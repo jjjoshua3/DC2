@@ -463,7 +463,15 @@ export function SitePage() {
 
       <footer className="border-t border-line bg-paper">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-muted">© De Connectors · Celebrating People</p>
+          <div className="text-sm text-muted">
+            <p>© De Connectors · Celebrating People</p>
+            <p className="mt-1">
+              Ontworpen door Joshua. Beveiligingslek melden? Dat kan via:{" "}
+              <a className="underline decoration-line underline-offset-2 hover:text-ink" href="mailto:aa0271n8@gmail.com">
+                aa0271n8@gmail.com
+              </a>
+            </p>
+          </div>
           <SocialsRow socials={design.socials} />
         </div>
       </footer>

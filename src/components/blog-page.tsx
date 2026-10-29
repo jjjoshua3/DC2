@@ -11,6 +11,22 @@ export function formatPostDate(iso: string) {
   return new Intl.DateTimeFormat("nl-NL", { day: "numeric", month: "long", year: "numeric" }).format(date)
 }
 
+function SiteFooter() {
+  return (
+    <footer className="border-t border-line bg-paper">
+      <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-muted">
+        <p>© De Connectors · Celebrating People</p>
+        <p className="mt-1">
+          Ontworpen door Joshua. Beveiligingslek melden? Dat kan via:{" "}
+          <a className="underline decoration-line underline-offset-2 hover:text-ink" href="mailto:aa0271n8@gmail.com">
+            aa0271n8@gmail.com
+          </a>
+        </p>
+      </div>
+    </footer>
+  )
+}
+
 function TopBar() {
   return (
     <header className="border-b border-line bg-paper">
@@ -46,6 +62,7 @@ export function BlogIndex() {
         </div>
         {posts.length === 0 ? <p className="mt-8 text-ink-soft">Er staan nog geen blogs live.</p> : null}
       </main>
+      <SiteFooter />
     </div>
   )
 }
@@ -102,6 +119,7 @@ export function BlogArticle({ postId }: { postId: string }) {
           <p className="mt-8 text-ink-soft">Dit blog staat niet live of bestaat niet.</p>
         )}
       </main>
+      <SiteFooter />
     </div>
   )
 }
