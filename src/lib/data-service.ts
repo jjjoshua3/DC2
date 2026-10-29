@@ -101,14 +101,12 @@ export function useSiteData() {
 
   useEffect(() => {
     const root = document.documentElement
-    const accent = /^#[0-9a-fA-F]{6}$/.test(data.design.accent) ? data.design.accent : "#E11D48"
+    const accent = /^#[0-9a-fA-F]{6}$/.test(data.design.accent) ? data.design.accent : "#8C734B"
     root.style.setProperty("--color-accent", accent)
     root.style.setProperty("--color-accent-ink", inkForAccent(accent))
     root.style.setProperty(
       "--font-display",
-      data.design.headingFont === "montserrat"
-        ? '"Montserrat", "Plus Jakarta Sans", sans-serif'
-        : '"Plus Jakarta Sans", sans-serif',
+      '"Cormorant Garamond", Georgia, "Times New Roman", serif',
     )
   }, [data.design.accent, data.design.headingFont])
 

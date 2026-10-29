@@ -152,15 +152,15 @@ export function SitePage() {
 
   return (
     <div className="min-h-screen bg-paper text-ink">
-      <header className="sticky top-0 z-40 border-b border-line bg-paper/90 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
           <a href="#home" className="flex min-w-0 items-center gap-3">
-            <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-ink font-display text-xs font-extrabold text-paper">
+            <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-ink font-display text-xs font-semibold text-paper">
               DC
               <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-accent" />
             </span>
             <span className="min-w-0">
-              <span className="block truncate font-display text-sm font-extrabold tracking-wide">DE CONNECTORS</span>
+              <span className="block truncate font-display text-sm font-semibold tracking-wide">DE CONNECTORS</span>
               <span className="block text-xs text-muted">Celebrating People</span>
             </span>
           </a>
@@ -206,10 +206,10 @@ export function SitePage() {
           <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:py-20 lg:grid-cols-12 lg:py-24">
             <div className="lg:col-span-7">
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Breda · sinds 2003</p>
-              <h1 className="mt-4 font-display text-5xl font-extrabold leading-[0.95] tracking-tight text-ink sm:text-6xl lg:text-7xl">
+              <h1 className="mt-4 font-display text-5xl font-medium leading-[0.92] tracking-tight text-ink sm:text-6xl lg:text-7xl">
                 {copy.heroTitle}
               </h1>
-              <p className="mt-3 font-story text-3xl italic text-accent sm:text-4xl">{copy.heroTagline}</p>
+              <p className="mt-4 font-story text-3xl italic text-accent sm:text-4xl">{copy.heroTagline}</p>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">{copy.heroSubtitle}</p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a
@@ -236,11 +236,11 @@ export function SitePage() {
             </div>
             <div className="lg:col-span-5">
               <div className="relative">
-                <div className="absolute -bottom-3 -right-3 h-full w-full rounded-card bg-accent" />
+                <div className="absolute -bottom-2 -right-2 h-full w-full rounded-card border border-accent" />
                 <img
                   src={copy.whoPhoto}
                   alt={copy.whoName}
-                  className="relative aspect-[4/5] w-full rounded-card object-cover object-top"
+                  className="relative aspect-[4/5] w-full rounded-card object-cover object-top shadow-sm"
                 />
               </div>
               <p className="relative mt-4 text-sm text-muted">
@@ -253,7 +253,7 @@ export function SitePage() {
         <section id="over" className="scroll-mt-24 border-t border-line bg-card">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Over</p>
-            <h2 className="mt-3 max-w-3xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
+            <h2 className="mt-3 max-w-3xl font-display text-4xl font-semibold tracking-tight sm:text-5xl">
               {copy.aboutTitle}
             </h2>
             <p className="mt-6 max-w-3xl text-xl font-semibold leading-relaxed text-ink">{copy.aboutLead}</p>
@@ -261,7 +261,7 @@ export function SitePage() {
               <p className="leading-relaxed text-ink-soft">{copy.aboutLeft}</p>
               <p className="leading-relaxed text-ink-soft">{copy.aboutRight}</p>
             </div>
-            <h3 className="mt-16 font-display text-2xl font-extrabold">{copy.stylesTitle}</h3>
+            <h3 className="mt-16 font-display text-2xl font-semibold">{copy.stylesTitle}</h3>
             <div className="mt-6 grid gap-4 md:grid-cols-3">
               {copy.styles.map((card, index) => {
                 const Icon = STYLE_ICONS[index % STYLE_ICONS.length]
@@ -270,7 +270,7 @@ export function SitePage() {
                     <span className="grid h-11 w-11 place-items-center rounded-full bg-accent text-accent-ink">
                       <Icon className="h-5 w-5" />
                     </span>
-                    <h4 className="mt-5 font-display text-lg font-extrabold">{card.title}</h4>
+                    <h4 className="mt-5 font-display text-lg font-semibold">{card.title}</h4>
                     <p className="mt-2 text-sm leading-relaxed text-ink-soft">{card.text}</p>
                   </article>
                 )
@@ -282,7 +282,7 @@ export function SitePage() {
         <section id="wat" className="scroll-mt-24">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wat</p>
-            <h2 className="mt-3 max-w-3xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
+            <h2 className="mt-3 max-w-3xl font-display text-4xl font-semibold tracking-tight sm:text-5xl">
               {copy.servicesTitle}
             </h2>
             <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -296,7 +296,7 @@ export function SitePage() {
                         {String(index + 1).padStart(2, "0")}
                       </span>
                     </div>
-                    <h3 className="mt-6 font-display text-xl font-extrabold leading-tight">{service.title}</h3>
+                    <h3 className="mt-6 font-display text-xl font-semibold leading-tight">{service.title}</h3>
                     <p className="mt-3 text-sm leading-relaxed text-ink-soft">{service.text}</p>
                   </article>
                 )
@@ -325,9 +325,9 @@ export function SitePage() {
             />
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wie</p>
-              <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{copy.whoTitle}</h2>
+              <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl">{copy.whoTitle}</h2>
               <p className="mt-6 text-lg leading-relaxed text-ink-soft">{copy.whoBody}</p>
-              <p className="mt-6 font-display text-lg font-extrabold">{copy.whoName}</p>
+              <p className="mt-6 font-display text-lg font-semibold">{copy.whoName}</p>
               <p className="text-sm text-muted">{copy.whoRole}</p>
               <a href={`mailto:${copy.email}`} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent">
                 <Mail className="h-4 w-4" />
@@ -355,7 +355,7 @@ export function SitePage() {
                     {client.image ? (
                       <img src={client.image} alt={client.name} className="h-10 w-auto max-w-40 object-contain" />
                     ) : (
-                      <span className="font-display text-lg font-extrabold text-ink">{client.name}</span>
+                      <span className="font-display text-lg font-semibold text-ink">{client.name}</span>
                     )}
                   </div>
                 ))}
@@ -368,7 +368,7 @@ export function SitePage() {
           <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Projecten</p>
             <div className="mt-3 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <h2 className="max-w-xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
+              <h2 className="max-w-xl font-display text-4xl font-semibold tracking-tight sm:text-5xl">
                 Blik op onze projecten
               </h2>
               <div className="flex flex-wrap gap-2">
@@ -403,7 +403,7 @@ export function SitePage() {
             <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Blog</p>
-                <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{copy.blogTitle}</h2>
+                <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl">{copy.blogTitle}</h2>
                 <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-soft">{copy.blogLead}</p>
               </div>
               <Link
@@ -430,7 +430,7 @@ export function SitePage() {
           <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:py-20 lg:grid-cols-2">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Contact</p>
-              <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{copy.contactTitle}</h2>
+              <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl">{copy.contactTitle}</h2>
               <p className="mt-5 max-w-md text-lg leading-relaxed text-paper/80">{copy.contactLead}</p>
               <a href={`mailto:${copy.email}`} className="mt-6 inline-flex text-lg font-bold text-paper underline decoration-accent underline-offset-4">
                 {copy.email}

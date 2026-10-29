@@ -16,7 +16,7 @@ export function ProjectCard({
     <button
       type="button"
       onClick={onOpen}
-      className="group flex h-full flex-col overflow-hidden rounded-card border border-line bg-card text-left shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
+      className="group flex h-full flex-col overflow-hidden rounded-card border border-line bg-card text-left shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md"
     >
       <span className="relative block aspect-[4/3] overflow-hidden bg-ink">
         {image ? (
