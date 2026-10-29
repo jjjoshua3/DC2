@@ -24,7 +24,7 @@ export function normalizeSite(value: SiteData): SiteData {
   if (!Array.isArray(next.posts)) next.posts = clone(defaultSite.posts)
   const base = clone(defaultSite.copy)
   next.copy = { ...base, ...next.copy }
-  if (!Array.isArray(next.copy.styles) || next.copy.styles.length === 0) next.copy.styles = base.styles
+  if (next.design.accent?.toLowerCase() === "#e11d48") next.design.accent = "#8C734B"
   if (!Array.isArray(next.copy.services) || next.copy.services.length === 0) next.copy.services = base.services
   return next
 }
