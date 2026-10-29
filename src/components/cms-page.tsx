@@ -59,9 +59,14 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
         },
       })
         .then(() => setSync("live"))
-        .catch(() => {
+        .catch((error: unknown) => {
           setSync("local")
-          setNotice("Bewaard op dit apparaat. De gedeelde opslag reageerde niet — probeer het nog eens.")
+          const detail = error instanceof Error ? error.message : ""
+          setNotice(
+            detail
+              ? `Bewaard op dit apparaat. Gedeelde opslag: ${detail}`
+              : "Bewaard op dit apparaat. De gedeelde opslag reageerde niet — probeer het nog eens.",
+          )
         })
     }, 500)
   }
