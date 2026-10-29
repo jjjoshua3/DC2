@@ -7,3 +7,6 @@ attachments
 screenshots
 artifacts
 .db.env
+
+.node_modules.lock
+AGENTS.md
