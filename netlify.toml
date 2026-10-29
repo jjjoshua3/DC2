@@ -1,0 +1,10 @@
+# Admin-wijzigingen die iedereen ziet: zet in Netlify bij
+# Environment variables de sleutel DATABASE_URL op je
+# Supabase Postgres-adres. Zonder die sleutel blijft de site
+# online met de teksten die nu in de pagina zitten.
+[build]
+  command = "npm run build && cp node_modules/@electric-sql/pglite/dist/pglite.data .netlify/functions-internal/server/_libs/pglite.data"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
