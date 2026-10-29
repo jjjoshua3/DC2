@@ -19,8 +19,9 @@ import { compressImage, newId, toEmbedUrl } from "@/lib/media"
 import { adminSession, clearAdminSession } from "@/lib/admin-session"
 import { saveSiteDocument } from "@/lib/site-store"
 import { BlogAdmin } from "@/components/blog-admin"
+import { AnalyticsPanel } from "@/components/analytics-panel"
 
-type Tab = "projects" | "posts" | "copy" | "design"
+type Tab = "projects" | "posts" | "copy" | "design" | "stats"
 
 const field =
   "mt-1 w-full rounded-xl border border-line bg-card px-3 py-2.5 text-sm text-ink outline-none focus:border-accent"
@@ -110,6 +111,7 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
       ["posts", "Blogs"],
       ["copy", "Paginateksten"],
       ["design", "Vormgeving"],
+      ["stats", "Bezoekers"],
     ] as const
   ).map(([id, name]) => (
     <button
@@ -465,6 +467,7 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
             onNotice={setNotice}
           />
         ) : null}
+        {tab === "stats" ? <AnalyticsPanel /> : null}
       </div>
       </div>
     </div>

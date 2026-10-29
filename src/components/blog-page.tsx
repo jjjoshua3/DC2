@@ -51,7 +51,7 @@ export function BlogIndex() {
       <TopBar />
       <main className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Blog</p>
-        <h1 className="mt-3 max-w-3xl font-display text-4xl font-medium tracking-tight sm:text-5xl">
+        <h1 className="mt-3 max-w-3xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
           {data.copy.blogTitle}
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-soft">{data.copy.blogLead}</p>
@@ -85,7 +85,7 @@ export function BlogCard({ post }: { post: Post }) {
       </span>
       <span className="flex flex-1 flex-col gap-2 p-5">
         <span className="text-xs font-bold uppercase tracking-widest text-accent">{formatPostDate(post.date)}</span>
-        <span className="font-display text-xl font-semibold leading-tight">{post.title}</span>
+        <span className="font-display text-xl font-extrabold leading-tight">{post.title}</span>
         {post.lead ? <span className="line-clamp-3 text-sm leading-relaxed text-ink-soft">{post.lead}</span> : null}
       </span>
     </Link>
@@ -105,7 +105,7 @@ export function BlogArticle({ postId }: { postId: string }) {
         {post ? (
           <article className="mt-6">
             <p className="text-xs font-bold uppercase tracking-widest text-accent">{formatPostDate(post.date)}</p>
-            <h1 className="mt-3 font-display text-4xl font-medium leading-tight sm:text-5xl">{post.title}</h1>
+            <h1 className="mt-3 font-display text-4xl font-extrabold leading-tight sm:text-5xl">{post.title}</h1>
             {post.lead ? <p className="mt-5 text-lg font-semibold leading-relaxed">{post.lead}</p> : null}
             {post.image ? (
               <img src={post.image} alt="" className="mt-6 aspect-[16/9] w-full rounded-card object-cover" />

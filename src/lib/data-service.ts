@@ -24,7 +24,7 @@ export function normalizeSite(value: SiteData): SiteData {
   if (!Array.isArray(next.posts)) next.posts = clone(defaultSite.posts)
   const base = clone(defaultSite.copy)
   next.copy = { ...base, ...next.copy }
-  if (next.design.accent?.toLowerCase() === "#e11d48") next.design.accent = "#8C734B"
+  if (!Array.isArray(next.copy.styles) || next.copy.styles.length === 0) next.copy.styles = base.styles
   if (!Array.isArray(next.copy.services) || next.copy.services.length === 0) next.copy.services = base.services
   return next
 }
@@ -101,12 +101,14 @@ export function useSiteData() {
 
   useEffect(() => {
     const root = document.documentElement
-    const accent = /^#[0-9a-fA-F]{6}$/.test(data.design.accent) ? data.design.accent : "#8C734B"
+    const accent = /^#[0-9a-fA-F]{6}$/.test(data.design.accent) ? data.design.accent : "#E11D48"
     root.style.setProperty("--color-accent", accent)
     root.style.setProperty("--color-accent-ink", inkForAccent(accent))
     root.style.setProperty(
       "--font-display",
-      '"Cormorant Garamond", Georgia, "Times New Roman", serif',
+      data.design.headingFont === "montserrat"
+        ? '"Montserrat", "Plus Jakarta Sans", sans-serif'
+        : '"Plus Jakarta Sans", sans-serif',
     )
   }, [data.design.accent, data.design.headingFont])
 

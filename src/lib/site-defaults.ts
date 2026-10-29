@@ -438,7 +438,7 @@ export const defaultSite: SiteData = {
     blogButton: "Naar de blogs",
   },
   design: {
-    accent: "#8C734B",
+    accent: "#E11D48",
     headingFont: "jakarta",
     socials: {
       youtube: "https://www.youtube.com/user/deconnectors",

@@ -2,10 +2,19 @@ import { useMemo, useState, type ReactNode } from "react"
 import { Link } from "@tanstack/react-router"
 import {
   ArrowRight,
+  BadgeCheck,
+  Building2,
+  Heart,
   Linkedin,
   Mail,
   Menu,
+  Megaphone,
+  Mic,
+  Newspaper,
+  Smile,
   Twitter,
+  Users,
+  Waypoints,
   X,
   Youtube,
 } from "lucide-react"
@@ -23,6 +32,9 @@ const NAV: { label: string; href?: string; to?: "/blog" }[] = [
   { to: "/blog", label: "Blog" },
   { href: "#contact", label: "Contact" },
 ]
+
+const STYLE_ICONS = [Heart, BadgeCheck, Smile]
+const SERVICE_ICONS = [Megaphone, Waypoints, Users, Mic, Newspaper, Building2]
 
 function FlickrIcon() {
   return (
@@ -141,23 +153,32 @@ export function SitePage() {
   return (
     <div className="min-h-screen bg-paper text-ink">
       <header className="sticky top-0 z-40 border-b border-line bg-paper/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center gap-6 px-4 py-4">
-          <a href="#home" className="min-w-0">
-            <span className="block font-display text-xl font-medium tracking-[0.18em]">DE CONNECTORS</span>
-            <span className="mt-0.5 block text-[10px] uppercase tracking-[0.28em] text-muted">Celebrating People</span>
+        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+          <a href="#home" className="flex min-w-0 items-center gap-3">
+            <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-ink font-display text-xs font-extrabold text-paper">
+              DC
+              <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-accent" />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate font-display text-sm font-extrabold tracking-wide">DE CONNECTORS</span>
+              <span className="block text-xs text-muted">Celebrating People</span>
+            </span>
           </a>
-          <nav className="ml-auto hidden items-center gap-1 lg:flex">
-            <NavItems itemClass="px-3 py-2 text-[11px] font-medium uppercase tracking-[0.18em] text-ink-soft hover:text-ink" />
+          <nav className="ml-auto hidden items-center lg:flex">
+            <NavItems itemClass="rounded-full px-2.5 py-2 text-sm font-semibold text-ink-soft hover:text-ink" />
           </nav>
+          <div className="hidden items-center xl:flex">
+            <SocialsRow socials={design.socials} />
+          </div>
           <Link
             to="/admin"
-            className="hidden border border-ink px-4 py-2 text-[11px] font-medium uppercase tracking-[0.18em] text-ink hover:bg-ink hover:text-paper lg:inline-flex"
+            className="ml-1 hidden min-h-11 items-center rounded-full border border-line bg-card px-4 text-sm font-semibold text-ink hover:border-accent lg:inline-flex"
           >
             Beheer
           </Link>
           <button
             type="button"
-            className="ml-auto grid h-11 w-11 place-items-center border border-line lg:hidden"
+            className="ml-auto grid h-11 w-11 place-items-center rounded-full border border-line bg-card lg:hidden"
             aria-label={menuOpen ? "Sluit menu" : "Open menu"}
             onClick={() => setMenuOpen((open) => !open)}
           >
@@ -182,43 +203,48 @@ export function SitePage() {
 
       <main>
         <section id="home" className="scroll-mt-24">
-          <div className="mx-auto grid max-w-6xl items-end gap-12 px-4 py-16 sm:py-24 lg:grid-cols-12 lg:py-28">
+          <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:py-20 lg:grid-cols-12 lg:py-24">
             <div className="lg:col-span-7">
-              <p className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.32em] text-accent">
-                <span className="h-px w-8 bg-accent" />
-                Breda · sinds 2003
-              </p>
-              <h1 className="mt-6 font-display text-6xl font-medium leading-[0.88] text-ink sm:text-7xl lg:text-8xl">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Breda · sinds 2003</p>
+              <h1 className="mt-4 font-display text-5xl font-extrabold leading-[0.95] tracking-tight text-ink sm:text-6xl lg:text-7xl">
                 {copy.heroTitle}
               </h1>
-              <p className="mt-6 max-w-md font-story text-3xl italic leading-snug text-accent sm:text-4xl">{copy.heroTagline}</p>
-              <p className="mt-6 max-w-lg text-base leading-relaxed text-ink-soft">{copy.heroSubtitle}</p>
-              <div className="mt-10 flex flex-wrap items-center gap-4">
+              <p className="mt-3 font-story text-3xl italic text-accent sm:text-4xl">{copy.heroTagline}</p>
+              <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">{copy.heroSubtitle}</p>
+              <div className="mt-8 flex flex-wrap gap-3">
                 <a
                   href="#projecten"
-                  className="inline-flex min-h-11 items-center gap-3 bg-ink px-6 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-paper"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink"
                 >
                   Bekijk onze projecten
                   <ArrowRight className="h-4 w-4" />
                 </a>
                 <a
                   href="#contact"
-                  className="text-[11px] font-medium uppercase tracking-[0.2em] text-ink underline decoration-accent underline-offset-4"
+                  className="inline-flex min-h-11 items-center rounded-full border border-ink bg-transparent px-5 py-2.5 text-sm font-bold text-ink"
                 >
                   Get in touch
                 </a>
+                <Link
+                  to="/blog"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-card px-5 py-2.5 text-sm font-bold text-ink"
+                >
+                  {copy.blogButton}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
             </div>
             <div className="lg:col-span-5">
-              <div className="border border-accent p-2">
+              <div className="relative">
+                <div className="absolute -bottom-3 -right-3 h-full w-full rounded-card bg-accent" />
                 <img
                   src={copy.whoPhoto}
                   alt={copy.whoName}
-                  className="aspect-[4/5] w-full object-cover object-top"
+                  className="relative aspect-[4/5] w-full rounded-card object-cover object-top"
                 />
               </div>
-              <p className="mt-4 text-[11px] uppercase tracking-[0.22em] text-muted">
-                <span className="text-ink">{copy.whoName}</span> — {copy.whoRole}
+              <p className="relative mt-4 text-sm text-muted">
+                <span className="font-semibold text-ink">{copy.whoName}</span> — {copy.whoRole}
               </p>
             </div>
           </div>
@@ -226,11 +252,8 @@ export function SitePage() {
 
         <section id="over" className="scroll-mt-24 border-t border-line bg-card">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
-            <p className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.32em] text-accent">
-              <span className="h-px w-8 bg-accent" />
-              Over
-            </p>
-            <h2 className="mt-4 max-w-3xl font-display text-5xl font-medium leading-none sm:text-6xl">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Over</p>
+            <h2 className="mt-3 max-w-3xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
               {copy.aboutTitle}
             </h2>
             <p className="mt-6 max-w-3xl text-xl font-semibold leading-relaxed text-ink">{copy.aboutLead}</p>
@@ -238,44 +261,54 @@ export function SitePage() {
               <p className="leading-relaxed text-ink-soft">{copy.aboutLeft}</p>
               <p className="leading-relaxed text-ink-soft">{copy.aboutRight}</p>
             </div>
-            <h3 className="mt-16 font-display text-3xl font-medium">{copy.stylesTitle}</h3>
-            <div className="mt-8 grid gap-px bg-line md:grid-cols-3">
-              {copy.styles.map((card, index) => (
-                <article key={card.title} className="bg-paper p-8">
-                  <p className="font-display text-3xl text-accent">{String(index + 1).padStart(2, "0")}</p>
-                  <h4 className="mt-4 font-display text-2xl font-medium">{card.title}</h4>
-                  <p className="mt-3 text-sm leading-relaxed text-ink-soft">{card.text}</p>
-                </article>
-              ))}
+            <h3 className="mt-16 font-display text-2xl font-extrabold">{copy.stylesTitle}</h3>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {copy.styles.map((card, index) => {
+                const Icon = STYLE_ICONS[index % STYLE_ICONS.length]
+                return (
+                  <article key={card.title} className="rounded-card border border-line bg-paper p-6">
+                    <span className="grid h-11 w-11 place-items-center rounded-full bg-accent text-accent-ink">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <h4 className="mt-5 font-display text-lg font-extrabold">{card.title}</h4>
+                    <p className="mt-2 text-sm leading-relaxed text-ink-soft">{card.text}</p>
+                  </article>
+                )
+              })}
             </div>
           </div>
         </section>
 
         <section id="wat" className="scroll-mt-24">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
-            <p className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.32em] text-accent">
-              <span className="h-px w-8 bg-accent" />
-              Wat
-            </p>
-            <h2 className="mt-4 max-w-3xl font-display text-5xl font-medium leading-none sm:text-6xl">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wat</p>
+            <h2 className="mt-3 max-w-3xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
               {copy.servicesTitle}
             </h2>
-            <div className="mt-12 divide-y divide-line border-y border-line">
-              {copy.services.map((service, index) => (
-                <article key={service.title} className="grid gap-3 py-7 sm:grid-cols-[5rem_1fr_2fr] sm:items-baseline sm:gap-8">
-                  <span className="font-display text-2xl text-accent">{String(index + 1).padStart(2, "0")}</span>
-                  <h3 className="font-display text-3xl font-medium leading-tight">{service.title}</h3>
-                  <p className="text-sm leading-relaxed text-ink-soft">{service.text}</p>
-                </article>
-              ))}
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {copy.services.map((service, index) => {
+                const Icon = SERVICE_ICONS[index % SERVICE_ICONS.length]
+                return (
+                  <article key={service.title} className="rounded-card border border-line bg-card p-6">
+                    <div className="flex items-center justify-between">
+                      <Icon className="h-5 w-5 text-accent" />
+                      <span className="font-display text-sm font-bold text-muted">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+                    <h3 className="mt-6 font-display text-xl font-extrabold leading-tight">{service.title}</h3>
+                    <p className="mt-3 text-sm leading-relaxed text-ink-soft">{service.text}</p>
+                  </article>
+                )
+              })}
             </div>
           </div>
           <div className="bg-ink text-paper">
-            <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 px-4 py-16 sm:flex-row sm:items-end">
-              <p className="max-w-3xl font-story text-4xl italic leading-tight sm:text-5xl">{copy.bannerText}</p>
+            <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-4 py-12 sm:flex-row sm:items-center">
+              <p className="font-story text-3xl italic sm:text-4xl">{copy.bannerText}</p>
               <a
                 href="#contact"
-                className="inline-flex items-center border border-accent px-6 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-paper"
+                className="inline-flex min-h-11 items-center rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink"
               >
                 Get in Touch
               </a>
@@ -285,21 +318,16 @@ export function SitePage() {
 
         <section id="wie" className="scroll-mt-24 bg-card">
           <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 sm:py-20 lg:grid-cols-2">
-            <div className="border border-accent p-2">
-              <img
-                src={copy.whoPhoto}
-                alt={copy.whoName}
-                className="aspect-[4/5] w-full object-cover object-top"
-              />
-            </div>
+            <img
+              src={copy.whoPhoto}
+              alt={copy.whoName}
+              className="aspect-[4/5] w-full rounded-card object-cover object-top"
+            />
             <div>
-              <p className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.32em] text-accent">
-                <span className="h-px w-8 bg-accent" />
-                Wie
-              </p>
-              <h2 className="mt-4 font-display text-5xl font-medium leading-none sm:text-6xl">{copy.whoTitle}</h2>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wie</p>
+              <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{copy.whoTitle}</h2>
               <p className="mt-6 text-lg leading-relaxed text-ink-soft">{copy.whoBody}</p>
-              <p className="mt-6 font-display text-lg font-semibold">{copy.whoName}</p>
+              <p className="mt-6 font-display text-lg font-extrabold">{copy.whoName}</p>
               <p className="text-sm text-muted">{copy.whoRole}</p>
               <a href={`mailto:${copy.email}`} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent">
                 <Mail className="h-4 w-4" />
@@ -308,10 +336,11 @@ export function SitePage() {
             </div>
           </div>
           <div className="border-y border-line bg-paper">
-            <div className="mx-auto max-w-5xl px-4 py-20">
-              <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-accent">Atelier</p>
-              <blockquote className="mt-6 font-story text-4xl italic leading-[1.15] text-ink sm:text-6xl">
+            <div className="mx-auto max-w-6xl px-4 py-12">
+              <blockquote className="max-w-4xl font-story text-3xl italic leading-snug text-ink sm:text-5xl">
+                <span className="text-accent">“</span>
                 {copy.quote}
+                <span className="text-accent">”</span>
               </blockquote>
             </div>
           </div>
@@ -326,7 +355,7 @@ export function SitePage() {
                     {client.image ? (
                       <img src={client.image} alt={client.name} className="h-10 w-auto max-w-40 object-contain" />
                     ) : (
-                      <span className="font-display text-lg font-semibold text-ink">{client.name}</span>
+                      <span className="font-display text-lg font-extrabold text-ink">{client.name}</span>
                     )}
                   </div>
                 ))}
@@ -339,7 +368,7 @@ export function SitePage() {
           <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Projecten</p>
             <div className="mt-3 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <h2 className="max-w-xl font-display text-4xl font-semibold tracking-tight sm:text-5xl">
+              <h2 className="max-w-xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
                 Blik op onze projecten
               </h2>
               <div className="flex flex-wrap gap-2">
@@ -374,7 +403,7 @@ export function SitePage() {
             <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Blog</p>
-                <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl">{copy.blogTitle}</h2>
+                <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{copy.blogTitle}</h2>
                 <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-soft">{copy.blogLead}</p>
               </div>
               <Link
@@ -401,7 +430,7 @@ export function SitePage() {
           <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:py-20 lg:grid-cols-2">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Contact</p>
-              <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl">{copy.contactTitle}</h2>
+              <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{copy.contactTitle}</h2>
               <p className="mt-5 max-w-md text-lg leading-relaxed text-paper/80">{copy.contactLead}</p>
               <a href={`mailto:${copy.email}`} className="mt-6 inline-flex text-lg font-bold text-paper underline decoration-accent underline-offset-4">
                 {copy.email}
