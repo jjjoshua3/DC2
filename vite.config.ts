@@ -61,6 +61,53 @@ function pgliteBootstrapPlugin(): Plugin {
  * and returns the 302 / completion HTML. Deployed apps do not use the popup
  * (full-page OAuth redirect), so `apply: "serve"` is enough.
  */
+function statsApiPlugin(): Plugin {
+  return {
+    name: "app-builder:stats-api",
+    apply: "serve",
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        try {
+          const pathOnly = (req.url ?? "").split("?", 1)[0] ?? ""
+          if (!pathOnly.endsWith("/api/stats")) {
+            next()
+            return
+          }
+          if ((req.method ?? "GET").toUpperCase() !== "POST") {
+            res.statusCode = 405
+            res.setHeader("content-type", "application/json")
+            res.end(JSON.stringify({ error: "Method Not Allowed" }))
+            return
+          }
+          const chunks: Buffer[] = []
+          for await (const chunk of req) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+          const body = Buffer.concat(chunks)
+          const host = String(req.headers.host ?? "localhost:8080")
+          const request = new Request(`http://${host}/api/stats`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body,
+          })
+          const mod = (await server.ssrLoadModule("/src/lib/analytics.ts")) as {
+            handleStatsRequest: (request: Request) => Promise<Response>
+          }
+          const response = await mod.handleStatsRequest(request)
+          res.statusCode = response.status
+          res.setHeader("content-type", "application/json; charset=utf-8")
+          res.end(Buffer.from(await response.arrayBuffer()))
+        } catch (err) {
+          console.error("[stats] /api/stats failed:", err)
+          if (!res.headersSent) {
+            res.statusCode = 500
+            res.setHeader("content-type", "application/json")
+            res.end(JSON.stringify({ error: "Cijfers laden mislukt" }))
+          }
+        }
+      })
+    },
+  }
+}
+
 function authPopupPlugin(): Plugin {
   return {
     name: "app-builder:auth-popup",
@@ -159,6 +206,7 @@ export default defineConfig(({ command, isPreview }) => ({
   resolve: { tsconfigPaths: true },
   plugins: [
     pgliteBootstrapPlugin(),
+    statsApiPlugin(),
     // Before tanstackStart so /auth/popup never falls through to the SPA.
     authPopupPlugin(),
     // Dev-only /__app-env, read by scripts/check-auth-invariant.mjs.

@@ -16,6 +16,11 @@ function isAnalytics(value: unknown): value is Analytics {
   return typeof row.uniques === "number" && Array.isArray(row.places)
 }
 
+function statsUrl() {
+  const match = window.location.pathname.match(/^(\/hds-[a-z0-9]+-\d+-[a-z0-9]+)(?=\/|$)/i)
+  return `${match?.[1] ?? ""}/api/stats`
+}
+
 export function AnalyticsPanel() {
   const [stats, setStats] = useState<Analytics | null>(null)
   const [error, setError] = useState("")
@@ -27,9 +32,9 @@ export function AnalyticsPanel() {
       return
     }
     let cancelled = false
-    void fetch("/api/stats", {
+    void fetch(statsUrl(), {
       method: "POST",
-      headers: { "content-type": "application/json", accept: "application/json" },
+      headers: { "content-type": "application/json", accept: "*/*" },
       body: JSON.stringify(session),
     })
       .then(async (response) => {
@@ -71,7 +76,7 @@ export function AnalyticsPanel() {
     <section>
       <h1 className="font-display text-2xl font-extrabold">Bezoekers</h1>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-        Herkomst op basis van IP. Tijd op de site, unieke bezoekers en hoe vaak iemand terugkomt.
+        Herkomst van bezoekers op basis van hun IP-adres: land en plaats. Plus hoe lang ze blijven en hoe vaak ze terugkomen.
       </p>
       <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map(([name, value]) => (

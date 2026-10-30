@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
+import { getRequest } from "@tanstack/react-start/server"
 import { getSql } from "@/lib/db"
 
 const ADMIN_USER = "admin"
@@ -28,35 +29,62 @@ async function ensureTable() {
   return sql
 }
 
-async function clientIp() {
+function isPrivateIp(ip: string) {
+  const value = ip.trim().toLowerCase()
+  if (!value || value === "unknown" || value === "127.0.0.1" || value === "::1" || value === "0.0.0.0") return true
+  if (value.startsWith("10.") || value.startsWith("192.168.") || value.startsWith("169.254.")) return true
+  if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(value)) return true
+  if (value.startsWith("fc") || value.startsWith("fd") || value.startsWith("fe80")) return true
+  return false
+}
+
+export function ipFromHeaders(headers: Headers) {
+  const raw = [
+    headers.get("x-nf-client-connection-ip"),
+    headers.get("cf-connecting-ip"),
+    headers.get("x-real-ip"),
+    headers.get("x-forwarded-for"),
+  ]
+  for (const entry of raw) {
+    if (!entry) continue
+    for (const part of entry.split(",")) {
+      const ip = part.trim().replace(/^::ffff:/, "")
+      if (!isPrivateIp(ip)) return ip
+    }
+  }
+  return ""
+}
+
+function countryName(code: string, fallback: string) {
+  if (!code) return fallback || "Onbekend"
   try {
-    const mod = await import("@tanstack/react-start/server")
-    const request = mod.getRequest()
-    const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-    return forwarded || mod.getRequestIP({ xForwardedFor: true }) || ""
+    return new Intl.DisplayNames(["nl"], { type: "region" }).of(code.toUpperCase()) || fallback || "Onbekend"
   } catch {
-    return ""
+    return fallback || "Onbekend"
   }
 }
 
 async function placeFor(ip: string): Promise<Place> {
-  if (!ip || ip === "127.0.0.1" || ip === "::1" || ip.startsWith("10.") || ip.startsWith("192.168.")) {
-    return { country: "Onbekend", city: "", region: "" }
-  }
+  if (!ip || isPrivateIp(ip)) return { country: "Onbekend", city: "", region: "" }
   const cached = placeCache.get(ip)
   if (cached) return cached
   try {
     const response = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}`, {
-      signal: AbortSignal.timeout(2500),
+      signal: AbortSignal.timeout(4000),
     })
     const data = (await response.json()) as {
       success?: boolean
       country?: string
+      country_code?: string
       city?: string
       region?: string
     }
     const place = data.success
-      ? { country: data.country || "Onbekend", city: data.city || "", region: data.region || "" }
+      ? {
+          country: countryName(data.country_code || "", data.country || ""),
+          city: data.city || "",
+          region: data.region || "",
+        }
       : { country: "Onbekend", city: "", region: "" }
     placeCache.set(ip, place)
     return place
@@ -76,7 +104,7 @@ export const startVisit = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const sql = await ensureTable()
-    const place = await placeFor(await clientIp())
+    const place = await placeFor(ipFromHeaders(getRequest().headers))
     const id = crypto.randomUUID()
     await sql`
       insert into site_visit (id, visitor_id, country, city, region)
@@ -153,6 +181,17 @@ export async function loadAnalytics(): Promise<Analytics> {
   }
 }
 
-export function adminAllowed(username: string, password: string) {
-  return allowed(username, password)
+export async function handleStatsRequest(request: Request): Promise<Response> {
+  try {
+    const body = (await request.json().catch(() => null)) as { username?: unknown; password?: unknown } | null
+    const username = typeof body?.username === "string" ? body.username : ""
+    const password = typeof body?.password === "string" ? body.password : ""
+    if (!allowed(username, password)) {
+      return Response.json({ error: "Geen toegang" }, { status: 401 })
+    }
+    return Response.json(await loadAnalytics())
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Onbekende fout"
+    return Response.json({ error: `Cijfers laden mislukt: ${message}` }, { status: 500 })
+  }
 }
