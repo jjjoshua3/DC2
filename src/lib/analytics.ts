@@ -76,7 +76,7 @@ export const startVisit = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const sql = await ensureTable()
-    const place = await placeFor(clientIp())
+    const place = await placeFor(await clientIp())
     const id = crypto.randomUUID()
     await sql`
       insert into site_visit (id, visitor_id, country, city, region)

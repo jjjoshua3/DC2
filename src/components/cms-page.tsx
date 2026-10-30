@@ -1,4 +1,4 @@
-import { useRef, useState, type RefObject } from "react"
+import { useRef, useState, type RefObject, Component, type ReactNode } from "react"
 import { Link } from "@tanstack/react-router"
 import {
   ChevronDown,
@@ -467,11 +467,28 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
             onNotice={setNotice}
           />
         ) : null}
-        {tab === "stats" ? <AnalyticsPanel /> : null}
+        {tab === "stats" ? (
+          <PanelBoundary>
+            <AnalyticsPanel />
+          </PanelBoundary>
+        ) : null}
       </div>
       </div>
     </div>
   )
+}
+
+class PanelBoundary extends Component<{ children: ReactNode }, { error: string }> {
+  state = { error: "" }
+  static getDerivedStateFromError(error: unknown) {
+    return { error: error instanceof Error ? error.message : "De bezoekerscijfers konden niet getoond worden." }
+  }
+  render() {
+    if (this.state.error) {
+      return <p className="rounded-xl border border-line bg-card px-4 py-3 text-sm">{this.state.error}</p>
+    }
+    return this.props.children
+  }
 }
 
 function CopyForm({ data, commit }: { data: SiteData; commit: (next: SiteData) => void }) {

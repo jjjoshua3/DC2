@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { adminSession } from "@/lib/admin-session"
 import { fetchAnalytics, type Analytics } from "@/lib/analytics"
 
@@ -11,24 +10,53 @@ function formatDuration(seconds: number) {
   return `${minutes} min ${rest} sec`
 }
 
+function isAnalytics(value: unknown): value is Analytics {
+  if (!value || typeof value !== "object") return false
+  const row = value as Partial<Analytics>
+  return typeof row.uniques === "number" && Array.isArray(row.places)
+}
+
 export function AnalyticsPanel() {
   const [stats, setStats] = useState<Analytics | null>(null)
   const [error, setError] = useState("")
 
   useEffect(() => {
     const session = adminSession()
-    if (!session) return
+    if (!session) {
+      setError("Log opnieuw in om de cijfers te zien.")
+      return
+    }
+    let cancelled = false
     void fetchAnalytics({ data: session })
-      .then(setStats)
-      .catch((error: unknown) => {
-        const detail = error instanceof Error ? error.message : ""
+      .then((result) => {
+        if (cancelled) return
+        if (!isAnalytics(result)) {
+          setError("De cijfers kwamen niet goed binnen. Vernieuw de pagina en probeer het nog eens.")
+          return
+        }
+        setStats(result)
+      })
+      .catch((caught: unknown) => {
+        if (cancelled) return
+        const detail = caught instanceof Error ? caught.message : ""
         setError(detail || "De cijfers konden niet geladen worden.")
       })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  if (error) return <p className="text-sm text-muted">{error}</p>
+  if (error) {
+    return (
+      <section>
+        <h1 className="font-display text-2xl font-extrabold">Bezoekers</h1>
+        <p className="mt-3 rounded-xl border border-line bg-card px-4 py-3 text-sm">{error}</p>
+      </section>
+    )
+  }
   if (!stats) return <p className="text-sm text-muted">Cijfers laden…</p>
 
+  const max = Math.max(1, ...stats.places.map((place) => place.visits))
   const cards = [
     ["Unieke bezoekers", String(stats.uniques)],
     ["Gemiddeld op de site", formatDuration(stats.avgSeconds)],
@@ -55,28 +83,24 @@ export function AnalyticsPanel() {
         {stats.places.length === 0 ? (
           <p className="mt-4 text-sm text-muted">Nog geen bezoeken. Open de site in een ander venster, dan verschijnt het hier.</p>
         ) : (
-          <>
-            <div className="mt-4 h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.places} layout="vertical" margin={{ left: 12, right: 12 }}>
-                  <XAxis type="number" allowDecimals={false} stroke="#64707e" fontSize={12} />
-                  <YAxis type="category" dataKey="label" width={140} stroke="#64707e" fontSize={12} />
-                  <Tooltip />
-                  <Bar dataKey="visits" name="Bezoeken" fill="#E11D48" radius={6} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <ul className="mt-4 divide-y divide-line text-sm">
-              {stats.places.map((place) => (
-                <li key={place.label} className="flex items-center justify-between py-2">
-                  <span>{place.label}</span>
+          <ul className="mt-5 space-y-4">
+            {stats.places.map((place) => (
+              <li key={place.label}>
+                <div className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="font-semibold">{place.label}</span>
                   <span className="text-muted">
                     {place.visits} bezoeken · {place.people} personen
                   </span>
-                </li>
-              ))}
-            </ul>
-          </>
+                </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-paper">
+                  <div
+                    className="h-full rounded-full bg-accent"
+                    style={{ width: `${Math.max(8, Math.round((place.visits / max) * 100))}%` }}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </section>
