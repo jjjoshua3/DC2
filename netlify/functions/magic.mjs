@@ -1,6 +1,8 @@
 import { createHash, randomBytes } from "node:crypto"
 import pg from "pg"
+import nodemailer from "nodemailer"
 
+const FROM = "DE CONNECTORS <aa0271n8@gmail.com>"
 const ADMINS = {
   "joshua.bosma@kpnmail.nl": { name: "Joshua Bosma", role: "Webdeveloper" },
   "stefanie@deconnectors.com": { name: "Stefanie Vermeulen", role: "Eigenaar" },
@@ -56,6 +58,26 @@ async function ensureTables(pool) {
   `)
 }
 
+async function sendLink(email, name, link) {
+  const password = process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, "")
+  if (!password) {
+    throw new Error("GMAIL_APP_PASSWORD ontbreekt op Netlify. Zet daar het app-wachtwoord van aa0271n8@gmail.com.")
+  }
+  const transport = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: { user: "aa0271n8@gmail.com", pass: password },
+  })
+  await transport.sendMail({
+    from: FROM,
+    to: email,
+    subject: "Inloglink DE CONNECTORS",
+    text: `Hoi ${name},\n\nHier is je inloglink voor het beheer. De link is 30 minuten geldig en werkt één keer.\n\n${link}\n`,
+    html: `<p>Hoi ${name},</p><p>Hier is je inloglink voor het beheer. De link is 30 minuten geldig en werkt één keer.</p><p><a href="${link}">Open het beheer</a></p>`,
+  })
+}
+
 export default async (request) => {
   try {
     if (request.method !== "POST") return Response.json({ error: "Method Not Allowed" }, { status: 405 })
@@ -90,11 +112,14 @@ export default async (request) => {
         [crypto.randomUUID(), email, hashToken(token)],
       )
       const link = `${origin.replace(/\/$/, "")}/admin?magic=${encodeURIComponent(token)}`
+      const outboxId = crypto.randomUUID()
       await pool.query(`insert into site_magic_outbox (id, email, link) values ($1, $2, $3)`, [
-        crypto.randomUUID(),
+        outboxId,
         email,
         link,
       ])
+      await sendLink(email, ADMINS[email].name, link)
+      await pool.query(`update site_magic_outbox set sent_at = now() where id = $1`, [outboxId])
       return Response.json({ ok: true })
     })
   } catch (error) {

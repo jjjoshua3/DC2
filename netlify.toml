@@ -2,6 +2,7 @@
 # Environment variables de sleutel DATABASE_URL op je
 # Supabase Postgres-adres. Zonder die sleutel blijft de site
 # online met de teksten die nu in de pagina zitten.
+# Inloglinks: zet ook GMAIL_APP_PASSWORD (app-wachtwoord van aa0271n8@gmail.com).
 [build]
   command = "npm run build && cp node_modules/@electric-sql/pglite/dist/pglite.data .netlify/functions-internal/server/_libs/pglite.data"
   publish = "dist"

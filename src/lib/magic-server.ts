@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "node:crypto"
 import pg from "pg"
+import nodemailer from "nodemailer"
 import { adminAccount } from "@/lib/admins"
 
 function hashToken(token: string) {
@@ -107,11 +108,30 @@ export async function handleMagicRequest(request: Request): Promise<Response> {
           sent_at timestamptz
         )`,
       )
+      const outboxId = crypto.randomUUID()
       await pool.query(`insert into site_magic_outbox (id, email, link) values ($1, $2, $3)`, [
-        crypto.randomUUID(),
+        outboxId,
         email,
         link,
       ])
+      const password = process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, "")
+      if (!password) {
+        throw new Error("GMAIL_APP_PASSWORD ontbreekt. Zet het app-wachtwoord van aa0271n8@gmail.com.")
+      }
+      const transport = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: { user: "aa0271n8@gmail.com", pass: password },
+      })
+      await transport.sendMail({
+        from: "DE CONNECTORS <aa0271n8@gmail.com>",
+        to: email,
+        subject: "Inloglink DE CONNECTORS",
+        text: `Hoi ${account.name},\n\nHier is je inloglink voor het beheer. De link is 30 minuten geldig en werkt één keer.\n\n${link}\n`,
+        html: `<p>Hoi ${account.name},</p><p>Hier is je inloglink voor het beheer. De link is 30 minuten geldig en werkt één keer.</p><p><a href="${link}">Open het beheer</a></p>`,
+      })
+      await pool.query(`update site_magic_outbox set sent_at = now() where id = $1`, [outboxId])
       return Response.json({ ok: true })
     })
   } catch (error) {
