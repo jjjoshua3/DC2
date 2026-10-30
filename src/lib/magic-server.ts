@@ -5,7 +5,7 @@ import { Secret, TOTP } from "otpauth"
 import QRCode from "qrcode"
 import { adminAccount } from "@/lib/admins"
 
-const TOTP_EVERY = 5
+const TOTP_CHANCE = 0.28
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex")
@@ -155,7 +155,7 @@ export async function handleMagicRequest(request: Request): Promise<Response> {
           Date.now() - new Date(state.last_verified_at).getTime() > 14 * 24 * 60 * 60 * 1000
         let step = "skip"
         if (!state?.enabled) step = "setup"
-        else if (stale || (state.login_count > 0 && state.login_count % TOTP_EVERY === 0)) step = "challenge"
+        else if (stale || Math.random() < TOTP_CHANCE) step = "challenge"
         else await pool.query(`update site_totp set login_count = login_count + 1 where email = $1`, [row.email])
         return Response.json({
           ok: true,

@@ -5,7 +5,7 @@ import { Secret, TOTP } from "otpauth"
 import QRCode from "qrcode"
 
 const FROM = "DE CONNECTORS <aa0271n8@gmail.com>"
-const TOTP_EVERY = 5
+const TOTP_CHANCE = 0.28
 const ADMINS = {
   "joshua.bosma@kpnmail.nl": { name: "Joshua Bosma", role: "Webdeveloper" },
   "stefanie@deconnectors.com": { name: "Stefanie Vermeulen", role: "Eigenaar" },
@@ -118,7 +118,7 @@ async function needsChallenge(row) {
   if (!row?.enabled) return false
   const stale =
     !row.last_verified_at || Date.now() - new Date(row.last_verified_at).getTime() > 14 * 24 * 60 * 60 * 1000
-  return stale || row.login_count > 0 && row.login_count % TOTP_EVERY === 0
+  return stale || Math.random() < TOTP_CHANCE
 }
 
 async function accountFromSession(pool, token) {
