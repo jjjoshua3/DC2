@@ -1,12 +1,6 @@
 import { ipFromHeaders, lookupPlace } from "@/lib/analytics"
+import { accountFromToken, adminAccount } from "@/lib/admins"
 import { getSql } from "@/lib/db"
-
-const ADMIN_USER = "admin"
-const ADMIN_PASSWORD = "Admin"
-
-function allowed(username: string, password: string) {
-  return username.toLowerCase() === ADMIN_USER && password === ADMIN_PASSWORD
-}
 
 async function ensureAuditTable() {
   const sql = await getSql()
@@ -60,45 +54,62 @@ export async function handleAuditRequest(request: Request): Promise<Response> {
     const body = (await request.json().catch(() => null)) as {
       action?: unknown
       username?: unknown
-      password?: unknown
+      token?: unknown
       summary?: unknown
       detail?: unknown
+      ok?: unknown
     } | null
     const action = typeof body?.action === "string" ? body.action : ""
-    const username = typeof body?.username === "string" ? body.username.trim() : ""
-    const password = typeof body?.password === "string" ? body.password : ""
+    const username = typeof body?.username === "string" ? body.username.trim().toLowerCase() : ""
+    const token = typeof body?.token === "string" ? body.token : ""
     const ip = ipFromHeaders(request.headers)
     const place = await lookupPlace(ip)
+    const account = token ? await accountFromToken(token) : null
 
     if (action === "login") {
-      const ok = allowed(username, password)
+      const known = adminAccount(username)
       await writeEvent({
         kind: "login",
         username: username || "(leeg)",
         ip,
         city: place.city,
         country: place.country,
-        ok,
-        summary: ok ? "Ingelogd" : "Inloggen mislukt",
-        detail: ok ? "Wachtwoord juist" : "Wachtwoord verkeerd",
+        ok: !!known,
+        summary: known ? "Inloglink verstuurd" : "Inloggen geweigerd",
+        detail: known ? "Magische link" : "Onbekend e-mailadres",
       })
-      return Response.json({ ok })
+      return Response.json({ ok: !!known })
     }
 
-    if (!allowed(username, password)) {
+    if (action === "session") {
+      if (!account) return Response.json({ error: "Geen toegang" }, { status: 401 })
+      await writeEvent({
+        kind: "login",
+        username: account.email,
+        ip,
+        city: place.city,
+        country: place.country,
+        ok: true,
+        summary: `Ingelogd als ${account.role}`,
+        detail: "Magische link",
+      })
+      return Response.json({ ok: true, account })
+    }
+
+    if (!account) {
       return Response.json({ error: "Geen toegang" }, { status: 401 })
     }
 
     if (action === "logout") {
       await writeEvent({
         kind: "logout",
-        username,
+        username: account.email,
         ip,
         city: place.city,
         country: place.country,
         ok: null,
         summary: "Uitgelogd",
-        detail: "Sessie beëindigd",
+        detail: account.role,
       })
       return Response.json({ ok: true })
     }
@@ -108,7 +119,7 @@ export async function handleAuditRequest(request: Request): Promise<Response> {
       const detail = typeof body?.detail === "string" ? body.detail.trim() : ""
       await writeEvent({
         kind: "change",
-        username,
+        username: account.email,
         ip,
         city: place.city,
         country: place.country,

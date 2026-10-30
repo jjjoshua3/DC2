@@ -1,7 +1,24 @@
 import pg from "pg"
 
-const ADMIN_USER = "admin"
-const ADMIN_PASSWORD = "Admin"
+const SUPABASE_URL = "https://zaljeyembygscuhzdnng.supabase.co"
+const SUPABASE_KEY = "sb_publishable__QNkTn2UekwNv9rMjT4uMQ__MCQ_lkj"
+const ADMINS = {
+  "joshua.bosma@kpnmail.nl": { name: "Joshua Bosma", role: "Webdeveloper" },
+  "stefanie@deconnectors.com": { name: "Stefanie Vermeulen", role: "Eigenaar" },
+}
+
+async function accountFromToken(token) {
+  if (!token) return null
+  const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${token}` },
+  })
+  if (!response.ok) return null
+  const user = await response.json().catch(() => null)
+  const email = user?.email?.trim().toLowerCase() ?? ""
+  const account = ADMINS[email]
+  if (!account) return null
+  return { email, ...account }
+}
 
 function isPrivateIp(ip) {
   const value = ip.trim().toLowerCase()
@@ -55,8 +72,8 @@ async function placeFor(ip) {
   }
 }
 
-function allowed(username, password) {
-  return username.toLowerCase() === ADMIN_USER && password === ADMIN_PASSWORD
+function allowed() {
+  return false
 }
 
 async function withDb(run) {
@@ -116,37 +133,52 @@ export default async (request, context) => {
     if (request.method !== "POST") return Response.json({ error: "Method Not Allowed" }, { status: 405 })
     const body = await request.json().catch(() => null)
     const action = typeof body?.action === "string" ? body.action : ""
-    const username = typeof body?.username === "string" ? body.username.trim() : ""
-    const password = typeof body?.password === "string" ? body.password : ""
+    const username = typeof body?.username === "string" ? body.username.trim().toLowerCase() : ""
+    const token = typeof body?.token === "string" ? body.token : ""
     const ip = clientIp(request, context)
     const place = await placeFor(ip)
+    const account = await accountFromToken(token)
 
     return await withDb(async (pool) => {
       if (action === "login") {
-        const ok = allowed(username, password)
+        const known = ADMINS[username]
         await writeEvent(pool, {
           kind: "login",
           username: username || "(leeg)",
           ip,
           city: place.city,
           country: place.country,
-          ok,
-          summary: ok ? "Ingelogd" : "Inloggen mislukt",
-          detail: ok ? "Wachtwoord juist" : "Wachtwoord verkeerd",
+          ok: !!known,
+          summary: known ? "Inloglink verstuurd" : "Inloggen geweigerd",
+          detail: known ? "Magische link" : "Onbekend e-mailadres",
         })
-        return Response.json({ ok })
+        return Response.json({ ok: !!known })
       }
-      if (!allowed(username, password)) return Response.json({ error: "Geen toegang" }, { status: 401 })
+      if (action === "session") {
+        if (!account) return Response.json({ error: "Geen toegang" }, { status: 401 })
+        await writeEvent(pool, {
+          kind: "login",
+          username: account.email,
+          ip,
+          city: place.city,
+          country: place.country,
+          ok: true,
+          summary: `Ingelogd als ${account.role}`,
+          detail: "Magische link",
+        })
+        return Response.json({ ok: true, account })
+      }
+      if (!account) return Response.json({ error: "Geen toegang" }, { status: 401 })
       if (action === "logout") {
         await writeEvent(pool, {
           kind: "logout",
-          username,
+          username: account.email,
           ip,
           city: place.city,
           country: place.country,
           ok: null,
           summary: "Uitgelogd",
-          detail: "Sessie beëindigd",
+          detail: account.role,
         })
         return Response.json({ ok: true })
       }
@@ -155,7 +187,7 @@ export default async (request, context) => {
         const detail = typeof body?.detail === "string" ? body.detail.trim() : ""
         await writeEvent(pool, {
           kind: "change",
-          username,
+          username: account.email,
           ip,
           city: place.city,
           country: place.country,

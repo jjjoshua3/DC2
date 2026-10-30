@@ -1,7 +1,22 @@
 import pg from "pg"
 
-const ADMIN_USER = "admin"
-const ADMIN_PASSWORD = "Admin"
+const SUPABASE_URL = "https://zaljeyembygscuhzdnng.supabase.co"
+const SUPABASE_KEY = "sb_publishable__QNkTn2UekwNv9rMjT4uMQ__MCQ_lkj"
+const ADMINS = {
+  "joshua.bosma@kpnmail.nl": { name: "Joshua Bosma", role: "Webdeveloper" },
+  "stefanie@deconnectors.com": { name: "Stefanie Vermeulen", role: "Eigenaar" },
+}
+
+async function accountFromToken(token) {
+  if (!token) return null
+  const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${token}` },
+  })
+  if (!response.ok) return null
+  const user = await response.json().catch(() => null)
+  const email = user?.email?.trim().toLowerCase() ?? ""
+  return ADMINS[email] ? { email, ...ADMINS[email] } : null
+}
 
 function amsterdamDay(date) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -118,9 +133,8 @@ export default async (request) => {
       return Response.json({ error: "Method Not Allowed" }, { status: 405 })
     }
     const body = await request.json().catch(() => null)
-    const username = typeof body?.username === "string" ? body.username : ""
-    const password = typeof body?.password === "string" ? body.password : ""
-    if (username.toLowerCase() !== ADMIN_USER || password !== ADMIN_PASSWORD) {
+    const token = typeof body?.token === "string" ? body.token : ""
+    if (!(await accountFromToken(token))) {
       return Response.json({ error: "Geen toegang" }, { status: 401 })
     }
     const databaseUrl = process.env.DATABASE_URL?.trim()

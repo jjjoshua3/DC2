@@ -58,8 +58,7 @@ export function logChange(summary: string, detail: string) {
   if (!session) return
   void postAudit({
     action: "change",
-    username: session.username,
-    password: session.password,
+    token: session.token,
     summary,
     detail,
   }).catch(() => {})
@@ -70,7 +69,6 @@ export function logLogout() {
   if (!session) return
   void postAudit({
     action: "logout",
-    username: session.username,
-    password: session.password,
+    token: session.token,
   }).catch(() => {})
 }

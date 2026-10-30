@@ -1,7 +1,5 @@
 import { getSql } from "@/lib/db"
-
-const ADMIN_USER = "admin"
-const ADMIN_PASSWORD = "Admin"
+import { accountFromToken } from "@/lib/admins"
 
 export type Analytics = {
   sessions: number
@@ -143,10 +141,9 @@ export async function loadAnalytics(): Promise<Analytics> {
 
 export async function handleStatsRequest(request: Request): Promise<Response> {
   try {
-    const body = (await request.json().catch(() => null)) as { username?: unknown; password?: unknown } | null
-    const username = typeof body?.username === "string" ? body.username : ""
-    const password = typeof body?.password === "string" ? body.password : ""
-    if (username.toLowerCase() !== ADMIN_USER || password !== ADMIN_PASSWORD) {
+    const body = (await request.json().catch(() => null)) as { token?: unknown } | null
+    const token = typeof body?.token === "string" ? body.token : ""
+    if (!(await accountFromToken(token))) {
       return Response.json({ error: "Geen toegang" }, { status: 401 })
     }
     if (!process.env.DATABASE_URL?.trim()) {

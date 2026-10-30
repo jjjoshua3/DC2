@@ -75,8 +75,7 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
       logChange(described.summary, described.detail)
       void saveSiteDocument({
         data: {
-          username: session.username,
-          password: session.password,
+          token: session.token,
           document: JSON.stringify(current),
         },
       })
@@ -157,7 +156,8 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
         <div className="flex items-start justify-between gap-3 px-4 py-4">
           <div>
             <p className="font-display text-sm font-extrabold tracking-wide">DE CONNECTORS</p>
-            <p className="text-xs text-paper/60">Admin</p>
+            <p className="text-xs text-paper/60">{adminSession()?.name || "Admin"}</p>
+            <p className="text-xs text-paper/50">{adminSession()?.role}</p>
             <p className="mt-2 text-xs text-paper/70">{syncLabel}</p>
           </div>
         </div>

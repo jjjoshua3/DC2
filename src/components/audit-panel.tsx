@@ -4,6 +4,7 @@ import { formatStamp, postAudit, type AuditEvent } from "@/lib/audit-client"
 
 function passwordLabel(event: AuditEvent) {
   if (event.kind !== "login") return "—"
+  if (event.detail?.toLowerCase().includes("magische")) return "Magische link"
   return event.ok ? "Juist" : "Verkeerd"
 }
 
@@ -24,7 +25,7 @@ export function AuditPanel() {
       return
     }
     let cancelled = false
-    void postAudit({ action: "list", username: session.username, password: session.password })
+    void postAudit({ action: "list", token: session.token })
       .then((data) => {
         if (!cancelled) setEvents(data?.events ?? [])
       })
@@ -46,7 +47,7 @@ export function AuditPanel() {
     <section>
       <h1 className="font-display text-2xl font-extrabold">Audit</h1>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-        Elke inlogpoging en elke opgeslagen wijziging. Datum als dag-maand-jaar, tijd in 24 uur.
+        Elke inlogpoging en elke opgeslagen wijziging.
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
         {(
