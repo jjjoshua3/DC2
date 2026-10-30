@@ -88,7 +88,7 @@ function statsApiPlugin(): Plugin {
             headers: { "content-type": "application/json" },
             body,
           })
-          const mod = (await server.ssrLoadModule("/src/lib/analytics.ts")) as {
+          const mod = (await server.ssrLoadModule("/src/lib/stats-query.ts")) as {
             handleStatsRequest: (request: Request) => Promise<Response>
           }
           const response = await mod.handleStatsRequest(request)
