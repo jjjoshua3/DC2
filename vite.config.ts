@@ -72,7 +72,8 @@ function statsApiPlugin(): Plugin {
           const isStats = pathOnly.endsWith("/api/stats")
           const isVisit = pathOnly.endsWith("/api/visit")
           const isAudit = pathOnly.endsWith("/api/audit")
-          if (!isStats && !isVisit && !isAudit) {
+          const isMagic = pathOnly.endsWith("/api/magic")
+          if (!isStats && !isVisit && !isAudit && !isMagic) {
             next()
             return
           }
@@ -92,7 +93,7 @@ function statsApiPlugin(): Plugin {
             if (typeof value === "string") headers.set(key, value)
           }
           const request = new Request(
-            `http://${host}${isVisit ? "/api/visit" : isAudit ? "/api/audit" : "/api/stats"}`,
+            `http://${host}${isVisit ? "/api/visit" : isAudit ? "/api/audit" : isMagic ? "/api/magic" : "/api/stats"}`,
             {
               method: "POST",
               headers,
@@ -111,6 +112,12 @@ function statsApiPlugin(): Plugin {
                     handleAuditRequest: (request: Request) => Promise<Response>
                   }
                 ).handleAuditRequest(request)
+              : isMagic
+                ? await (
+                    (await server.ssrLoadModule("/src/lib/magic-server.ts")) as {
+                      handleMagicRequest: (request: Request) => Promise<Response>
+                    }
+                  ).handleMagicRequest(request)
               : await (
                   (await server.ssrLoadModule("/src/lib/stats-query.ts")) as {
                     handleStatsRequest: (request: Request) => Promise<Response>

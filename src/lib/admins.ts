@@ -12,6 +12,9 @@ export function adminAccount(email: string) {
 
 export async function accountFromToken(token: string) {
   if (!token) return null
+  const { sessionAccount } = await import("@/lib/magic-server")
+  const session = await sessionAccount(token).catch(() => null)
+  if (session) return session
   const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
     headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${token}` },
   })

@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react"
 import { CmsPage } from "@/components/cms-page"
 import { clearAdminSession, setAdminSession, adminSession } from "@/lib/admin-session"
 import { postAudit } from "@/lib/audit-client"
-import { SUPABASE_KEY, SUPABASE_URL, accountFromToken, adminAccount } from "@/lib/admins"
+import { adminAccount } from "@/lib/admins"
 
 export function AdminGate() {
   const [authed, setAuthed] = useState(false)
@@ -22,11 +22,7 @@ export function AdminGate() {
         return
       }
       const existing = adminSession()
-      if (existing) {
-        const account = await accountFromToken(existing.token).catch(() => null)
-        if (!account) clearAdminSession()
-        if (!cancelled) setAuthed(!!account)
-      }
+      if (existing) setAuthed(true)
       if (!cancelled) setReady(true)
     })()
     return () => {
@@ -48,18 +44,26 @@ export function AdminGate() {
   )
 }
 
-function readToken() {
-  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""))
-  const query = new URLSearchParams(window.location.search)
-  return hash.get("access_token") || query.get("access_token") || ""
+function magicUrl() {
+  const match = window.location.pathname.match(/^(\/hds-[a-z0-9]+-\d+-[a-z0-9]+)(?=\/|$)/i)
+  return `${match?.[1] ?? ""}/api/magic`
 }
 
 async function sessionFromUrl() {
-  const token = readToken()
-  if (!token) return null
-  const account = await accountFromToken(token)
-  if (!account) return null
-  return { ...account, token }
+  const params = new URLSearchParams(window.location.search)
+  const magic = params.get("magic")
+  if (!magic) return null
+  const response = await fetch(magicUrl(), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ token: magic }),
+  })
+  const data = (await response.json().catch(() => null)) as {
+    token?: string
+    account?: { email: string; name: string; role: string }
+  } | null
+  if (!response.ok || !data?.token || !data.account) return null
+  return { ...data.account, token: data.token }
 }
 
 function AdminLogin() {
@@ -80,19 +84,13 @@ function AdminLogin() {
       return
     }
     try {
-      const redirect = `${window.location.origin}/admin`
-      const response = await fetch(
-        `${SUPABASE_URL}/auth/v1/recover?redirect_to=${encodeURIComponent(redirect)}`,
-        {
-          method: "POST",
-          headers: { apikey: SUPABASE_KEY, "content-type": "application/json" },
-          body: JSON.stringify({ email: email.trim().toLowerCase() }),
-        },
-      )
-      if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as { msg?: string } | null
-        throw new Error(data?.msg || "De link kon niet worden verstuurd.")
-      }
+      const response = await fetch(magicUrl(), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      })
+      const data = (await response.json().catch(() => null)) as { error?: string } | null
+      if (!response.ok) throw new Error(data?.error || "De link kon niet worden verstuurd.")
       void postAudit({
         action: "login",
         username: email.trim().toLowerCase(),
@@ -137,9 +135,6 @@ function AdminLogin() {
         >
           {busy ? "Bezig…" : "Stuur inloglink"}
         </button>
-        <p className="mt-4 text-xs leading-relaxed text-muted">
-          Alleen Joshua en Stefanie kunnen inloggen. De link opent deze beheerpagina.
-        </p>
       </form>
     </div>
   )
