@@ -27,21 +27,22 @@ export function installPreviewServerFnRewrite() {
 }
 
 function rewriteServerFnUrl(input: RequestInfo | URL, prefix: string): RequestInfo | URL {
+  const needsPrefix = (pathname: string) =>
+    (pathname.startsWith("/_serverFn") || pathname.startsWith("/api/")) && !pathname.startsWith(`${prefix}/`)
+
   if (typeof input === "string") {
-    if (input.startsWith("/_serverFn") && !input.startsWith(`${prefix}/`)) {
-      return `${prefix}${input}`
+    if (input.startsWith("/_serverFn") || input.startsWith("/api/")) {
+      if (!input.startsWith(`${prefix}/`)) return `${prefix}${input}`
     }
     return input
   }
   if (input instanceof URL) {
-    if (input.pathname.startsWith("/_serverFn") && !input.pathname.startsWith(`${prefix}/`)) {
-      input.pathname = `${prefix}${input.pathname}`
-    }
+    if (needsPrefix(input.pathname)) input.pathname = `${prefix}${input.pathname}`
     return input
   }
   if (input instanceof Request) {
     const url = new URL(input.url)
-    if (url.pathname.startsWith("/_serverFn") && !url.pathname.startsWith(`${prefix}/`)) {
+    if (needsPrefix(url.pathname)) {
       url.pathname = `${prefix}${url.pathname}`
       return new Request(url.toString(), input)
     }

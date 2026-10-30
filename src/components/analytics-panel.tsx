@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { adminSession } from "@/lib/admin-session"
-import { fetchAnalytics, type Analytics } from "@/lib/analytics"
+import type { Analytics } from "@/lib/analytics"
 
 function formatDuration(seconds: number) {
   if (!seconds) return "—"
@@ -27,19 +27,22 @@ export function AnalyticsPanel() {
       return
     }
     let cancelled = false
-    void fetchAnalytics({ data: session })
-      .then((result) => {
+    void fetch("/api/stats", {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "application/json" },
+      body: JSON.stringify(session),
+    })
+      .then(async (response) => {
+        const data = (await response.json().catch(() => null)) as { error?: string } | Analytics | null
         if (cancelled) return
-        if (!isAnalytics(result)) {
-          setError("De cijfers kwamen niet goed binnen. Vernieuw de pagina en probeer het nog eens.")
+        if (!response.ok || !isAnalytics(data)) {
+          setError(data && "error" in data && data.error ? data.error : "De cijfers konden niet geladen worden.")
           return
         }
-        setStats(result)
+        setStats(data)
       })
-      .catch((caught: unknown) => {
-        if (cancelled) return
-        const detail = caught instanceof Error ? caught.message : ""
-        setError(detail || "De cijfers konden niet geladen worden.")
+      .catch(() => {
+        if (!cancelled) setError("De cijfers konden niet geladen worden.")
       })
     return () => {
       cancelled = true

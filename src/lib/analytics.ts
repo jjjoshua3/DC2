@@ -115,54 +115,44 @@ export type Analytics = {
   places: { label: string; country: string; city: string; visits: number; people: number }[]
 }
 
-export const fetchAnalytics = createServerFn({ method: "POST" })
-  .validator((input: unknown) => {
-    const username = (input as { username?: unknown })?.username
-    const password = (input as { password?: unknown })?.password
-    if (typeof username !== "string" || typeof password !== "string" || !allowed(username, password)) {
-      throw new Error("Geen toegang")
-    }
-    return { username, password }
-  })
-  .handler(async (): Promise<Analytics> => {
-    try {
-      const sql = await ensureTable()
-      const totals = await sql<{ sessions: string; uniques: string; avg_seconds: string }>`
-        select
-          count(*)::text as sessions,
-          count(distinct visitor_id)::text as uniques,
-          coalesce(avg(nullif(duration_seconds, 0)), 0)::text as avg_seconds
-        from site_visit
-      `
-      const perVisitor = await sql<{ n: string }>`
-        select count(*)::text as n from site_visit group by visitor_id
-      `
-      const places = await sql<{ country: string; city: string; visits: string; people: string }>`
-        select country, city, count(*)::text as visits, count(distinct visitor_id)::text as people
-        from site_visit
-        group by country, city
-        order by count(*) desc
-        limit 12
-      `
-      const counts = perVisitor.map((row) => Number(row.n) || 0)
-      const returning = counts.filter((n) => n > 1).length
-      const uniques = Number(totals[0]?.uniques ?? 0) || 0
-      return {
-        sessions: Number(totals[0]?.sessions ?? 0) || 0,
-        uniques,
-        avgSeconds: Math.round(Number(totals[0]?.avg_seconds ?? 0) || 0),
-        avgReturns: counts.length ? Math.round((counts.reduce((sum, n) => sum + n, 0) / counts.length) * 10) / 10 : 0,
-        returnRate: uniques ? Math.round((returning / uniques) * 100) : 0,
-        places: places.map((place) => ({
-          label: place.city ? `${place.city}, ${place.country}` : place.country || "Onbekend",
-          country: place.country || "Onbekend",
-          city: place.city || "",
-          visits: Number(place.visits) || 0,
-          people: Number(place.people) || 0,
-        })),
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Onbekende fout"
-      throw new Error(`Cijfers laden mislukt: ${message}`)
-    }
-  })
+export async function loadAnalytics(): Promise<Analytics> {
+  const sql = await ensureTable()
+  const totals = await sql<{ sessions: string; uniques: string; avg_seconds: string }>`
+    select
+      count(*)::text as sessions,
+      count(distinct visitor_id)::text as uniques,
+      coalesce(avg(nullif(duration_seconds, 0)), 0)::text as avg_seconds
+    from site_visit
+  `
+  const perVisitor = await sql<{ n: string }>`
+    select count(*)::text as n from site_visit group by visitor_id
+  `
+  const places = await sql<{ country: string; city: string; visits: string; people: string }>`
+    select country, city, count(*)::text as visits, count(distinct visitor_id)::text as people
+    from site_visit
+    group by country, city
+    order by count(*) desc
+    limit 12
+  `
+  const counts = perVisitor.map((row) => Number(row.n) || 0)
+  const returning = counts.filter((n) => n > 1).length
+  const uniques = Number(totals[0]?.uniques ?? 0) || 0
+  return {
+    sessions: Number(totals[0]?.sessions ?? 0) || 0,
+    uniques,
+    avgSeconds: Math.round(Number(totals[0]?.avg_seconds ?? 0) || 0),
+    avgReturns: counts.length ? Math.round((counts.reduce((sum, n) => sum + n, 0) / counts.length) * 10) / 10 : 0,
+    returnRate: uniques ? Math.round((returning / uniques) * 100) : 0,
+    places: places.map((place) => ({
+      label: place.city ? `${place.city}, ${place.country}` : place.country || "Onbekend",
+      country: place.country || "Onbekend",
+      city: place.city || "",
+      visits: Number(place.visits) || 0,
+      people: Number(place.people) || 0,
+    })),
+  }
+}
+
+export function adminAllowed(username: string, password: string) {
+  return allowed(username, password)
+}
