@@ -20,7 +20,10 @@ export function AnalyticsPanel() {
     if (!session) return
     void fetchAnalytics({ data: session })
       .then(setStats)
-      .catch(() => setError("De cijfers konden niet geladen worden."))
+      .catch((error: unknown) => {
+        const detail = error instanceof Error ? error.message : ""
+        setError(detail || "De cijfers konden niet geladen worden.")
+      })
   }, [])
 
   if (error) return <p className="text-sm text-muted">{error}</p>

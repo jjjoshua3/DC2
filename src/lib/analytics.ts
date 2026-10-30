@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start"
-import { getRequest, getRequestIP } from "@tanstack/react-start/server"
 import { getSql } from "@/lib/db"
 
 const ADMIN_USER = "admin"
@@ -29,10 +28,12 @@ async function ensureTable() {
   return sql
 }
 
-function clientIp() {
+async function clientIp() {
   try {
-    const forwarded = getRequest().headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-    return forwarded || getRequestIP({ xForwardedFor: true }) || ""
+    const mod = await import("@tanstack/react-start/server")
+    const request = mod.getRequest()
+    const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    return forwarded || mod.getRequestIP({ xForwardedFor: true }) || ""
   } catch {
     return ""
   }
@@ -124,39 +125,44 @@ export const fetchAnalytics = createServerFn({ method: "POST" })
     return { username, password }
   })
   .handler(async (): Promise<Analytics> => {
-    const sql = await ensureTable()
-    const totals = await sql<{ sessions: number; uniques: number; avg_seconds: number }>`
-      select
-        count(*)::int as sessions,
-        count(distinct visitor_id)::int as uniques,
-        coalesce(avg(nullif(duration_seconds, 0)), 0)::float as avg_seconds
-      from site_visit
-    `
-    const perVisitor = await sql<{ n: number }>`
-      select count(*)::int as n from site_visit group by visitor_id
-    `
-    const places = await sql<{ country: string; city: string; visits: number; people: number }>`
-      select country, city, count(*)::int as visits, count(distinct visitor_id)::int as people
-      from site_visit
-      group by country, city
-      order by visits desc
-      limit 12
-    `
-    const counts = perVisitor.map((row) => row.n)
-    const returning = counts.filter((n) => n > 1).length
-    const uniques = totals[0]?.uniques ?? 0
-    return {
-      sessions: totals[0]?.sessions ?? 0,
-      uniques,
-      avgSeconds: Math.round(totals[0]?.avg_seconds ?? 0),
-      avgReturns: counts.length ? Math.round((counts.reduce((sum, n) => sum + n, 0) / counts.length) * 10) / 10 : 0,
-      returnRate: uniques ? Math.round((returning / uniques) * 100) : 0,
-      places: places.map((place) => ({
-        label: place.city ? `${place.city}, ${place.country}` : place.country || "Onbekend",
-        country: place.country || "Onbekend",
-        city: place.city || "",
-        visits: place.visits,
-        people: place.people,
-      })),
+    try {
+      const sql = await ensureTable()
+      const totals = await sql<{ sessions: string; uniques: string; avg_seconds: string }>`
+        select
+          count(*)::text as sessions,
+          count(distinct visitor_id)::text as uniques,
+          coalesce(avg(nullif(duration_seconds, 0)), 0)::text as avg_seconds
+        from site_visit
+      `
+      const perVisitor = await sql<{ n: string }>`
+        select count(*)::text as n from site_visit group by visitor_id
+      `
+      const places = await sql<{ country: string; city: string; visits: string; people: string }>`
+        select country, city, count(*)::text as visits, count(distinct visitor_id)::text as people
+        from site_visit
+        group by country, city
+        order by count(*) desc
+        limit 12
+      `
+      const counts = perVisitor.map((row) => Number(row.n) || 0)
+      const returning = counts.filter((n) => n > 1).length
+      const uniques = Number(totals[0]?.uniques ?? 0) || 0
+      return {
+        sessions: Number(totals[0]?.sessions ?? 0) || 0,
+        uniques,
+        avgSeconds: Math.round(Number(totals[0]?.avg_seconds ?? 0) || 0),
+        avgReturns: counts.length ? Math.round((counts.reduce((sum, n) => sum + n, 0) / counts.length) * 10) / 10 : 0,
+        returnRate: uniques ? Math.round((returning / uniques) * 100) : 0,
+        places: places.map((place) => ({
+          label: place.city ? `${place.city}, ${place.country}` : place.country || "Onbekend",
+          country: place.country || "Onbekend",
+          city: place.city || "",
+          visits: Number(place.visits) || 0,
+          people: Number(place.people) || 0,
+        })),
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Onbekende fout"
+      throw new Error(`Cijfers laden mislukt: ${message}`)
     }
   })
