@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import pg from "pg"
 
 const SUPABASE_URL = "https://zaljeyembygscuhzdnng.supabase.co"
@@ -7,8 +8,20 @@ const ADMINS = {
   "stefanie@deconnectors.com": { name: "Stefanie Vermeulen", role: "Eigenaar" },
 }
 
-async function accountFromToken(token) {
+function hashToken(token) {
+  return createHash("sha256").update(token).digest("hex")
+}
+
+async function accountFromToken(token, pool) {
   if (!token) return null
+  if (pool) {
+    const found = await pool.query(
+      `select email from site_session where token_hash = $1 and expires_at > now()`,
+      [hashToken(token)],
+    )
+    const email = found.rows[0]?.email?.trim().toLowerCase() ?? ""
+    if (ADMINS[email]) return { email, ...ADMINS[email] }
+  }
   const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
     headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${token}` },
   })
@@ -134,9 +147,6 @@ export default async (request) => {
     }
     const body = await request.json().catch(() => null)
     const token = typeof body?.token === "string" ? body.token : ""
-    if (!(await accountFromToken(token))) {
-      return Response.json({ error: "Geen toegang" }, { status: 401 })
-    }
     const databaseUrl = process.env.DATABASE_URL?.trim()
     if (!databaseUrl) {
       return Response.json(
@@ -151,6 +161,9 @@ export default async (request) => {
       connectionTimeoutMillis: 8000,
     })
     try {
+      if (!(await accountFromToken(token, pool))) {
+        return Response.json({ error: "Geen toegang" }, { status: 401 })
+      }
       return Response.json(await load(pool))
     } finally {
       await pool.end()
