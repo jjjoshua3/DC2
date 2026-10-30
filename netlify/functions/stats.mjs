@@ -70,6 +70,14 @@ async function load(sql) {
     where started_at > now() - interval '14 days'
     group by 1
   `)
+  await sql.query(`alter table site_visit add column if not exists ip text not null default ''`)
+  await sql.query(`alter table site_visit add column if not exists path text not null default ''`)
+  const recent = await sql.query(`
+    select started_at as at, ip, city, country, path, duration_seconds::text as seconds
+    from site_visit
+    order by started_at desc
+    limit 40
+  `)
   const counts = perVisitor.rows.map((row) => Number(row.n) || 0)
   const returning = counts.filter((n) => n > 1).length
   const uniques = Number(totals.rows[0]?.uniques ?? 0) || 0
@@ -93,6 +101,14 @@ async function load(sql) {
         people: Number(row.people) || 0,
       })),
     ),
+    recent: recent.rows.map((row) => ({
+      at: row.at instanceof Date ? row.at.toISOString() : String(row.at),
+      ip: row.ip || "",
+      city: row.city || "",
+      country: row.country || "Onbekend",
+      path: row.path || "/",
+      seconds: Number(row.seconds) || 0,
+    })),
   }
 }
 

@@ -1,4 +1,4 @@
-import { useRef, useState, type RefObject, Component, type ReactNode } from "react"
+import { useEffect, useRef, useState, type RefObject, Component, type ReactNode } from "react"
 import { Link } from "@tanstack/react-router"
 import {
   ChevronDown,
@@ -20,8 +20,11 @@ import { adminSession, clearAdminSession } from "@/lib/admin-session"
 import { saveSiteDocument } from "@/lib/site-store"
 import { BlogAdmin } from "@/components/blog-admin"
 import { AnalyticsPanel } from "@/components/analytics-panel"
+import { AuditPanel } from "@/components/audit-panel"
+import { describeChange } from "@/lib/change-summary"
+import { logChange, logLogout } from "@/lib/audit-client"
 
-type Tab = "projects" | "posts" | "copy" | "design" | "stats"
+type Tab = "projects" | "posts" | "copy" | "design" | "stats" | "audit"
 
 const field =
   "mt-1 w-full rounded-xl border border-line bg-card px-3 py-2.5 text-sm text-ink outline-none focus:border-accent"
@@ -37,8 +40,14 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
   const [sync, setSync] = useState<"idle" | "saving" | "live" | "local">("idle")
   const fileRef = useRef<HTMLInputElement>(null)
   const remoteTimer = useRef<number | null>(null)
+  const lastAudited = useRef<SiteData | null>(null)
+  const pendingNote = useRef("")
 
-  function commit(next: SiteData) {
+  useEffect(() => {
+    if (ready && !lastAudited.current) lastAudited.current = data
+  }, [ready, data])
+
+  function commit(next: SiteData, note?: string) {
     const stamped = { ...next, updatedAt: Date.now() }
     try {
       DataService.save(stamped)
@@ -47,16 +56,28 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
       setNotice("De browseropslag zit vol. Gebruik een kleinere foto of een afbeeldings-URL.")
       return
     }
+    if (note) pendingNote.current = note
     const session = adminSession()
     if (!session) return
     if (remoteTimer.current) window.clearTimeout(remoteTimer.current)
     setSync("saving")
     remoteTimer.current = window.setTimeout(() => {
+      const current = DataService.load()
+      const described = lastAudited.current
+        ? describeChange(lastAudited.current, current)
+        : { summary: "Wijziging opgeslagen", detail: "" }
+      if (pendingNote.current) {
+        described.summary = pendingNote.current
+        described.detail = pendingNote.current
+        pendingNote.current = ""
+      }
+      lastAudited.current = current
+      logChange(described.summary, described.detail)
       void saveSiteDocument({
         data: {
           username: session.username,
           password: session.password,
-          document: JSON.stringify(DataService.load()),
+          document: JSON.stringify(current),
         },
       })
         .then(() => setSync("live"))
@@ -69,7 +90,7 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
               : "Bewaard op dit apparaat. De gedeelde opslag reageerde niet — probeer het nog eens.",
           )
         })
-    }, 500)
+    }, 800)
   }
 
   function patchProject(id: string, patch: Partial<Project>) {
@@ -112,6 +133,7 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
       ["copy", "Paginateksten"],
       ["design", "Vormgeving"],
       ["stats", "Bezoekers"],
+      ["audit", "Audit"],
     ] as const
   ).map(([id, name]) => (
     <button
@@ -145,6 +167,7 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
             type="button"
             className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/20 px-4 text-sm font-semibold"
             onClick={() => {
+              logLogout()
               clearAdminSession()
               onLogout?.()
             }}
@@ -472,6 +495,7 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
             <AnalyticsPanel />
           </PanelBoundary>
         ) : null}
+        {tab === "audit" ? <AuditPanel /> : null}
       </div>
       </div>
     </div>
@@ -593,7 +617,7 @@ function DesignForm({
   onNotice,
 }: {
   data: SiteData
-  commit: (next: SiteData) => void
+  commit: (next: SiteData, note?: string) => void
   fileRef: RefObject<HTMLInputElement | null>
   onNotice: (message: string) => void
 }) {
@@ -780,7 +804,7 @@ function DesignForm({
             if (!file) return
             void file.text().then((raw) => {
               try {
-                commit(DataService.importJson(raw))
+                commit(DataService.importJson(raw), "JSON-bestand geïmporteerd")
                 onNotice("Import gelukt.")
               } catch {
                 onNotice("Dit bestand kon niet worden gelezen.")
@@ -793,9 +817,9 @@ function DesignForm({
           className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line px-4 text-sm font-semibold"
           onClick={() => {
             if (!window.confirm("Alle lokale aanpassingen wissen en de originele site terugzetten?")) return
-            commit(defaultSite)
+            commit(defaultSite, "Originele site teruggezet")
             DataService.reset()
-            commit(defaultSite)
+            commit(defaultSite, "Originele site teruggezet")
             onNotice("Originele site teruggezet.")
           }}
         >

@@ -71,7 +71,8 @@ function statsApiPlugin(): Plugin {
           const pathOnly = (req.url ?? "").split("?", 1)[0] ?? ""
           const isStats = pathOnly.endsWith("/api/stats")
           const isVisit = pathOnly.endsWith("/api/visit")
-          if (!isStats && !isVisit) {
+          const isAudit = pathOnly.endsWith("/api/audit")
+          if (!isStats && !isVisit && !isAudit) {
             next()
             return
           }
@@ -90,21 +91,31 @@ function statsApiPlugin(): Plugin {
             const value = req.headers[key]
             if (typeof value === "string") headers.set(key, value)
           }
-          const request = new Request(`http://${host}${isVisit ? "/api/visit" : "/api/stats"}`, {
-            method: "POST",
-            headers,
-            body,
-          })
-          const mod = isVisit
-            ? ((await server.ssrLoadModule("/src/lib/record-visit.ts")) as {
-                handleVisitRequest: (request: Request) => Promise<Response>
-              })
-            : ((await server.ssrLoadModule("/src/lib/stats-query.ts")) as {
-                handleStatsRequest: (request: Request) => Promise<Response>
-              })
+          const request = new Request(
+            `http://${host}${isVisit ? "/api/visit" : isAudit ? "/api/audit" : "/api/stats"}`,
+            {
+              method: "POST",
+              headers,
+              body,
+            },
+          )
           const response = isVisit
-            ? await (mod as { handleVisitRequest: (request: Request) => Promise<Response> }).handleVisitRequest(request)
-            : await (mod as { handleStatsRequest: (request: Request) => Promise<Response> }).handleStatsRequest(request)
+            ? await (
+                (await server.ssrLoadModule("/src/lib/record-visit.ts")) as {
+                  handleVisitRequest: (request: Request) => Promise<Response>
+                }
+              ).handleVisitRequest(request)
+            : isAudit
+              ? await (
+                  (await server.ssrLoadModule("/src/lib/audit-server.ts")) as {
+                    handleAuditRequest: (request: Request) => Promise<Response>
+                  }
+                ).handleAuditRequest(request)
+              : await (
+                  (await server.ssrLoadModule("/src/lib/stats-query.ts")) as {
+                    handleStatsRequest: (request: Request) => Promise<Response>
+                  }
+                ).handleStatsRequest(request)
           res.statusCode = response.status
           res.setHeader("content-type", "application/json; charset=utf-8")
           res.end(Buffer.from(await response.arrayBuffer()))

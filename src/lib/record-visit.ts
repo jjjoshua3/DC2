@@ -27,10 +27,12 @@ export async function handleVisitRequest(request: Request): Promise<Response> {
       return Response.json({ error: "Ongeldige bezoeker" }, { status: 400 })
     }
     const place = await lookupPlace(ipFromHeaders(request.headers))
+    const ip = ipFromHeaders(request.headers)
+    const path = typeof body?.path === "string" ? body.path.slice(0, 120) : "/"
     const id = crypto.randomUUID()
     await sql`
-      insert into site_visit (id, visitor_id, country, city, region)
-      values (${id}, ${visitorId}, ${place.country}, ${place.city}, ${place.region})
+      insert into site_visit (id, visitor_id, country, city, region, ip, path)
+      values (${id}, ${visitorId}, ${place.country}, ${place.city}, ${place.region}, ${ip}, ${path})
     `
     return Response.json({ visitId: id, city: place.city, country: place.country })
   } catch (error) {

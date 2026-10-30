@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { CmsPage } from "@/components/cms-page"
 import { clearAdminSession, setAdminSession, adminSession } from "@/lib/admin-session"
+import { postAudit } from "@/lib/audit-client"
 import { loginAdmin } from "@/lib/site-store"
 
 export function AdminGate() {
@@ -37,8 +38,15 @@ function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
     setBusy(true)
     setError("")
     try {
-      const result = await loginAdmin({ data: { username, password } })
-      if (!result.ok) {
+      let ok = false
+      try {
+        const audited = await postAudit({ action: "login", username, password })
+        ok = !!audited?.ok
+      } catch {
+        const result = await loginAdmin({ data: { username, password } })
+        ok = !!result.ok
+      }
+      if (!ok) {
         setError("Gebruikersnaam of wachtwoord klopt niet.")
         setBusy(false)
         return

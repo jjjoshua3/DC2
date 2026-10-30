@@ -82,9 +82,13 @@ export default async (request, context) => {
           region text not null default '',
           started_at timestamptz not null default now(),
           last_seen_at timestamptz not null default now(),
-          duration_seconds integer not null default 0
+          duration_seconds integer not null default 0,
+          ip text not null default '',
+          path text not null default ''
         )
       `)
+      await pool.query(`alter table site_visit add column if not exists ip text not null default ''`)
+      await pool.query(`alter table site_visit add column if not exists path text not null default ''`)
       if (typeof body?.visitId === "string" && body.visitId) {
         const seconds =
           typeof body.seconds === "number" && Number.isFinite(body.seconds)
@@ -100,11 +104,13 @@ export default async (request, context) => {
       if (visitorId.length < 8 || visitorId.length > 80) {
         return Response.json({ error: "Ongeldige bezoeker" }, { status: 400 })
       }
-      const place = await placeFor(clientIp(request, context))
+      const ip = clientIp(request, context)
+      const place = await placeFor(ip)
+      const path = typeof body?.path === "string" ? body.path.slice(0, 120) : "/"
       const id = crypto.randomUUID()
       await pool.query(
-        `insert into site_visit (id, visitor_id, country, city, region) values ($1, $2, $3, $4, $5)`,
-        [id, visitorId, place.country, place.city, place.region],
+        `insert into site_visit (id, visitor_id, country, city, region, ip, path) values ($1, $2, $3, $4, $5, $6, $7)`,
+        [id, visitorId, place.country, place.city, place.region, ip, path],
       )
       return Response.json({ visitId: id, city: place.city, country: place.country })
     })

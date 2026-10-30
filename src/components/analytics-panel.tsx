@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { adminSession } from "@/lib/admin-session"
+import { formatStamp } from "@/lib/audit-client"
 import type { Analytics } from "@/lib/stats-query"
 
 function formatDuration(seconds: number) {
@@ -143,7 +144,7 @@ export function AnalyticsPanel() {
     <section>
       <h1 className="font-display text-2xl font-extrabold">Bezoekers</h1>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-        Herkomst op basis van IP, hoe lang iemand blijft, en hoe vaak die terugkomt.
+        Elk bezoek wordt gelogd met IP-adres, plaats en tijd. Oudere bezoeken hebben nog geen IP.
       </p>
       <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map(([name, value]) => (
@@ -171,6 +172,41 @@ export function AnalyticsPanel() {
             <DayChart days={stats.days} />
           </div>
         </article>
+      </div>
+
+      <div className="mt-4 rounded-card border border-line bg-card p-5">
+        <h2 className="font-display text-lg font-extrabold">Recente bezoeken</h2>
+        {!stats.recent?.length ? (
+          <p className="mt-4 text-sm text-muted">Nog geen bezoeken met een bewaard IP.</p>
+        ) : (
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[640px] text-left text-sm">
+              <thead className="border-b border-line text-xs uppercase tracking-wide text-muted">
+                <tr>
+                  <th className="py-2 pr-3 font-bold">Datum</th>
+                  <th className="py-2 pr-3 font-bold">Tijd</th>
+                  <th className="py-2 pr-3 font-bold">IP</th>
+                  <th className="py-2 pr-3 font-bold">Plaats</th>
+                  <th className="py-2 font-bold">Pagina</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.recent.map((visit, index) => {
+                  const stamp = formatStamp(visit.at)
+                  return (
+                    <tr key={`${visit.at}-${index}`} className="border-b border-line last:border-0">
+                      <td className="whitespace-nowrap py-2 pr-3 font-semibold">{stamp.date}</td>
+                      <td className="whitespace-nowrap py-2 pr-3">{stamp.time}</td>
+                      <td className="whitespace-nowrap py-2 pr-3 font-mono text-xs">{visit.ip || "Onbekend"}</td>
+                      <td className="py-2 pr-3">{visit.city ? `${visit.city}, ${visit.country}` : visit.country}</td>
+                      <td className="py-2 text-muted">{visit.path || "/"}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <div className="mt-4 rounded-card border border-line bg-card p-5">

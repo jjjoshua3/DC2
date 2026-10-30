@@ -11,6 +11,7 @@ export type Analytics = {
   returnRate: number
   places: { label: string; country: string; city: string; visits: number; people: number }[]
   days: { day: string; label: string; visits: number; people: number }[]
+  recent: { at: string; ip: string; city: string; country: string; path: string; seconds: number }[]
 }
 
 export async function ensureVisitTable() {
@@ -24,9 +25,13 @@ export async function ensureVisitTable() {
       region text not null default '',
       started_at timestamptz not null default now(),
       last_seen_at timestamptz not null default now(),
-      duration_seconds integer not null default 0
+      duration_seconds integer not null default 0,
+      ip text not null default '',
+      path text not null default ''
     )
   `
+  await sql`alter table site_visit add column if not exists ip text not null default ''`
+  await sql`alter table site_visit add column if not exists path text not null default ''`
   return sql
 }
 
@@ -81,6 +86,19 @@ export async function loadAnalytics(): Promise<Analytics> {
     order by count(*) desc
     limit 8
   `
+  const recent = await sql<{
+    at: string
+    ip: string
+    city: string
+    country: string
+    path: string
+    seconds: string
+  }>`
+    select started_at as at, ip, city, country, path, duration_seconds::text as seconds
+    from site_visit
+    order by started_at desc
+    limit 40
+  `
   const daily = await sql<{ day: string; visits: string; people: string }>`
     select to_char(started_at at time zone 'Europe/Amsterdam', 'YYYY-MM-DD') as day,
            count(*)::text as visits,
@@ -112,6 +130,14 @@ export async function loadAnalytics(): Promise<Analytics> {
         people: Number(row.people) || 0,
       })),
     ),
+    recent: recent.map((row) => ({
+      at: typeof row.at === "string" ? row.at : new Date(row.at as string | number).toISOString(),
+      ip: row.ip || "",
+      city: row.city || "",
+      country: row.country || "Onbekend",
+      path: row.path || "/",
+      seconds: Number(row.seconds) || 0,
+    })),
   }
 }
 
