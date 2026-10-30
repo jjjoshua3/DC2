@@ -1,7 +1,11 @@
 import { createHash, randomBytes } from "node:crypto"
 import pg from "pg"
 import nodemailer from "nodemailer"
+import { Secret, TOTP } from "otpauth"
+import QRCode from "qrcode"
 import { adminAccount } from "@/lib/admins"
+
+const TOTP_EVERY = 5
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex")
@@ -42,6 +46,15 @@ async function ensureTables(pool: import("pg").Pool) {
       expires_at timestamptz not null
     )
   `)
+  await pool.query(`
+    create table if not exists site_totp (
+      email text primary key,
+      secret text not null,
+      enabled boolean not null default false,
+      login_count integer not null default 0,
+      last_verified_at timestamptz
+    )
+  `)
 }
 
 export async function sessionAccount(token: string) {
@@ -62,10 +75,58 @@ export async function sessionAccount(token: string) {
 
 export async function handleMagicRequest(request: Request): Promise<Response> {
   try {
-    const body = (await request.json().catch(() => null)) as { email?: unknown; token?: unknown } | null
+    const body = (await request.json().catch(() => null)) as {
+      email?: unknown
+      token?: unknown
+      action?: unknown
+      code?: unknown
+    } | null
     const origin = request.headers.get("origin") || "https://deconnectors2.netlify.app"
     return await withDb(async (pool) => {
       await ensureTables(pool)
+      const action = typeof body?.action === "string" ? body.action : ""
+      if (action === "totp-setup" || action === "totp-confirm" || action === "totp-verify") {
+        const account = await sessionAccount(String(body?.token || ""))
+        if (!account) return Response.json({ error: "Log opnieuw in." }, { status: 401 })
+        if (action === "totp-setup") {
+          const existing = await pool.query(`select secret from site_totp where email = $1`, [account.email])
+          const secret = (existing.rows[0]?.secret as string | undefined) || new Secret({ size: 20 }).base32
+          if (!existing.rows[0]) {
+            await pool.query(`insert into site_totp (email, secret) values ($1, $2)`, [account.email, secret])
+          }
+          const totp = new TOTP({
+            issuer: "DE CONNECTORS",
+            label: account.email,
+            algorithm: "SHA1",
+            digits: 6,
+            period: 30,
+            secret: Secret.fromBase32(secret),
+          })
+          const qr = await QRCode.toDataURL(totp.toString(), { margin: 1, width: 240 })
+          return Response.json({ ok: true, qr, secret })
+        }
+        const found = await pool.query(`select secret from site_totp where email = $1`, [account.email])
+        const secret = found.rows[0]?.secret as string | undefined
+        const code = String(body?.code || "").replace(/\s/g, "")
+        const totp = secret
+          ? new TOTP({
+              issuer: "DE CONNECTORS",
+              label: account.email,
+              algorithm: "SHA1",
+              digits: 6,
+              period: 30,
+              secret: Secret.fromBase32(secret),
+            })
+          : null
+        if (!totp || !/^\d{6}$/.test(code) || totp.validate({ token: code, window: 1 }) === null) {
+          return Response.json({ error: "De code is onjuist." }, { status: 401 })
+        }
+        await pool.query(
+          `update site_totp set enabled = true, login_count = login_count + 1, last_verified_at = now() where email = $1`,
+          [account.email],
+        )
+        return Response.json({ ok: true })
+      }
       if (typeof body?.token === "string" && body.token) {
         const found = await pool.query(
           `select id, email from site_magic_link
@@ -82,10 +143,25 @@ export async function handleMagicRequest(request: Request): Promise<Response> {
           `insert into site_session (token_hash, email, expires_at) values ($1, $2, now() + interval '14 days')`,
           [hashToken(session), row.email],
         )
+        const totp = await pool.query(
+          `select enabled, login_count, last_verified_at from site_totp where email = $1`,
+          [row.email],
+        )
+        const state = totp.rows[0] as
+          | { enabled: boolean; login_count: number; last_verified_at: string | null }
+          | undefined
+        const stale =
+          !state?.last_verified_at ||
+          Date.now() - new Date(state.last_verified_at).getTime() > 14 * 24 * 60 * 60 * 1000
+        let step = "skip"
+        if (!state?.enabled) step = "setup"
+        else if (stale || (state.login_count > 0 && state.login_count % TOTP_EVERY === 0)) step = "challenge"
+        else await pool.query(`update site_totp set login_count = login_count + 1 where email = $1`, [row.email])
         return Response.json({
           ok: true,
           token: session,
           account: { email: row.email, name: account.name, role: account.role },
+          totp: step,
         })
       }
 
