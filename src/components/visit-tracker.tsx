@@ -1,7 +1,7 @@
 import { useEffect } from "react"
-import { heartbeatVisit, startVisit } from "@/lib/analytics"
 
 const VISITOR_KEY = "dc.visitor"
+let tracked = false
 
 function visitorId() {
   const existing = window.localStorage.getItem(VISITOR_KEY)
@@ -11,28 +11,42 @@ function visitorId() {
   return next
 }
 
+function visitUrl() {
+  const match = window.location.pathname.match(/^(\/hds-[a-z0-9]+-\d+-[a-z0-9]+)(?=\/|$)/i)
+  return `${match?.[1] ?? ""}/api/visit`
+}
+
 export function VisitTracker() {
   useEffect(() => {
-    if (window.location.pathname.startsWith("/admin")) return
+    if (tracked) return
+    tracked = true
     const started = Date.now()
     let visitId = ""
-    let cancelled = false
 
-    void startVisit({ data: { visitorId: visitorId(), path: window.location.pathname } })
-      .then((result) => {
-        if (!cancelled) visitId = result.visitId
+    void fetch(visitUrl(), {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ visitorId: visitorId(), path: window.location.pathname }),
+    })
+      .then(async (response) => {
+        const data = (await response.json().catch(() => null)) as { visitId?: string } | null
+        if (data?.visitId) visitId = data.visitId
       })
       .catch(() => {})
 
     const send = () => {
       if (!visitId) return
       const seconds = Math.max(1, Math.round((Date.now() - started) / 1000))
-      void heartbeatVisit({ data: { visitId, seconds } }).catch(() => {})
+      void fetch(visitUrl(), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ visitId, seconds }),
+        keepalive: true,
+      }).catch(() => {})
     }
     const timer = window.setInterval(send, 20000)
     window.addEventListener("pagehide", send)
     return () => {
-      cancelled = true
       window.clearInterval(timer)
       window.removeEventListener("pagehide", send)
       send()

@@ -1,1 +1,2 @@
 /api/stats /.netlify/functions/stats 200
+/api/visit /.netlify/functions/visit 200

@@ -41,7 +41,7 @@ function countryName(code: string, fallback: string) {
   }
 }
 
-async function placeFor(ip: string): Promise<Place> {
+export async function lookupPlace(ip: string): Promise<Place> {
   if (!ip || isPrivateIp(ip)) return { country: "Onbekend", city: "", region: "" }
   const cached = placeCache.get(ip)
   if (cached) return cached
@@ -81,7 +81,7 @@ export const startVisit = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const sql = await ensureVisitTable()
-    const place = await placeFor(ipFromHeaders(getRequest().headers))
+    const place = await lookupPlace(ipFromHeaders(getRequest().headers))
     const id = crypto.randomUUID()
     await sql`
       insert into site_visit (id, visitor_id, country, city, region)

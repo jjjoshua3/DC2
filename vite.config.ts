@@ -69,7 +69,9 @@ function statsApiPlugin(): Plugin {
       server.middlewares.use(async (req, res, next) => {
         try {
           const pathOnly = (req.url ?? "").split("?", 1)[0] ?? ""
-          if (!pathOnly.endsWith("/api/stats")) {
+          const isStats = pathOnly.endsWith("/api/stats")
+          const isVisit = pathOnly.endsWith("/api/visit")
+          if (!isStats && !isVisit) {
             next()
             return
           }
@@ -83,15 +85,26 @@ function statsApiPlugin(): Plugin {
           for await (const chunk of req) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
           const body = Buffer.concat(chunks)
           const host = String(req.headers.host ?? "localhost:8080")
-          const request = new Request(`http://${host}/api/stats`, {
+          const headers = new Headers({ "content-type": "application/json" })
+          for (const key of ["x-forwarded-for", "x-nf-client-connection-ip", "x-real-ip", "cf-connecting-ip"]) {
+            const value = req.headers[key]
+            if (typeof value === "string") headers.set(key, value)
+          }
+          const request = new Request(`http://${host}${isVisit ? "/api/visit" : "/api/stats"}`, {
             method: "POST",
-            headers: { "content-type": "application/json" },
+            headers,
             body,
           })
-          const mod = (await server.ssrLoadModule("/src/lib/stats-query.ts")) as {
-            handleStatsRequest: (request: Request) => Promise<Response>
-          }
-          const response = await mod.handleStatsRequest(request)
+          const mod = isVisit
+            ? ((await server.ssrLoadModule("/src/lib/record-visit.ts")) as {
+                handleVisitRequest: (request: Request) => Promise<Response>
+              })
+            : ((await server.ssrLoadModule("/src/lib/stats-query.ts")) as {
+                handleStatsRequest: (request: Request) => Promise<Response>
+              })
+          const response = isVisit
+            ? await (mod as { handleVisitRequest: (request: Request) => Promise<Response> }).handleVisitRequest(request)
+            : await (mod as { handleStatsRequest: (request: Request) => Promise<Response> }).handleStatsRequest(request)
           res.statusCode = response.status
           res.setHeader("content-type", "application/json; charset=utf-8")
           res.end(Buffer.from(await response.arrayBuffer()))
