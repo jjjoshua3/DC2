@@ -74,7 +74,18 @@ async function accountFromToken(pool, token) {
     [hashToken(token)],
   )
   const email = found.rows[0]?.email?.trim().toLowerCase() ?? ""
-  return ADMINS[email] ? { email, ...ADMINS[email] } : null
+  if (ADMINS[email]) return { email, ...ADMINS[email] }
+  await pool.query(`
+    create table if not exists site_admin (
+      email text primary key,
+      name text not null,
+      role text not null,
+      created_at timestamptz not null default now()
+    )
+  `)
+  const extra = await pool.query(`select name, role from site_admin where lower(email) = lower($1)`, [email])
+  if (!extra.rows[0]) return null
+  return { email, name: extra.rows[0].name, role: extra.rows[0].role }
 }
 
 function rowOut(row, notes) {

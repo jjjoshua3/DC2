@@ -17,11 +17,12 @@ export function adminSession(): AdminSession | null {
   if (typeof window === "undefined") return null
   const email = sessionStorage.getItem(EMAIL_KEY)
   const token = sessionStorage.getItem(TOKEN_KEY)
-  if (!email || !token || !adminAccount(email)) return null
+  const name = sessionStorage.getItem(NAME_KEY)
+  if (!email || !token || !name) return null
   const account = adminAccount(email)
   return {
     email,
-    name: sessionStorage.getItem(NAME_KEY) || account?.name || email,
+    name,
     role: sessionStorage.getItem(ROLE_KEY) || account?.role || "",
     token,
     username: email,
