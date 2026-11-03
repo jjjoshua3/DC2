@@ -23,6 +23,7 @@ import { AnalyticsPanel } from "@/components/analytics-panel"
 import { AuditPanel } from "@/components/audit-panel"
 import { describeChange } from "@/lib/change-summary"
 import { logChange, logLogout } from "@/lib/audit-client"
+import { FeedbackDock } from "@/components/feedback-dock"
 
 type Tab = "projects" | "posts" | "copy" | "design" | "stats" | "audit"
 
@@ -498,6 +499,7 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
         {tab === "audit" ? <AuditPanel /> : null}
       </div>
       </div>
+      <FeedbackDock />
     </div>
   )
 }

@@ -73,7 +73,8 @@ function statsApiPlugin(): Plugin {
           const isVisit = pathOnly.endsWith("/api/visit")
           const isAudit = pathOnly.endsWith("/api/audit")
           const isMagic = pathOnly.endsWith("/api/magic")
-          if (!isStats && !isVisit && !isAudit && !isMagic) {
+          const isFeedback = pathOnly.endsWith("/api/feedback")
+          if (!isStats && !isVisit && !isAudit && !isMagic && !isFeedback) {
             next()
             return
           }
@@ -93,7 +94,7 @@ function statsApiPlugin(): Plugin {
             if (typeof value === "string") headers.set(key, value)
           }
           const request = new Request(
-            `http://${host}${isVisit ? "/api/visit" : isAudit ? "/api/audit" : isMagic ? "/api/magic" : "/api/stats"}`,
+            `http://${host}${isVisit ? "/api/visit" : isAudit ? "/api/audit" : isMagic ? "/api/magic" : isFeedback ? "/api/feedback" : "/api/stats"}`,
             {
               method: "POST",
               headers,
@@ -118,6 +119,12 @@ function statsApiPlugin(): Plugin {
                       handleMagicRequest: (request: Request) => Promise<Response>
                     }
                   ).handleMagicRequest(request)
+                : isFeedback
+                  ? await (
+                      (await server.ssrLoadModule("/src/lib/feedback-server.ts")) as {
+                        handleFeedbackRequest: (request: Request) => Promise<Response>
+                      }
+                    ).handleFeedbackRequest(request)
               : await (
                   (await server.ssrLoadModule("/src/lib/stats-query.ts")) as {
                     handleStatsRequest: (request: Request) => Promise<Response>
