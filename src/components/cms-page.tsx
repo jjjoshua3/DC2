@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 import { DataService, useSiteData } from "@/lib/data-service"
 import { defaultSite } from "@/lib/site-defaults"
-import { CATEGORIES, projectCategories, type PageCopy, type Project, type SiteData, type WatPage } from "@/lib/site-types"
+import { CATEGORIES, projectCategories, type PageCopy, type Project, type SiteData, type WatPage, type WhoPerson } from "@/lib/site-types"
 import { ArticleBody, ProjectCard } from "@/components/project-views"
 import { DropImage, RichText } from "@/components/editor-fields"
 import { compressImage, newId, toEmbedUrl } from "@/lib/media"
@@ -655,6 +655,23 @@ function CopyForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =
   function set<K extends keyof PageCopy>(key: K, value: PageCopy[K]) {
     commit({ ...data, copy: { ...copy, [key]: value } })
   }
+  function setPeople(people: WhoPerson[]) {
+    const first = people[0]
+    commit({
+      ...data,
+      copy: {
+        ...copy,
+        people,
+        whoName: first?.name ?? "",
+        whoRole: first?.role ?? "",
+        whoBody: first?.text ?? "",
+        whoPhoto: first?.photos[0] ?? "",
+      },
+    })
+  }
+  function updatePerson(index: number, part: Partial<WhoPerson>) {
+    setPeople(copy.people.map((person, i) => (i === index ? { ...person, ...part } : person)))
+  }
   return (
     <section className="max-w-3xl">
       <h1 className="font-display text-2xl font-extrabold">Vaste paginateksten</h1>
@@ -710,11 +727,44 @@ function CopyForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =
       ))}
       <Field label="Banner" value={copy.bannerText} onChange={(value) => set("bannerText", value)} />
       <Field label="Wie-titel" value={copy.whoTitle} onChange={(value) => set("whoTitle", value)} />
-      <Area label="Wie-tekst" value={copy.whoBody} onChange={(value) => set("whoBody", value)} />
-      <Field label="Naam" value={copy.whoName} onChange={(value) => set("whoName", value)} />
-      <Field label="Rol" value={copy.whoRole} onChange={(value) => set("whoRole", value)} />
-      <Field label="Portret-URL" value={copy.whoPhoto} onChange={(value) => set("whoPhoto", value)} />
-      <DropImage label="Upload portret" onFile={(url) => set("whoPhoto", url)} />
+      <p className="mt-6 text-sm text-muted">Voeg mensen toe. Bij twee of meer foto’s start vanzelf een diashow.</p>
+      {copy.people.map((person, index) => (
+        <div key={person.id} className="mt-4 rounded-xl border border-line bg-card p-4">
+          <div className="flex items-center justify-between">
+            <p className="font-display font-extrabold">{person.name || `Persoon ${index + 1}`}</p>
+            <button
+              type="button"
+              className="text-sm font-semibold text-accent"
+              onClick={() => setPeople(copy.people.filter((item) => item.id !== person.id))}
+            >
+              Verwijder
+            </button>
+          </div>
+          <Field label="Naam" value={person.name} onChange={(value) => updatePerson(index, { name: value })} />
+          <Field label="Rol" value={person.role} onChange={(value) => updatePerson(index, { role: value })} />
+          <Area label="Tekst" value={person.text} onChange={(value) => updatePerson(index, { text: value })} />
+          {person.photos.map((photo, photoIndex) => (
+            <div key={`${person.id}-${photoIndex}`} className="mt-3 flex items-center gap-3">
+              <img src={photo} alt="" className="h-16 w-12 rounded-lg object-cover" />
+              <button
+                type="button"
+                className="text-sm font-semibold text-accent"
+                onClick={() => updatePerson(index, { photos: person.photos.filter((_, i) => i !== photoIndex) })}
+              >
+                Foto weg
+              </button>
+            </div>
+          ))}
+          <DropImage label="Upload foto" onFile={(url) => updatePerson(index, { photos: [...person.photos, url] })} />
+        </div>
+      ))}
+      <button
+        type="button"
+        className="mt-4 inline-flex min-h-11 items-center rounded-full border border-line px-4 text-sm font-semibold"
+        onClick={() => setPeople([...copy.people, { id: newId(), name: "", role: "", text: "", photos: [] }])}
+      >
+        Iemand toevoegen
+      </button>
       <Field label="Citaat" value={copy.quote} onChange={(value) => set("quote", value)} />
       <Area label="Spoken word" value={copy.poem} onChange={(value) => set("poem", value)} />
       <Field label="Klanten-titel" value={copy.clientsTitle} onChange={(value) => set("clientsTitle", value)} />

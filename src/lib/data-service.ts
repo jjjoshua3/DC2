@@ -30,6 +30,25 @@ export function normalizeSite(value: SiteData): SiteData {
   if (next.copy.clientsTitle === "Organisaties voor wie we werkten") {
     next.copy.clientsTitle = "Organisaties waarvoor ik werkte"
   }
+  if (next.copy.blogButton === "Naar de blogs") next.copy.blogButton = "Naar mijn blogs"
+  const savedPeople = Array.isArray(value.copy?.people) ? value.copy.people : []
+  if (savedPeople.length === 0) {
+    next.copy.people = [
+      {
+        id: "stefanie",
+        name: next.copy.whoName,
+        role: next.copy.whoRole,
+        text: next.copy.whoBody,
+        photos: next.copy.whoPhoto ? [next.copy.whoPhoto] : [],
+      },
+    ]
+  } else {
+    next.copy.people = savedPeople
+  }
+  next.copy.people = next.copy.people.map((person) => ({
+    ...person,
+    photos: Array.isArray(person.photos) ? person.photos.filter(Boolean) : [],
+  }))
   if (!Array.isArray(next.copy.styles) || next.copy.styles.length === 0) next.copy.styles = base.styles
   if (!Array.isArray(next.copy.services) || next.copy.services.length === 0) next.copy.services = base.services
   const watBase = clone(defaultSite.wat)

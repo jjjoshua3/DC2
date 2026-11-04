@@ -19,6 +19,7 @@ const COPY_LABELS: Record<keyof PageCopy, string> = {
   whoName: "naam",
   whoRole: "rol",
   whoPhoto: "foto",
+  people: "wie",
   quote: "quote",
   poem: "spoken word",
   clientsTitle: "klanten-titel",

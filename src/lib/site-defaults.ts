@@ -481,6 +481,15 @@ export const defaultSite: SiteData = {
     whoName: "Stefanie Vermeulen",
     whoRole: "Runs DE CONNECTORS. Journalist & producer",
     whoPhoto: "/media/people/stefanie.jpg",
+    people: [
+      {
+        id: "stefanie",
+        name: "Stefanie Vermeulen",
+        role: "Runs DE CONNECTORS. Journalist & producer",
+        text: "Ik ben Stefanie Vermeulen. Ik ben een CONNECTOR in hart en ziel. Ik hou ervan om mensen te laten samenwerken en een stem te geven die werkelijk wordt gehoord. We willen namelijk allemaal verbinden en gezien en gehoord worden. Maar dan echt.",
+        photos: ["/media/people/stefanie.jpg"],
+      },
+    ],
     quote: "Change your strategy. Engage your audience",
     poem: `Met gespitste oren
 Richting plekken waar geen ander luistert
@@ -499,7 +508,7 @@ geschreven door Jimmy Rockx`,
     blogTitle: "Blog",
     blogLead:
       "Achtergronden, verslagen en notities. Dezelfde stem als op de site, alleen met de tijd erbij.",
-    blogButton: "Naar de blogs",
+    blogButton: "Naar mijn blogs",
   },
   design: {
     accent: "#E11D48",

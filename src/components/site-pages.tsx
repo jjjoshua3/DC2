@@ -1,13 +1,66 @@
-import { useState, type FormEvent } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import { Link } from "@tanstack/react-router"
 import { ArrowRight, BadgeCheck, Heart, Mail, Smile } from "lucide-react"
 import { useSiteData } from "@/lib/data-service"
-import type { Project, WatPage } from "@/lib/site-types"
+import type { Project, WatPage, WhoPerson } from "@/lib/site-types"
 import { CATEGORIES, projectCategories } from "@/lib/site-types"
 import { ProjectCard, ProjectDialog } from "@/components/project-views"
 import { ClientLogos, MediaPane, Poem, SiteShell, SocialsRow } from "@/components/site-shell"
 
 const STYLE_ICONS = [Heart, BadgeCheck, Smile]
+
+function PhotoShow({ photos, alt }: { photos: string[]; alt: string }) {
+  const frames = photos.filter(Boolean)
+  const [index, setIndex] = useState(0)
+  useEffect(() => {
+    if (frames.length < 2) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    const timer = window.setInterval(() => setIndex((current) => (current + 1) % frames.length), 4500)
+    return () => window.clearInterval(timer)
+  }, [frames.length])
+  const src = frames[index % Math.max(frames.length, 1)]
+  if (!src) {
+    return <div className="grid aspect-[4/5] place-items-center rounded-card bg-ink font-display text-lg font-bold text-paper">Foto volgt</div>
+  }
+  return (
+    <div className="relative">
+      <img src={src} alt={alt} className="aspect-[4/5] w-full rounded-card object-cover object-top" />
+      {frames.length > 1 ? (
+        <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
+          {frames.map((photo, dot) => (
+            <button
+              key={`${photo}-${dot}`}
+              type="button"
+              aria-label={`Foto ${dot + 1}`}
+              onClick={() => setIndex(dot)}
+              className={`h-2.5 w-2.5 rounded-full ${dot === index % frames.length ? "bg-accent" : "bg-paper"}`}
+            />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function WhoBlock({ person, title }: { person: WhoPerson; title?: string }) {
+  const { data } = useSiteData()
+  return (
+    <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-2">
+      <PhotoShow photos={person.photos} alt={person.name} />
+      <div>
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wie</p>
+        {title ? <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{title}</h2> : null}
+        {person.text ? <p className="mt-6 text-lg leading-relaxed text-ink-soft">{person.text}</p> : null}
+        <p className="mt-6 font-display text-lg font-extrabold">{person.name}</p>
+        <p className="text-sm text-muted">{person.role}</p>
+        <a href={`mailto:${data.copy.email}`} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent">
+          <Mail className="h-4 w-4" />
+          {data.copy.email}
+        </a>
+      </div>
+    </div>
+  )
+}
 
 export function HomePage() {
   const { data } = useSiteData()
@@ -20,24 +73,27 @@ export function HomePage() {
           <h1 className="mt-3 font-display text-5xl font-extrabold tracking-tight sm:text-6xl">{copy.heroTitle}</h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">{copy.heroSubtitle}</p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/over" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink">
-              Over mij <ArrowRight className="h-4 w-4" />
+            <Link to="/projecten" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink">
+              Bekijk mijn projecten <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link to="/wat" className="inline-flex min-h-11 items-center rounded-full border border-ink px-5 py-2.5 text-sm font-bold">
-              Wat
+            <Link to="/contact" className="inline-flex min-h-11 items-center rounded-full border border-ink px-5 py-2.5 text-sm font-bold">
+              Get in touch
             </Link>
-            <Link to="/projecten" className="inline-flex min-h-11 items-center rounded-full border border-line bg-card px-5 py-2.5 text-sm font-bold">
-              Projecten
+            <Link to="/blog" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-card px-5 py-2.5 text-sm font-bold">
+              {copy.blogButton}
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
         <div className="lg:col-span-5">
           <div className="relative">
             <div className="absolute -bottom-3 -right-3 h-full w-full rounded-card bg-accent" />
-            <img src={copy.whoPhoto} alt={copy.whoName} className="relative aspect-[4/5] w-full rounded-card object-cover object-top" />
+            <div className="relative">
+              <PhotoShow photos={copy.people[0]?.photos ?? []} alt={copy.people[0]?.name || copy.whoName} />
+            </div>
           </div>
           <p className="relative mt-4 text-sm text-muted">
-            <span className="font-semibold text-ink">{copy.whoName}</span> — {copy.whoRole}
+            <span className="font-semibold text-ink">{copy.people[0]?.name || copy.whoName}</span> — {copy.people[0]?.role || copy.whoRole}
           </p>
         </div>
       </section>
@@ -76,20 +132,9 @@ export function OverPage() {
         </div>
       </section>
       <section className="bg-card">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-2">
-          <img src={copy.whoPhoto} alt={copy.whoName} className="aspect-[4/5] w-full rounded-card object-cover object-top" />
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wie</p>
-            <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{copy.whoTitle}</h2>
-            <p className="mt-6 text-lg leading-relaxed text-ink-soft">{copy.whoBody}</p>
-            <p className="mt-6 font-display text-lg font-extrabold">{copy.whoName}</p>
-            <p className="text-sm text-muted">{copy.whoRole}</p>
-            <a href={`mailto:${copy.email}`} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent">
-              <Mail className="h-4 w-4" />
-              {copy.email}
-            </a>
-          </div>
-        </div>
+        {copy.people.map((person, index) => (
+          <WhoBlock key={person.id} person={person} title={index === 0 ? copy.whoTitle : undefined} />
+        ))}
       </section>
       <Poem />
       <ClientLogos />

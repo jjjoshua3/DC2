@@ -216,7 +216,7 @@ export function SitePage() {
                   href="#projecten"
                   className="inline-flex min-h-11 items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink"
                 >
-                  Bekijk onze projecten
+                  Bekijk mijn projecten
                   <ArrowRight className="h-4 w-4" />
                 </a>
                 <a

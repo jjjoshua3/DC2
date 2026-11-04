@@ -16,6 +16,14 @@ export type Project = {
 
 export type StyleCard = { title: string; text: string }
 export type ServiceCard = { title: string; text: string }
+export type WhoPerson = {
+  id: string
+  name: string
+  role: string
+  text: string
+  photos: string[]
+}
+
 export type OfferCard = { title: string; text: string; image: string }
 
 export type WatPage = {
@@ -50,6 +58,7 @@ export type PageCopy = {
   whoName: string
   whoRole: string
   whoPhoto: string
+  people: WhoPerson[]
   quote: string
   poem: string
   clientsTitle: string
