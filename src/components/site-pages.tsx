@@ -1,8 +1,9 @@
-import { useMemo, useState, type FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 import { Link } from "@tanstack/react-router"
 import { ArrowRight, BadgeCheck, Heart, Mail, Smile } from "lucide-react"
 import { useSiteData } from "@/lib/data-service"
 import type { Project, WatPage } from "@/lib/site-types"
+import { CATEGORIES, projectCategories } from "@/lib/site-types"
 import { ProjectCard, ProjectDialog } from "@/components/project-views"
 import { ClientLogos, MediaPane, Poem, SiteShell, SocialsRow } from "@/components/site-shell"
 
@@ -201,16 +202,15 @@ export function ProjectsPage() {
   const [filter, setFilter] = useState("Alles")
   const [active, setActive] = useState<Project | null>(null)
   const published = data.projects.filter((project) => project.status === "published")
-  const categories = useMemo(() => ["Alles", ...new Set(published.map((project) => project.category).filter(Boolean))], [published])
-  const visible = filter === "Alles" ? published : published.filter((project) => project.category === filter)
+  const visible = filter === "Alles" ? published : published.filter((project) => projectCategories(project).includes(filter))
   return (
     <SiteShell>
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Projecten</p>
         <div className="mt-3 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <h1 className="max-w-xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">Blik op onze projecten</h1>
+          <h1 className="max-w-xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">Blik op mijn projecten</h1>
           <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
+            {["Alles", ...CATEGORIES].map((category) => (
               <button
                 key={category}
                 type="button"

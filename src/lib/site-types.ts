@@ -2,6 +2,7 @@ export type Project = {
   id: string
   title: string
   category: string
+  categories?: string[]
   status: "published" | "draft"
   mediaType: "image" | "video"
   mediaUrl: string
@@ -100,4 +101,25 @@ export type SiteData = {
   updatedAt?: number
 }
 
-export const CATEGORIES = ["Project", "Journalistiek", "Video / Docu", "Event"] as const
+export const CATEGORIES = ["Video / Docu", "Artikel", "Event"] as const
+
+const LEGACY_CATEGORY: Record<string, (typeof CATEGORIES)[number]> = {
+  Journalistiek: "Artikel",
+  Project: "Artikel",
+  Artikel: "Artikel",
+  "Video / Docu": "Video / Docu",
+  Event: "Event",
+}
+
+export function projectCategories(project: { category?: string; categories?: string[] }): string[] {
+  const raw = project.categories?.length
+    ? project.categories
+    : String(project.category || "")
+        .split(/[,·]/)
+        .map((part) => part.trim())
+        .filter(Boolean)
+  const mapped = raw
+    .map((name) => LEGACY_CATEGORY[name])
+    .filter((name): name is (typeof CATEGORIES)[number] => Boolean(name))
+  return [...new Set(mapped)]
+}

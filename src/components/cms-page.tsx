@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 import { DataService, useSiteData } from "@/lib/data-service"
 import { defaultSite } from "@/lib/site-defaults"
-import { CATEGORIES, type PageCopy, type Project, type SiteData, type WatPage } from "@/lib/site-types"
+import { CATEGORIES, projectCategories, type PageCopy, type Project, type SiteData, type WatPage } from "@/lib/site-types"
 import { ArticleBody, ProjectCard } from "@/components/project-views"
 import { DropImage, RichText } from "@/components/editor-fields"
 import { compressImage, newId, toEmbedUrl } from "@/lib/media"
@@ -202,7 +202,8 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
                   const project: Project = {
                     id: newId(),
                     title: "",
-                    category: "Project",
+                    category: "Artikel",
+                    categories: ["Artikel"],
                     status: "draft",
                     mediaType: "image",
                     mediaUrl: "",
@@ -304,21 +305,29 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
                   onChange={(event) => patchProject(current.id, { title: event.target.value })}
                 />
 
-                <label className={label} htmlFor="category">
-                  Categorie
-                </label>
-                <input
-                  id="category"
-                  list="categories"
-                  className={field}
-                  value={current.category}
-                  onChange={(event) => patchProject(current.id, { category: event.target.value })}
-                />
-                <datalist id="categories">
-                  {CATEGORIES.map((category) => (
-                    <option key={category} value={category} />
-                  ))}
-                </datalist>
+                <p className={label}>Categorieën</p>
+                <p className="mt-1 text-sm text-muted">Zet er één of meer aan. Een project kan bijvoorbeeld Artikel én Event zijn.</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {CATEGORIES.map((name) => {
+                    const selected = projectCategories(current).includes(name)
+                    return (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => {
+                          const now = projectCategories(current)
+                          const categories = selected ? now.filter((item) => item !== name) : [...now, name]
+                          patchProject(current.id, { categories, category: categories.join(" · ") })
+                        }}
+                        className={`min-h-11 rounded-full px-4 text-sm font-semibold ${
+                          selected ? "bg-ink text-paper" : "border border-line bg-card"
+                        }`}
+                      >
+                        {name}
+                      </button>
+                    )
+                  })}
+                </div>
 
                 <p className={label}>Hoofdmedia</p>
                 <div className="mt-2 grid grid-cols-2 gap-2">

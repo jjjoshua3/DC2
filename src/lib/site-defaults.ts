@@ -5,7 +5,7 @@ const projects: Project[] = [
   {
     id: "duurzaamheidskrant",
     title: "Duurzaamheidskrant",
-    category: "Journalistiek",
+    category: "Artikel",
     status: "published",
     mediaType: "image",
     mediaUrl: "/media/projects/duurzaamheidskrant.jpg",
@@ -40,7 +40,7 @@ const projects: Project[] = [
   {
     id: "journalistiek",
     title: "Journalistiek",
-    category: "Journalistiek",
+    category: "Artikel",
     status: "published",
     mediaType: "image",
     mediaUrl: "/media/projects/journalistiek.jpg",
@@ -63,7 +63,7 @@ const projects: Project[] = [
   {
     id: "dutch-magic",
     title: "Co-auteur Boek Nederlandse topbrands",
-    category: "Journalistiek",
+    category: "Artikel",
     status: "published",
     mediaType: "image",
     mediaUrl: "/media/projects/armin.jpg",
@@ -78,7 +78,7 @@ const projects: Project[] = [
   {
     id: "datamining",
     title: "Datajournalistieke crowdsourcer",
-    category: "Project",
+    category: "Artikel",
     status: "published",
     mediaType: "image",
     mediaUrl: "/media/projects/stoplichten.jpg",
@@ -102,7 +102,7 @@ const projects: Project[] = [
   {
     id: "bak-met-energie",
     title: "Bak met Energie",
-    category: "Project",
+    category: "Artikel",
     status: "published",
     mediaType: "image",
     mediaUrl: "/media/projects/bak-met-energie.jpg",
@@ -119,7 +119,7 @@ const projects: Project[] = [
   {
     id: "sociaal-domein",
     title: "Het nieuwe Sociaal Domein – Interactief web magazine",
-    category: "Project",
+    category: "Artikel",
     status: "published",
     mediaType: "image",
     mediaUrl: "/media/projects/sociaal-domein.jpg",
@@ -137,7 +137,7 @@ const projects: Project[] = [
   {
     id: "groenplein",
     title: "Duurzaamheidsplatform",
-    category: "Project",
+    category: "Artikel",
     status: "published",
     mediaType: "image",
     mediaUrl: "/media/projects/groenplein.jpg",
@@ -188,7 +188,7 @@ const projects: Project[] = [
   {
     id: "lokale-journalistiek",
     title: "Lokale journalistiek",
-    category: "Journalistiek",
+    category: "Artikel",
     status: "published",
     mediaType: "image",
     mediaUrl: "/media/projects/lokale-journalistiek.jpg",
@@ -223,7 +223,7 @@ const projects: Project[] = [
   {
     id: "sprank",
     title: "Sprank – magazine van Divosa",
-    category: "Journalistiek",
+    category: "Artikel",
     status: "published",
     mediaType: "image",
     mediaUrl: "/media/projects/sprank.jpg",
@@ -327,7 +327,7 @@ const projects: Project[] = [
   {
     id: "afrilabs",
     title: "Online Co-Creation met 10 Afrikaanse Tech Hubs",
-    category: "Project",
+    category: "Artikel",
     status: "published",
     mediaType: "video",
     mediaUrl: "https://youtu.be/SQH43gPVl1g",

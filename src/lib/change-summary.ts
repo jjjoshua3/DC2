@@ -1,4 +1,5 @@
 import type { PageCopy, Post, Project, SiteData } from "@/lib/site-types"
+import { projectCategories } from "@/lib/site-types"
 
 const COPY_LABELS: Record<keyof PageCopy, string> = {
   heroTitle: "hoofdtitel",
@@ -37,7 +38,7 @@ function nameOf(item: { title?: string } | undefined, fallback = "zonder titel")
 function projectFields(before: Project, after: Project) {
   const fields: string[] = []
   if (before.title !== after.title) fields.push("titel")
-  if (before.category !== after.category) fields.push("categorie")
+  if (projectCategories(before).join(" · ") !== projectCategories(after).join(" · ")) fields.push("categorie")
   if (before.status !== after.status) fields.push(after.status === "published" ? "live gezet" : "op concept gezet")
   if (before.lead !== after.lead) fields.push("samenvatting")
   if (before.body !== after.body) fields.push("verhaal")

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { defaultSite } from "@/lib/site-defaults"
 import type { SiteData } from "@/lib/site-types"
+import { projectCategories } from "@/lib/site-types"
 import { inkForAccent } from "@/lib/media"
 import { fetchSiteDocument } from "@/lib/site-store"
 
@@ -41,6 +42,10 @@ export function normalizeSite(value: SiteData): SiteData {
       ...found,
       cards: Array.isArray(found.cards) && found.cards.length ? found.cards : page.cards,
     }
+  })
+  next.projects = next.projects.map((project) => {
+    const categories = projectCategories(project)
+    return { ...project, categories, category: categories.join(" · ") }
   })
   return next
 }

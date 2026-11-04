@@ -2,6 +2,7 @@ import { useState } from "react"
 import * as Dialog from "@radix-ui/react-dialog"
 import { Play, X } from "lucide-react"
 import type { Project } from "@/lib/site-types"
+import { projectCategories } from "@/lib/site-types"
 import { sanitizeHtml, toEmbedUrl } from "@/lib/media"
 
 export function ProjectCard({
@@ -38,7 +39,7 @@ export function ProjectCard({
       </span>
       <span className="flex flex-1 flex-col gap-2 p-5">
         <span className="text-xs font-bold uppercase tracking-widest text-accent">
-          {project.category || "Project"}
+          {projectCategories(project).join(" · ") || "Project"}
         </span>
         <span className="font-display text-xl font-extrabold leading-tight text-ink">
           {project.title || "Zonder titel"}
@@ -124,7 +125,7 @@ export function ArticleBody({ project, stacked = false }: { project: Project; st
       </div>
       <div className={stacked ? "px-5 py-6" : "overflow-y-auto px-5 py-6 sm:px-8 sm:py-8 lg:max-h-[92vh]"}>
         <p className="text-xs font-bold uppercase tracking-widest text-accent">
-          {project.category || "Project"}
+          {projectCategories(project).join(" · ") || "Project"}
         </p>
         <h2 className="mt-2 font-display text-3xl font-extrabold leading-tight text-ink sm:text-4xl">
           {project.title || "Zonder titel"}
