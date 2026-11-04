@@ -24,8 +24,24 @@ export function normalizeSite(value: SiteData): SiteData {
   if (!Array.isArray(next.posts)) next.posts = clone(defaultSite.posts)
   const base = clone(defaultSite.copy)
   next.copy = { ...base, ...next.copy }
+  if (!next.copy.poem) next.copy.poem = base.poem
+  if (next.copy.aboutTitle === "Over De Connectors") next.copy.aboutTitle = "Over mij"
+  if (next.copy.clientsTitle === "Organisaties voor wie we werkten") {
+    next.copy.clientsTitle = "Organisaties waarvoor ik werkte"
+  }
   if (!Array.isArray(next.copy.styles) || next.copy.styles.length === 0) next.copy.styles = base.styles
   if (!Array.isArray(next.copy.services) || next.copy.services.length === 0) next.copy.services = base.services
+  const watBase = clone(defaultSite.wat)
+  const saved = Array.isArray(next.wat) ? next.wat : []
+  next.wat = watBase.map((page) => {
+    const found = saved.find((item) => item.slug === page.slug)
+    if (!found) return page
+    return {
+      ...page,
+      ...found,
+      cards: Array.isArray(found.cards) && found.cards.length ? found.cards : page.cards,
+    }
+  })
   return next
 }
 

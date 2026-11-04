@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router"
-import { ArrowLeft } from "lucide-react"
 import { useSiteData } from "@/lib/data-service"
 import { sanitizeHtml } from "@/lib/media"
+import { SiteShell } from "@/components/site-shell"
 import type { Post } from "@/lib/site-types"
 
 export function formatPostDate(iso: string) {
@@ -11,45 +11,12 @@ export function formatPostDate(iso: string) {
   return new Intl.DateTimeFormat("nl-NL", { day: "numeric", month: "long", year: "numeric" }).format(date)
 }
 
-function SiteFooter() {
-  return (
-    <footer className="border-t border-line bg-paper">
-      <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-muted">
-        <p>© De Connectors · Celebrating People</p>
-        <p className="mt-1">
-          Ontworpen door Joshua. Beveiligingslek melden? Dat kan via:{" "}
-          <a className="underline decoration-line underline-offset-2 hover:text-ink" href="mailto:aa0271n8@gmail.com">
-            aa0271n8@gmail.com
-          </a>
-        </p>
-      </div>
-    </footer>
-  )
-}
-
-function TopBar() {
-  return (
-    <header className="border-b border-line bg-paper">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
-        <Link to="/" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold">
-          <ArrowLeft className="h-4 w-4" />
-          DE CONNECTORS
-        </Link>
-        <Link to="/admin" className="inline-flex min-h-11 items-center rounded-full border border-line bg-card px-4 text-sm font-semibold">
-          Beheer
-        </Link>
-      </div>
-    </header>
-  )
-}
-
 export function BlogIndex() {
   const { data } = useSiteData()
   const posts = (data.posts ?? []).filter((post) => post.status === "published")
   return (
-    <div className="min-h-screen bg-paper text-ink">
-      <TopBar />
-      <main className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+    <SiteShell>
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Blog</p>
         <h1 className="mt-3 max-w-3xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
           {data.copy.blogTitle}
@@ -61,9 +28,8 @@ export function BlogIndex() {
           ))}
         </div>
         {posts.length === 0 ? <p className="mt-8 text-ink-soft">Er staan nog geen blogs live.</p> : null}
-      </main>
-      <SiteFooter />
-    </div>
+      </div>
+    </SiteShell>
   )
 }
 
@@ -96,9 +62,8 @@ export function BlogArticle({ postId }: { postId: string }) {
   const { data } = useSiteData()
   const post = (data.posts ?? []).find((item) => item.id === postId && item.status === "published")
   return (
-    <div className="min-h-screen bg-paper text-ink">
-      <TopBar />
-      <main className="mx-auto max-w-3xl px-4 py-10 sm:py-14">
+    <SiteShell>
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:py-14">
         <Link to="/blog" className="text-sm font-semibold text-accent">
           Alle blogs
         </Link>
@@ -118,8 +83,7 @@ export function BlogArticle({ postId }: { postId: string }) {
         ) : (
           <p className="mt-8 text-ink-soft">Dit blog staat niet live of bestaat niet.</p>
         )}
-      </main>
-      <SiteFooter />
-    </div>
+      </div>
+    </SiteShell>
   )
 }

@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 import { DataService, useSiteData } from "@/lib/data-service"
 import { defaultSite } from "@/lib/site-defaults"
-import { CATEGORIES, type PageCopy, type Project, type SiteData } from "@/lib/site-types"
+import { CATEGORIES, type PageCopy, type Project, type SiteData, type WatPage } from "@/lib/site-types"
 import { ArticleBody, ProjectCard } from "@/components/project-views"
 import { DropImage, RichText } from "@/components/editor-fields"
 import { compressImage, newId, toEmbedUrl } from "@/lib/media"
@@ -25,7 +25,7 @@ import { describeChange } from "@/lib/change-summary"
 import { logChange, logLogout } from "@/lib/audit-client"
 import { FeedbackDock } from "@/components/feedback-dock"
 
-type Tab = "projects" | "posts" | "copy" | "design" | "stats" | "audit"
+type Tab = "projects" | "posts" | "copy" | "wat" | "design" | "stats" | "audit"
 
 const field =
   "mt-1 w-full rounded-xl border border-line bg-card px-3 py-2.5 text-sm text-ink outline-none focus:border-accent"
@@ -131,6 +131,7 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
       ["projects", "Projecten"],
       ["posts", "Blogs"],
       ["copy", "Paginateksten"],
+      ["wat", "Wat-pagina’s"],
       ["design", "Vormgeving"],
       ["stats", "Bezoekers"],
       ["audit", "Audit"],
@@ -483,6 +484,7 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
         {tab === "posts" ? <BlogAdmin data={data} commit={commit} /> : null}
 
         {tab === "copy" ? <CopyForm data={data} commit={commit} /> : null}
+        {tab === "wat" ? <WatForm data={data} commit={commit} /> : null}
         {tab === "design" ? (
           <DesignForm
             data={data}
@@ -515,6 +517,128 @@ class PanelBoundary extends Component<{ children: ReactNode }, { error: string }
     }
     return this.props.children
   }
+}
+
+function WatForm({ data, commit }: { data: SiteData; commit: (next: SiteData) => void }) {
+  function save(wat: WatPage[]) {
+    commit({ ...data, wat })
+  }
+  return (
+    <section className="max-w-3xl">
+      <h1 className="font-display text-2xl font-extrabold">Wat-pagina’s</h1>
+      <p className="mt-2 text-sm text-muted">Journalistiek, Artistiek en Artistiek journalistiek. Beeld links, tekst rechts, daaronder een voorbeeld en de blokken.</p>
+      {data.wat.map((page, index) => (
+        <div key={page.slug} className="mt-8 rounded-card border border-line bg-card p-4">
+          <h2 className="font-display text-xl font-extrabold">{page.title}</h2>
+          <Field label="Titel" value={page.title} onChange={(value) => patch(data, save, index, { title: value })} />
+          <Area label="Korte tekst rechts" value={page.lead} onChange={(value) => patch(data, save, index, { lead: value })} />
+          <Area label="Tekst" value={page.body} onChange={(value) => patch(data, save, index, { body: value })} />
+          <MediaFields
+            label="Hoofdbeeld"
+            type={page.mediaType}
+            url={page.mediaUrl}
+            onType={(mediaType) => patch(data, save, index, { mediaType })}
+            onUrl={(mediaUrl) => patch(data, save, index, { mediaUrl })}
+          />
+          <MediaFields
+            label="Voorbeeld eronder"
+            type={page.exampleType}
+            url={page.exampleUrl}
+            onType={(exampleType) => patch(data, save, index, { exampleType })}
+            onUrl={(exampleUrl) => patch(data, save, index, { exampleUrl })}
+          />
+          <Field label="Titel van het aanbod" value={page.offerTitle} onChange={(value) => patch(data, save, index, { offerTitle: value })} />
+          <Area label="Wat ik voor je kan doen" value={page.offerText} onChange={(value) => patch(data, save, index, { offerText: value })} />
+          {page.cards.map((card, cardIndex) => (
+            <div key={`${page.slug}-${cardIndex}`} className="mt-4 rounded-xl border border-line bg-paper p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-bold">Blok {cardIndex + 1}</p>
+                <button
+                  type="button"
+                  className="text-sm font-semibold text-accent"
+                  onClick={() => patch(data, save, index, { cards: page.cards.filter((_, i) => i !== cardIndex) })}
+                >
+                  Verwijder
+                </button>
+              </div>
+              <Field
+                label="Titel"
+                value={card.title}
+                onChange={(value) => {
+                  const cards = page.cards.map((item, i) => (i === cardIndex ? { ...item, title: value } : item))
+                  patch(data, save, index, { cards })
+                }}
+              />
+              <Area
+                label="Tekst"
+                value={card.text}
+                onChange={(value) => {
+                  const cards = page.cards.map((item, i) => (i === cardIndex ? { ...item, text: value } : item))
+                  patch(data, save, index, { cards })
+                }}
+              />
+              <Field
+                label="Afbeelding-URL"
+                value={card.image}
+                onChange={(value) => {
+                  const cards = page.cards.map((item, i) => (i === cardIndex ? { ...item, image: value } : item))
+                  patch(data, save, index, { cards })
+                }}
+              />
+              <DropImage
+                label="Upload afbeelding"
+                onFile={(url) => {
+                  const cards = page.cards.map((item, i) => (i === cardIndex ? { ...item, image: url } : item))
+                  patch(data, save, index, { cards })
+                }}
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            className="mt-4 inline-flex min-h-11 items-center rounded-full border border-line px-4 text-sm font-semibold"
+            onClick={() => patch(data, save, index, { cards: [...page.cards, { title: "Nieuw blok", text: "", image: "" }] })}
+          >
+            Blok toevoegen
+          </button>
+        </div>
+      ))}
+    </section>
+  )
+}
+
+function patch(data: SiteData, save: (wat: WatPage[]) => void, index: number, part: Partial<WatPage>) {
+  save(data.wat.map((page, i) => (i === index ? { ...page, ...part } : page)))
+}
+
+function MediaFields({
+  label: name,
+  type,
+  url,
+  onType,
+  onUrl,
+}: {
+  label: string
+  type: "image" | "video"
+  url: string
+  onType: (type: "image" | "video") => void
+  onUrl: (url: string) => void
+}) {
+  return (
+    <div className="mt-4">
+      <p className="text-sm font-semibold">{name}</p>
+      <div className="mt-2 flex gap-2">
+        <button type="button" onClick={() => onType("image")} className={`min-h-11 rounded-full px-4 text-sm font-semibold ${type === "image" ? "bg-ink text-paper" : "border border-line"}`}>
+          Afbeelding
+        </button>
+        <button type="button" onClick={() => onType("video")} className={`min-h-11 rounded-full px-4 text-sm font-semibold ${type === "video" ? "bg-ink text-paper" : "border border-line"}`}>
+          Video
+        </button>
+      </div>
+      <Field label={type === "video" ? "YouTube-, Vimeo- of videolink" : "Afbeelding-URL"} value={url} onChange={onUrl} />
+      {type === "image" ? <DropImage label="Upload afbeelding" onFile={onUrl} /> : null}
+    </div>
+  )
 }
 
 function CopyForm({ data, commit }: { data: SiteData; commit: (next: SiteData) => void }) {
@@ -583,6 +707,7 @@ function CopyForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =
       <Field label="Portret-URL" value={copy.whoPhoto} onChange={(value) => set("whoPhoto", value)} />
       <DropImage label="Upload portret" onFile={(url) => set("whoPhoto", url)} />
       <Field label="Citaat" value={copy.quote} onChange={(value) => set("quote", value)} />
+      <Area label="Spoken word" value={copy.poem} onChange={(value) => set("poem", value)} />
       <Field label="Klanten-titel" value={copy.clientsTitle} onChange={(value) => set("clientsTitle", value)} />
       <Field label="Contacttitel" value={copy.contactTitle} onChange={(value) => set("contactTitle", value)} />
       <Area label="Contacttekst" value={copy.contactLead} onChange={(value) => set("contactLead", value)} />

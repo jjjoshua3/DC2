@@ -13,9 +13,15 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as BeheerRouteImport } from './routes/beheer'
 import { Route as BlogRouteImport } from './routes/blog'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as OverRouteImport } from './routes/over'
+import { Route as ProjectenRouteImport } from './routes/projecten'
+import { Route as WatRouteImport } from './routes/wat'
 import { Route as ApiStatsRouteImport } from './routes/api.stats'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogPostIdRouteImport } from './routes/blog.$postId'
+import { Route as WatIndexRouteImport } from './routes/wat.index'
+import { Route as WatSlugRouteImport } from './routes/wat.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -37,6 +43,26 @@ const BlogRoute = BlogRouteImport.update({
   path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OverRoute = OverRouteImport.update({
+  id: '/over',
+  path: '/over',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectenRoute = ProjectenRouteImport.update({
+  id: '/projecten',
+  path: '/projecten',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WatRoute = WatRouteImport.update({
+  id: '/wat',
+  path: '/wat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiStatsRoute = ApiStatsRouteImport.update({
   id: '/api/stats',
   path: '/api/stats',
@@ -52,23 +78,44 @@ const BlogPostIdRoute = BlogPostIdRouteImport.update({
   path: '/$postId',
   getParentRoute: () => BlogRoute,
 } as any)
+const WatIndexRoute = WatIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => WatRoute,
+} as any)
+const WatSlugRoute = WatSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => WatRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/beheer': typeof BeheerRoute
   '/blog': typeof BlogRouteWithChildren
+  '/contact': typeof ContactRoute
+  '/over': typeof OverRoute
+  '/projecten': typeof ProjectenRoute
+  '/wat': typeof WatRouteWithChildren
   '/api/stats': typeof ApiStatsRoute
   '/blog/$postId': typeof BlogPostIdRoute
+  '/wat/$slug': typeof WatSlugRoute
   '/blog/': typeof BlogIndexRoute
+  '/wat/': typeof WatIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/beheer': typeof BeheerRoute
+  '/contact': typeof ContactRoute
+  '/over': typeof OverRoute
+  '/projecten': typeof ProjectenRoute
   '/api/stats': typeof ApiStatsRoute
   '/blog/$postId': typeof BlogPostIdRoute
+  '/wat/$slug': typeof WatSlugRoute
   '/blog': typeof BlogIndexRoute
+  '/wat': typeof WatIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -76,9 +123,15 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/beheer': typeof BeheerRoute
   '/blog': typeof BlogRouteWithChildren
+  '/contact': typeof ContactRoute
+  '/over': typeof OverRoute
+  '/projecten': typeof ProjectenRoute
+  '/wat': typeof WatRouteWithChildren
   '/api/stats': typeof ApiStatsRoute
   '/blog/$postId': typeof BlogPostIdRoute
+  '/wat/$slug': typeof WatSlugRoute
   '/blog/': typeof BlogIndexRoute
+  '/wat/': typeof WatIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -87,20 +140,43 @@ export interface FileRouteTypes {
     | '/admin'
     | '/beheer'
     | '/blog'
+    | '/contact'
+    | '/over'
+    | '/projecten'
+    | '/wat'
     | '/api/stats'
     | '/blog/$postId'
+    | '/wat/$slug'
     | '/blog/'
+    | '/wat/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/beheer' | '/api/stats' | '/blog/$postId' | '/blog'
+  to:
+    | '/'
+    | '/admin'
+    | '/beheer'
+    | '/contact'
+    | '/over'
+    | '/projecten'
+    | '/api/stats'
+    | '/blog/$postId'
+    | '/wat/$slug'
+    | '/blog'
+    | '/wat'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/beheer'
     | '/blog'
+    | '/contact'
+    | '/over'
+    | '/projecten'
+    | '/wat'
     | '/api/stats'
     | '/blog/$postId'
+    | '/wat/$slug'
     | '/blog/'
+    | '/wat/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -108,6 +184,10 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   BeheerRoute: typeof BeheerRoute
   BlogRoute: typeof BlogRouteWithChildren
+  ContactRoute: typeof ContactRoute
+  OverRoute: typeof OverRoute
+  ProjectenRoute: typeof ProjectenRoute
+  WatRoute: typeof WatRouteWithChildren
   ApiStatsRoute: typeof ApiStatsRoute
 }
 
@@ -141,6 +221,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/over': {
+      id: '/over'
+      path: '/over'
+      fullPath: '/over'
+      preLoaderRoute: typeof OverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projecten': {
+      id: '/projecten'
+      path: '/projecten'
+      fullPath: '/projecten'
+      preLoaderRoute: typeof ProjectenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wat': {
+      id: '/wat'
+      path: '/wat'
+      fullPath: '/wat'
+      preLoaderRoute: typeof WatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/stats': {
       id: '/api/stats'
       path: '/api/stats'
@@ -162,6 +270,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogPostIdRouteImport
       parentRoute: typeof BlogRoute
     }
+    '/wat/': {
+      id: '/wat/'
+      path: '/'
+      fullPath: '/wat/'
+      preLoaderRoute: typeof WatIndexRouteImport
+      parentRoute: typeof WatRoute
+    }
+    '/wat/$slug': {
+      id: '/wat/$slug'
+      path: '/$slug'
+      fullPath: '/wat/$slug'
+      preLoaderRoute: typeof WatSlugRouteImport
+      parentRoute: typeof WatRoute
+    }
   }
 }
 
@@ -177,11 +299,27 @@ const BlogRouteChildren: BlogRouteChildren = {
 
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 
+interface WatRouteChildren {
+  WatSlugRoute: typeof WatSlugRoute
+  WatIndexRoute: typeof WatIndexRoute
+}
+
+const WatRouteChildren: WatRouteChildren = {
+  WatSlugRoute: WatSlugRoute,
+  WatIndexRoute: WatIndexRoute,
+}
+
+const WatRouteWithChildren = WatRoute._addFileChildren(WatRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   BeheerRoute: BeheerRoute,
   BlogRoute: BlogRouteWithChildren,
+  ContactRoute: ContactRoute,
+  OverRoute: OverRoute,
+  ProjectenRoute: ProjectenRoute,
+  WatRoute: WatRouteWithChildren,
   ApiStatsRoute: ApiStatsRoute,
 }
 export const routeTree = rootRouteImport

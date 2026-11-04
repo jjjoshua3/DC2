@@ -1,4 +1,4 @@
-import type { Project, SiteData } from "@/lib/site-types"
+import type { Project, SiteData, WatPage } from "@/lib/site-types"
 import { defaultPosts } from "@/lib/blog-defaults"
 
 const projects: Project[] = [
@@ -362,15 +362,70 @@ const projects: Project[] = [
   },
 ]
 
+const wat: WatPage[] = [
+  {
+    slug: "journalistiek",
+    title: "Journalistiek",
+    lead: "Waar iedereen naar rechts kijkt, kijk ik naar links.",
+    body: "Daar vind ik vaak vooruitgang en positieve veranderaars. Ik maak journalistieke producties waarin mensen zelf het woord krijgen, met een stem die werkelijk gehoord wordt.",
+    mediaType: "image",
+    mediaUrl: "/media/projects/journalistiek.jpg",
+    exampleType: "image",
+    exampleUrl: "/media/projects/lokale-journalistiek.jpg",
+    offerTitle: "Wat ik voor je kan doen",
+    offerText: "Een reportage, een reeks of een gesprek dat blijft staan. Van het eerste idee tot het verhaal dat de organisatie en de mensen draagt.",
+    cards: [
+      { title: "Reportage", text: "Mensen en plekken, en de vraag die niemand hardop stelde.", image: "/media/projects/journalistiek.jpg" },
+      { title: "Interview", text: "Een gesprek dat de kern raakt, niet de praatjes eromheen.", image: "/media/projects/lidewij.jpg" },
+      { title: "Serie", text: "Meerdere verhalen die samen een groter beeld geven.", image: "/media/projects/lokale-journalistiek.jpg" },
+    ],
+  },
+  {
+    slug: "artistiek",
+    title: "Artistiek",
+    lead: "Vorm, podium en een publiek dat meedoet.",
+    body: "Artistiek werk gaat bij mij over samen maken. Live, op beeld of in een ruimte waar mensen elkaar tegenkomen en iets achterlaten.",
+    mediaType: "image",
+    mediaUrl: "/media/projects/festival.jpg",
+    exampleType: "image",
+    exampleUrl: "/media/projects/tedx.jpg",
+    offerTitle: "Wat ik voor je kan doen",
+    offerText: "Een avond, een beeldreeks of een vorm die het verhaal draagt. Ik stem het aantal en de vorm af op wat jij nodig hebt.",
+    cards: [
+      { title: "Live", text: "Een event dat open is, en waarbij het publiek niet alleen toekijkt.", image: "/media/projects/festival.jpg" },
+      { title: "Beeld", text: "Fotografie en film die de sfeer vasthouden.", image: "/media/projects/tedx.jpg" },
+      { title: "Podium", text: "Spoken word, debat of een vorm die de avond sluit.", image: "/media/projects/spotprent.jpg" },
+    ],
+  },
+  {
+    slug: "artistiek-journalistiek",
+    title: "Artistiek journalistiek",
+    lead: "Het feitenverhaal, in een vorm die blijft hangen.",
+    body: "Hier komen journalistiek en kunst samen. Dezelfde zorg voor wat waar is, in een vorm die mensen raakt en meeneemt.",
+    mediaType: "image",
+    mediaUrl: "/media/projects/duurzaamheidskrant.jpg",
+    exampleType: "image",
+    exampleUrl: "/media/projects/stad-van-straks.jpg",
+    offerTitle: "Wat ik voor je kan doen",
+    offerText: "Een productie waarin het verhaal klopt en de vorm iets doet. Krant, film, live of een combinatie.",
+    cards: [
+      { title: "Krant", text: "Een publicatie die je vasthoudt, met stemmen uit de stad.", image: "/media/projects/duurzaamheidskrant.jpg" },
+      { title: "Film", text: "Een documentaire lijn, kort of langer, met de mensen zelf.", image: "/media/projects/sprank.jpg" },
+      { title: "Live verhaal", text: "Een avond waarin het onderzoek en het publiek elkaar vinden.", image: "/media/projects/stad-van-straks.jpg" },
+    ],
+  },
+]
+
 export const defaultSite: SiteData = {
   projects,
   posts: defaultPosts,
+  wat,
   copy: {
     heroTitle: "DE CONNECTORS",
     heroTagline: "Celebrating People",
     heroSubtitle:
       "Wij zijn de nieuwe digital leaders. We reorganiseren en transformeren, verbinden mensen en geven ze een stem die gehoord moet worden.",
-    aboutTitle: "Over De Connectors",
+    aboutTitle: "Over mij",
     aboutLead:
       "DE CONNECTORS zijn de nieuwe digital leaders. We reorganiseren en transformeren, verbinden mensen en geven ze een stem die gehoord moet worden.",
     aboutLeft:
@@ -427,7 +482,16 @@ export const defaultSite: SiteData = {
     whoRole: "Runs DE CONNECTORS. Journalist & producer",
     whoPhoto: "/media/people/stefanie.jpg",
     quote: "Change your strategy. Engage your audience",
-    clientsTitle: "Organisaties voor wie we werkten",
+    poem: `Met gespitste oren
+Richting plekken waar geen ander luistert
+Bouwt ze bruggen van begrip
+Waarover je de stemmen van de stad kunt horen
+En aan de hand van die verhalen
+Worden deuren ingetrapt
+Om af te dwingen samen te werken
+Aan een vernieuwende toekomst vol moderne idealen
+geschreven door Jimmy Rockx`,
+    clientsTitle: "Organisaties waarvoor ik werkte",
     contactTitle: "Get in touch",
     contactLead:
       "Een koffie, een verhaal, een eerste vraag. We beginnen het liefst met een echt gesprek.",

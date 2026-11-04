@@ -15,6 +15,21 @@ export type Project = {
 
 export type StyleCard = { title: string; text: string }
 export type ServiceCard = { title: string; text: string }
+export type OfferCard = { title: string; text: string; image: string }
+
+export type WatPage = {
+  slug: "journalistiek" | "artistiek" | "artistiek-journalistiek"
+  title: string
+  lead: string
+  body: string
+  mediaType: "image" | "video"
+  mediaUrl: string
+  exampleType: "image" | "video"
+  exampleUrl: string
+  offerTitle: string
+  offerText: string
+  cards: OfferCard[]
+}
 
 export type PageCopy = {
   heroTitle: string
@@ -35,6 +50,7 @@ export type PageCopy = {
   whoRole: string
   whoPhoto: string
   quote: string
+  poem: string
   clientsTitle: string
   contactTitle: string
   contactLead: string
@@ -78,6 +94,7 @@ export type Post = {
 export type SiteData = {
   projects: Project[]
   posts: Post[]
+  wat: WatPage[]
   copy: PageCopy
   design: DesignSettings
   updatedAt?: number

@@ -57,6 +57,20 @@ async function ensureTables(pool: import("pg").Pool) {
   `)
 }
 
+async function loadExtraAdmin(pool: pg.Pool, email: string) {
+  await pool.query(`
+    create table if not exists site_admin (
+      email text primary key,
+      name text not null,
+      role text not null,
+      created_at timestamptz not null default now()
+    )
+  `)
+  const found = await pool.query(`select name, role from site_admin where lower(email) = lower($1)`, [email])
+  const row = found.rows[0] as { name: string; role: string } | undefined
+  return row ? { name: row.name, role: row.role } : null
+}
+
 export async function sessionAccount(token: string) {
   if (!token || token.length < 20) return null
   return withDb(async (pool) => {
@@ -67,7 +81,7 @@ export async function sessionAccount(token: string) {
     )
     const email = rows.rows[0]?.email as string | undefined
     if (!email) return null
-    const account = adminAccount(email)
+    const account = adminAccount(email) ?? (await loadExtraAdmin(pool, email))
     if (!account) return null
     return { email, name: account.name, role: account.role }
   })
@@ -135,7 +149,7 @@ export async function handleMagicRequest(request: Request): Promise<Response> {
         )
         const row = found.rows[0]
         if (!row) return Response.json({ error: "Deze link is ongeldig of verlopen." }, { status: 401 })
-        const account = adminAccount(row.email)
+        const account = adminAccount(row.email) ?? (await loadExtraAdmin(pool, row.email))
         if (!account) return Response.json({ error: "Geen toegang" }, { status: 401 })
         await pool.query(`update site_magic_link set used_at = now() where id = $1`, [row.id])
         const session = randomBytes(32).toString("base64url")
@@ -166,7 +180,7 @@ export async function handleMagicRequest(request: Request): Promise<Response> {
       }
 
       const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : ""
-      const account = adminAccount(email)
+      const account = adminAccount(email) ?? (await loadExtraAdmin(pool, email))
       if (!account) return Response.json({ error: "Dit e-mailadres heeft geen toegang." }, { status: 403 })
       const token = randomBytes(32).toString("base64url")
       await pool.query(

@@ -121,6 +121,22 @@ async function needsChallenge(row) {
   return stale || Math.random() < TOTP_CHANCE
 }
 
+async function resolveAccount(pool, email) {
+  const known = ADMINS[email]
+  if (known) return { email, ...known }
+  await pool.query(`
+    create table if not exists site_admin (
+      email text primary key,
+      name text not null,
+      role text not null,
+      created_at timestamptz not null default now()
+    )
+  `)
+  const found = await pool.query(`select name, role from site_admin where lower(email) = lower($1)`, [email])
+  if (!found.rows[0]) return null
+  return { email, name: found.rows[0].name, role: found.rows[0].role }
+}
+
 async function accountFromSession(pool, token) {
   if (!token) return null
   const found = await pool.query(
@@ -128,7 +144,7 @@ async function accountFromSession(pool, token) {
     [hashToken(token)],
   )
   const email = found.rows[0]?.email?.trim().toLowerCase() ?? ""
-  return ADMINS[email] ? { email, ...ADMINS[email] } : null
+  return resolveAccount(pool, email)
 }
 
 export default async (request) => {
@@ -169,7 +185,9 @@ export default async (request) => {
           [hashToken(body.token)],
         )
         const row = found.rows[0]
-        if (!row || !ADMINS[row.email]) return Response.json({ error: "Deze link is ongeldig of verlopen." }, { status: 401 })
+        if (!row) return Response.json({ error: "Deze link is ongeldig of verlopen." }, { status: 401 })
+        const account = await resolveAccount(pool, row.email)
+        if (!account) return Response.json({ error: "Deze link is ongeldig of verlopen." }, { status: 401 })
         await pool.query(`update site_magic_link set used_at = now() where id = $1`, [row.id])
         const session = randomBytes(32).toString("base64url")
         await pool.query(
@@ -184,12 +202,13 @@ export default async (request) => {
         return Response.json({
           ok: true,
           token: session,
-          account: { email: row.email, ...ADMINS[row.email] },
+          account,
           totp: step,
         })
       }
       const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : ""
-      if (!ADMINS[email]) return Response.json({ error: "Dit e-mailadres heeft geen toegang." }, { status: 403 })
+      const account = await resolveAccount(pool, email)
+      if (!account) return Response.json({ error: "Dit e-mailadres heeft geen toegang." }, { status: 403 })
       const token = randomBytes(32).toString("base64url")
       await pool.query(
         `insert into site_magic_link (id, email, token_hash, expires_at) values ($1, $2, $3, now() + interval '30 minutes')`,
@@ -202,7 +221,7 @@ export default async (request) => {
         email,
         link,
       ])
-      await sendLink(email, ADMINS[email].name, link)
+      await sendLink(email, account.name, link)
       await pool.query(`update site_magic_outbox set sent_at = now() where id = $1`, [outboxId])
       return Response.json({ ok: true })
     })
