@@ -147,18 +147,41 @@ export function WatIndexPage() {
   return (
     <SiteShell>
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wat ik doe</p>
-        <h1 className="mt-3 max-w-3xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">Wat ik doe</h1>
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {data.wat.map((page) => (
-            <Link key={page.slug} to="/wat/$slug" params={{ slug: page.slug }} className="group rounded-card border border-line bg-card p-6">
-              <span className="font-display text-2xl font-extrabold">{page.title}</span>
-              <span className="mt-3 block leading-relaxed text-ink-soft">{page.lead}</span>
-              <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-accent">
-                Lees meer <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-              </span>
-            </Link>
-          ))}
+        <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
+          <div className="lg:col-span-7">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wat ik doe</p>
+            <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-6xl">Drie lijnen. Eén stem.</h1>
+          </div>
+          <p className="max-w-md text-lg leading-relaxed text-ink-soft lg:col-span-5">
+            Journalistiek, artistiek, en waar die twee elkaar raken. Kies de lijn die bij jouw verhaal past.
+          </p>
+        </div>
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
+          {data.wat.map((page, index) => {
+            const dark = index === 1
+            return (
+              <Link
+                key={page.slug}
+                to="/wat/$slug"
+                params={{ slug: page.slug }}
+                className={`group flex h-full flex-col rounded-card border p-7 transition duration-200 hover:-translate-y-1 hover:shadow-lg ${
+                  dark ? "border-ink bg-ink text-paper" : "border-line bg-card text-ink hover:border-accent"
+                }`}
+              >
+                <span className="font-display text-sm font-bold tracking-[0.2em] text-accent">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="mt-6 font-display text-3xl font-extrabold leading-tight">{page.title}</span>
+                <span className={`mt-4 flex-1 font-story text-base italic leading-relaxed ${dark ? "text-paper/80" : "text-ink-soft"}`}>
+                  {page.lead}
+                </span>
+                <span className={`mt-8 inline-flex items-center gap-2 text-sm font-bold ${dark ? "text-paper" : "text-ink"}`}>
+                  Lees meer
+                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                </span>
+              </Link>
+            )
+          })}
         </div>
       </section>
     </SiteShell>
@@ -182,15 +205,16 @@ function WatTabs({ current }: { current: string }) {
   const { data } = useSiteData()
   return (
     <div className="flex flex-wrap gap-2">
-      {data.wat.map((page) => (
+      {data.wat.map((page, index) => (
         <Link
           key={page.slug}
           to="/wat/$slug"
           params={{ slug: page.slug }}
-          className={`inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold ${
-            page.slug === current ? "bg-ink text-paper" : "border border-line bg-card"
+          className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold ${
+            page.slug === current ? "bg-ink text-paper" : "border border-line bg-card text-ink hover:border-accent"
           }`}
         >
+          <span className="text-xs tracking-widest text-accent">{String(index + 1).padStart(2, "0")}</span>
           {page.title}
         </Link>
       ))}
@@ -200,23 +224,31 @@ function WatTabs({ current }: { current: string }) {
 
 function WatBody({ page }: { page: WatPage }) {
   return (
-    <div className="mt-10">
-      <div className="grid items-center gap-8 lg:grid-cols-2">
-        <MediaPane type={page.mediaType} url={page.mediaUrl} label={page.title} />
-        <div>
+    <div className="mt-12">
+      <div className="grid items-center gap-10 lg:grid-cols-12">
+        <div className="relative lg:col-span-6">
+          <div className="absolute -bottom-3 -right-3 h-full w-full rounded-card bg-accent" />
+          <div className="relative">
+            <MediaPane type={page.mediaType} url={page.mediaUrl} label={page.title} />
+          </div>
+        </div>
+        <div className="lg:col-span-6">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wat ik doe</p>
           <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{page.title}</h1>
-          <p className="mt-5 text-xl font-semibold leading-relaxed">{page.lead}</p>
-          <p className="mt-4 leading-relaxed text-ink-soft">{page.body}</p>
+          <p className="mt-6 font-story text-xl italic leading-relaxed text-ink">{page.lead}</p>
+          <p className="mt-5 leading-relaxed text-ink-soft">{page.body}</p>
         </div>
       </div>
-      <div className="mt-16">
-        <h2 className="font-display text-3xl font-extrabold">{page.offerTitle}</h2>
-        <p className="mt-4 max-w-3xl text-lg leading-relaxed text-ink-soft">{page.offerText}</p>
-        <div className="mt-8 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(16rem,1fr))]">
-          {page.cards.map((card) => (
+      <div className="mt-20 border-t border-line pt-14">
+        <div className="max-w-2xl">
+          <h2 className="font-display text-3xl font-extrabold tracking-tight">{page.offerTitle}</h2>
+          <p className="mt-4 text-lg leading-relaxed text-ink-soft">{page.offerText}</p>
+        </div>
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {page.cards.map((card, index) => (
             <article key={card.title} className="rounded-card border border-line bg-card p-6">
-              <h3 className="font-display text-xl font-extrabold leading-tight">{card.title}</h3>
+              <p className="font-display text-sm font-bold tracking-[0.2em] text-accent">{String(index + 1).padStart(2, "0")}</p>
+              <h3 className="mt-4 font-display text-xl font-extrabold leading-tight">{card.title}</h3>
               <p className="mt-3 text-sm leading-relaxed text-ink-soft">{card.text}</p>
             </article>
           ))}
