@@ -139,13 +139,13 @@ export function ClientLogos() {
   return (
     <div className="border-t border-line py-14">
       <p className="px-4 text-center text-xs font-bold uppercase tracking-[0.22em] text-muted">{data.copy.clientsTitle}</p>
-      <div className="mx-auto mt-8 grid max-w-6xl grid-cols-2 justify-items-center gap-4 px-4 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="mx-auto mt-8 grid max-w-6xl grid-cols-2 justify-items-center gap-5 px-4 sm:grid-cols-3 lg:grid-cols-4">
         {clients.map((client) => (
-          <div key={client.id} className="grid h-28 w-full max-w-56 place-items-center rounded-2xl bg-ink px-5 sm:h-32">
+          <div key={client.id} className="grid h-36 w-full max-w-64 place-items-center rounded-2xl bg-ink px-6 sm:h-40">
             {client.image ? (
-              <img src={client.image} alt={client.name} className="max-h-16 w-auto max-w-full object-contain sm:max-h-20" />
+              <img src={client.image} alt={client.name} className="max-h-24 w-auto max-w-full object-contain sm:max-h-28" />
             ) : (
-              <span className="text-center font-display text-lg font-extrabold text-paper">{client.name}</span>
+              <span className="text-center font-display text-xl font-extrabold text-paper">{client.name}</span>
             )}
           </div>
         ))}

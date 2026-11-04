@@ -239,17 +239,31 @@ function WatBody({ page }: { page: WatPage }) {
           <p className="mt-5 leading-relaxed text-ink-soft">{page.body}</p>
         </div>
       </div>
+      {page.exampleUrl ? (
+        <div className="mt-16">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted">Voorbeeld</p>
+          <div className="mt-4 max-w-3xl">
+            <MediaPane type={page.exampleType} url={page.exampleUrl} label={`${page.title} voorbeeld`} />
+          </div>
+        </div>
+      ) : null}
       <div className="mt-20 border-t border-line pt-14">
         <div className="max-w-2xl">
-          <h2 className="font-display text-3xl font-extrabold tracking-tight">{page.offerTitle}</h2>
+          <h2 className="font-display text-3xl font-extrabold tracking-tight">{page.offerTitle || "Wat ik voor je kan doen"}</h2>
           <p className="mt-4 text-lg leading-relaxed text-ink-soft">{page.offerText}</p>
         </div>
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {page.cards.map((card, index) => (
-            <article key={card.title} className="rounded-card border border-line bg-card p-6">
-              <p className="font-display text-sm font-bold tracking-[0.2em] text-accent">{String(index + 1).padStart(2, "0")}</p>
-              <h3 className="mt-4 font-display text-xl font-extrabold leading-tight">{card.title}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-ink-soft">{card.text}</p>
+          {page.cards.map((card) => (
+            <article key={card.title} className="flex h-full flex-col overflow-hidden rounded-card border border-line bg-card shadow-sm">
+              {card.image ? (
+                <img src={card.image} alt="" className="aspect-[4/3] w-full object-cover" />
+              ) : (
+                <div className="grid aspect-[4/3] place-items-center bg-ink px-6 text-center font-display text-lg font-bold text-paper">{card.title}</div>
+              )}
+              <div className="flex flex-1 flex-col p-5">
+                <h3 className="font-display text-xl font-extrabold leading-tight">{card.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-soft">{card.text}</p>
+              </div>
             </article>
           ))}
         </div>
