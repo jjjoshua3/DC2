@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react"
 import { Link } from "@tanstack/react-router"
 import { ArrowRight, BadgeCheck, Heart, Mail, Smile } from "lucide-react"
 import { useSiteData } from "@/lib/data-service"
-import type { Project, WatPage, WhoPerson } from "@/lib/site-types"
+import type { Project, WatPage } from "@/lib/site-types"
 import { CATEGORIES, projectCategories } from "@/lib/site-types"
 import { ProjectCard, ProjectDialog } from "@/components/project-views"
 import { ClientLogos, MediaPane, Poem, SiteShell, SocialsRow } from "@/components/site-shell"
@@ -38,26 +38,6 @@ function PhotoShow({ photos, alt }: { photos: string[]; alt: string }) {
           ))}
         </div>
       ) : null}
-    </div>
-  )
-}
-
-function WhoBlock({ person, title }: { person: WhoPerson; title?: string }) {
-  const { data } = useSiteData()
-  return (
-    <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-2">
-      <PhotoShow photos={person.photos} alt={person.name} />
-      <div>
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wie</p>
-        {title ? <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{title}</h2> : null}
-        {person.text ? <p className="mt-6 text-lg leading-relaxed text-ink-soft">{person.text}</p> : null}
-        <p className="mt-6 font-display text-lg font-extrabold">{person.name}</p>
-        <p className="text-sm text-muted">{person.role}</p>
-        <a href={`mailto:${data.copy.email}`} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent">
-          <Mail className="h-4 w-4" />
-          {data.copy.email}
-        </a>
-      </div>
     </div>
   )
 }
@@ -105,16 +85,42 @@ export function HomePage() {
 export function OverPage() {
   const { data } = useSiteData()
   const { copy } = data
+  const [first, ...others] = copy.people
   return (
     <SiteShell>
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Over mij</p>
         <h1 className="mt-3 max-w-3xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{copy.aboutTitle}</h1>
-        <p className="mt-6 max-w-3xl text-xl font-semibold leading-relaxed">{copy.aboutLead}</p>
-        <div className="mt-8 grid gap-8 md:grid-cols-2">
-          <p className="leading-relaxed text-ink-soft">{copy.aboutLeft}</p>
-          <p className="leading-relaxed text-ink-soft">{copy.aboutRight}</p>
+        <div className="mt-10 grid items-start gap-10 lg:grid-cols-12">
+          <div className="lg:col-span-5">
+            <PhotoShow photos={first?.photos ?? []} alt={first?.name || copy.whoName} />
+            <p className="mt-4 font-display text-lg font-extrabold">{first?.name || copy.whoName}</p>
+            <p className="text-sm text-muted">{first?.role || copy.whoRole}</p>
+            <a href={`mailto:${copy.email}`} className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-accent">
+              <Mail className="h-4 w-4" />
+              {copy.email}
+            </a>
+          </div>
+          <div className="lg:col-span-7">
+            {copy.aboutLead ? <p className="text-xl font-semibold leading-relaxed">{copy.aboutLead}</p> : null}
+            <div className="mt-6 grid gap-6">
+              {copy.aboutLeft ? <p className="leading-relaxed text-ink-soft">{copy.aboutLeft}</p> : null}
+              {copy.aboutRight ? <p className="leading-relaxed text-ink-soft">{copy.aboutRight}</p> : null}
+            </div>
+          </div>
         </div>
+        {others.map((person) => (
+          <div key={person.id} className="mt-16 grid items-start gap-10 border-t border-line pt-16 lg:grid-cols-12">
+            <div className="lg:col-span-5">
+              <PhotoShow photos={person.photos} alt={person.name} />
+            </div>
+            <div className="lg:col-span-7">
+              <p className="font-display text-2xl font-extrabold">{person.name}</p>
+              <p className="mt-1 text-sm text-muted">{person.role}</p>
+              {person.text ? <p className="mt-6 leading-relaxed text-ink-soft">{person.text}</p> : null}
+            </div>
+          </div>
+        ))}
         <h2 className="mt-16 font-display text-2xl font-extrabold">{copy.stylesTitle}</h2>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {copy.styles.map((card, index) => {
@@ -131,13 +137,7 @@ export function OverPage() {
           })}
         </div>
       </section>
-      <section className="bg-card">
-        {copy.people.map((person, index) => (
-          <WhoBlock key={person.id} person={person} title={index === 0 ? copy.whoTitle : undefined} />
-        ))}
-      </section>
       <Poem />
-      <ClientLogos />
     </SiteShell>
   )
 }
@@ -147,18 +147,15 @@ export function WatIndexPage() {
   return (
     <SiteShell>
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wat</p>
-        <h1 className="mt-3 max-w-3xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{data.copy.servicesTitle}</h1>
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wat ik doe</p>
+        <h1 className="mt-3 max-w-3xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">Wat ik doe</h1>
         <div className="mt-10 grid gap-5 md:grid-cols-3">
           {data.wat.map((page) => (
-            <Link key={page.slug} to="/wat/$slug" params={{ slug: page.slug }} className="group overflow-hidden rounded-card border border-line bg-card">
-              <MediaPane type={page.mediaType} url={page.mediaUrl} label={page.title} />
-              <span className="block p-5">
-                <span className="font-display text-2xl font-extrabold">{page.title}</span>
-                <span className="mt-2 block text-sm leading-relaxed text-ink-soft">{page.lead}</span>
-                <span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-accent">
-                  Bekijk <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-                </span>
+            <Link key={page.slug} to="/wat/$slug" params={{ slug: page.slug }} className="group rounded-card border border-line bg-card p-6">
+              <span className="font-display text-2xl font-extrabold">{page.title}</span>
+              <span className="mt-3 block leading-relaxed text-ink-soft">{page.lead}</span>
+              <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-accent">
+                Lees meer <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
               </span>
             </Link>
           ))}
@@ -207,16 +204,10 @@ function WatBody({ page }: { page: WatPage }) {
       <div className="grid items-center gap-8 lg:grid-cols-2">
         <MediaPane type={page.mediaType} url={page.mediaUrl} label={page.title} />
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wat</p>
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wat ik doe</p>
           <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{page.title}</h1>
           <p className="mt-5 text-xl font-semibold leading-relaxed">{page.lead}</p>
           <p className="mt-4 leading-relaxed text-ink-soft">{page.body}</p>
-        </div>
-      </div>
-      <div className="mt-12">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted">Voorbeeld</p>
-        <div className="mt-4 max-w-3xl">
-          <MediaPane type={page.exampleType} url={page.exampleUrl} label={`${page.title} voorbeeld`} />
         </div>
       </div>
       <div className="mt-16">
@@ -224,16 +215,9 @@ function WatBody({ page }: { page: WatPage }) {
         <p className="mt-4 max-w-3xl text-lg leading-relaxed text-ink-soft">{page.offerText}</p>
         <div className="mt-8 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(16rem,1fr))]">
           {page.cards.map((card) => (
-            <article key={card.title} className="overflow-hidden rounded-card border border-line bg-card shadow-sm">
-              {card.image ? (
-                <img src={card.image} alt="" className="aspect-[4/3] w-full object-cover" />
-              ) : (
-                <div className="grid aspect-[4/3] place-items-center bg-ink px-6 text-center font-display text-lg font-bold text-paper">{card.title}</div>
-              )}
-              <div className="p-5">
-                <h3 className="font-display text-xl font-extrabold leading-tight">{card.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">{card.text}</p>
-              </div>
+            <article key={card.title} className="rounded-card border border-line bg-card p-6">
+              <h3 className="font-display text-xl font-extrabold leading-tight">{card.title}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-ink-soft">{card.text}</p>
             </article>
           ))}
         </div>
