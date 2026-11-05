@@ -126,9 +126,21 @@ export function normalizeSite(value: SiteData): SiteData {
   return next
 }
 
-/** Central data layer. The shared copy lives in the database; this browser keeps a copy too. */
+/** Central data layer. The shared copy lives in the database. This browser keeps a light copy. */
+let memory: SiteData | null = null
+let remotePromise: Promise<void> | null = null
+
+function slim(data: SiteData): SiteData {
+  return JSON.parse(
+    JSON.stringify(data, (_key, value) =>
+      typeof value === "string" && value.startsWith("data:") && value.length > 200 ? "" : value,
+    ),
+  ) as SiteData
+}
+
 export const DataService = {
   load(): SiteData {
+    if (memory) return memory
     if (typeof window === "undefined") return clone(defaultSite)
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY)
@@ -142,11 +154,18 @@ export const DataService = {
   },
   save(data: SiteData) {
     const next = normalizeSite({ ...data, updatedAt: data.updatedAt ?? Date.now() })
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+    memory = next
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(slim(next)))
+    } catch {
+      window.localStorage.removeItem(STORAGE_KEY)
+    }
     listeners.forEach((listener) => listener())
     return next
   },
   reset() {
+    memory = null
+    remotePromise = null
     window.localStorage.removeItem(STORAGE_KEY)
     listeners.forEach((listener) => listener())
   },
@@ -175,18 +194,24 @@ export function useSiteData() {
     setData(local)
     setReady(true)
     let cancelled = false
-    void fetchSiteDocument()
-      .then((raw) => {
-        if (cancelled || !raw) return
-        const parsed: unknown = JSON.parse(raw)
-        if (!isSite(parsed)) return
-        const remote = normalizeSite(parsed)
-        const current = DataService.load()
-        if ((remote.updatedAt ?? 0) >= (current.updatedAt ?? 0)) {
-          DataService.save(remote)
-        }
-      })
-      .catch(() => {})
+    if (!remotePromise) {
+      remotePromise = fetchSiteDocument()
+        .then((raw) => {
+          if (!raw) return
+          const parsed: unknown = JSON.parse(raw)
+          if (!isSite(parsed)) return
+          const remote = normalizeSite(parsed)
+          const current = DataService.load()
+          if ((remote.updatedAt ?? 0) >= (current.updatedAt ?? 0)) {
+            memory = remote
+            listeners.forEach((listener) => listener())
+          }
+        })
+        .catch(() => {})
+    }
+    void remotePromise.then(() => {
+      if (!cancelled) setData(DataService.load())
+    })
     return () => {
       cancelled = true
     }

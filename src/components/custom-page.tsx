@@ -43,7 +43,7 @@ function BlockView({ block }: { block: PageBlock }) {
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {block.cards.map((card, index) => (
             <article key={`${card.title}-${index}`} className="overflow-hidden rounded-card border border-line bg-card">
-              {card.image ? <img src={card.image} alt="" className="aspect-[4/3] w-full object-cover" /> : null}
+              {card.image ? <img src={card.image} alt="" loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover" /> : null}
               <div className="p-5">
                 <h3 className="font-display text-xl font-extrabold">{card.title}</h3>
                 {card.text ? <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink-soft">{card.text}</p> : null}

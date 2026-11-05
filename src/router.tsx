@@ -13,5 +13,7 @@ export function getRouter() {
     rewrite: previewPathRewrite(),
     defaultErrorComponent: AppErrorComponent,
     defaultNotFoundComponent: NotFoundPage,
+    defaultPreload: "intent",
+    defaultPreloadDelay: 50,
   });
 }

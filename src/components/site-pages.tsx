@@ -26,7 +26,7 @@ function PhotoShow({ photos, alt }: { photos: string[]; alt: string }) {
   }
   return (
     <div className="relative">
-      <img src={src} alt={alt} className="aspect-[4/5] w-full rounded-card object-cover object-top" />
+      <img src={src} alt={alt} fetchPriority="high" className="aspect-[4/5] w-full rounded-card object-cover object-top" />
       {frames.length > 1 ? (
         <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
           {frames.map((photo, dot) => (
@@ -513,7 +513,7 @@ function ArtistiekPage({ page, gedicht }: { page: WatPage; gedicht: string }) {
             >
               <span className="block aspect-[4/3] overflow-hidden bg-ink">
                 {item.image ? (
-                  <img src={item.image} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" />
+                  <img src={item.image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" />
                 ) : (
                   <span className="grid h-full place-items-center px-6 text-center font-story text-3xl italic text-paper">{item.title}</span>
                 )}
@@ -536,7 +536,7 @@ function PoemPhoto({ src, onSave }: { src: string; onSave: (url: string) => void
   return (
     <div>
       {src ? (
-        <img src={src} alt="" className="aspect-[4/5] w-full rounded-card object-cover object-top" />
+        <img src={src} alt="" loading="lazy" decoding="async" className="aspect-[4/5] w-full rounded-card object-cover object-top" />
       ) : editing ? (
         <div className="grid aspect-[4/5] place-items-center rounded-card border border-dashed border-line bg-card font-story text-2xl italic text-muted">Foto</div>
       ) : null}
@@ -836,7 +836,7 @@ function WatBody({ page }: { page: WatPage }) {
           {page.cards.map((card) => (
             <article key={card.title} className="flex h-full flex-col overflow-hidden rounded-card border border-line bg-card shadow-sm">
               {card.image ? (
-                <img src={card.image} alt="" className="aspect-[4/3] w-full object-cover" />
+                <img src={card.image} alt="" loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover" />
               ) : (
                 <div className="grid aspect-[4/3] place-items-center bg-ink px-6 text-center font-display text-lg font-bold text-paper">{card.title}</div>
               )}

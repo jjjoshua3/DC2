@@ -261,7 +261,7 @@ export function ClientLogos() {
         {clients.map((client) => (
           <div key={client.id} className="grid h-36 w-full max-w-64 place-items-center rounded-2xl bg-ink px-6 sm:h-40">
             {client.image ? (
-              <img src={client.image} alt={client.name} className="max-h-24 w-auto max-w-full object-contain sm:max-h-28" />
+              <img src={client.image} alt={client.name} loading="lazy" decoding="async" className="max-h-24 w-auto max-w-full object-contain sm:max-h-28" />
             ) : (
               <span className="text-center font-display text-xl font-extrabold text-paper">{client.name}</span>
             )}
@@ -284,7 +284,7 @@ export function MediaPane({ type, url, label }: { type: "image" | "video"; url: 
   if (type === "video" && url) {
     return <video src={url} controls className="aspect-video w-full rounded-card bg-ink" />
   }
-  if (url) return <img src={url} alt="" className="aspect-[4/3] w-full rounded-card object-cover" />
+  if (url) return <img src={url} alt="" loading="lazy" decoding="async" className="aspect-[4/3] w-full rounded-card object-cover" />
   return <div className="grid aspect-[4/3] place-items-center rounded-card bg-ink px-6 text-center font-display text-lg font-bold text-paper">Beeld volgt</div>
 }
 

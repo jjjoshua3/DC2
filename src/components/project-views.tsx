@@ -65,7 +65,7 @@ function Gallery({ images }: { images: string[] }) {
             onClick={() => setOpen(src)}
             className="overflow-hidden rounded-xl border border-line bg-paper"
           >
-            <img src={src} alt="" className="aspect-[4/3] w-full object-cover" />
+            <img src={src} alt="" loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover" />
           </button>
         ))}
       </div>

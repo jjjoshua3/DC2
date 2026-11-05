@@ -1,8 +1,25 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import { useSiteData } from "@/lib/data-service"
-import type { I18nMap, LangCode, PageCopy, PoemItem, Post, Project, SiteData, WatPage } from "@/lib/site-types"
-import { postPacks, projectPacks } from "@/lib/content-i18n"
+import type { I18nMap, LangCode, PageCopy, PoemItem, Post, Project, SiteData, TextPack, WatPage } from "@/lib/site-types"
 import { defaultSite } from "@/lib/site-defaults"
+
+type Packs = {
+  postPacks: Record<string, Partial<Record<LangCode, TextPack>>>
+  projectPacks: Record<string, Partial<Record<LangCode, TextPack>>>
+}
+
+let packs: Packs | null = null
+let packsPromise: Promise<void> | null = null
+
+export function ensurePacks() {
+  if (packs) return Promise.resolve()
+  if (!packsPromise) {
+    packsPromise = import("@/lib/content-i18n").then((mod) => {
+      packs = { postPacks: mod.postPacks, projectPacks: mod.projectPacks }
+    })
+  }
+  return packsPromise
+}
 
 export const LOCALES = [
   { id: "nl", label: "Nederlands", short: "NL" },
@@ -423,7 +440,7 @@ function translated(dutch: string, map: I18nMap | undefined, locale: LangCode, k
 
 function translatePost(post: Post, locale: LangCode): Post {
   const origin = defaultSite.posts.find((item) => item.id === post.id)
-  const catalog = postPacks[post.id]?.[locale]
+  const catalog = packs?.postPacks[post.id]?.[locale]
   const baked = (key: "title" | "lead" | "body", current: string) =>
     !origin || current.trim() === (origin[key] || "").trim() ? catalog?.[key] : undefined
   return {
@@ -436,7 +453,7 @@ function translatePost(post: Post, locale: LangCode): Post {
 
 function translateProject(project: Project, locale: LangCode): Project {
   const origin = defaultSite.projects.find((item) => item.id === project.id)
-  const catalog = projectPacks[project.id]?.[locale]
+  const catalog = packs?.projectPacks[project.id]?.[locale]
   const baked = (key: "title" | "lead" | "body" | "ctaLabel", current: string) =>
     !origin || current.trim() === (origin[key] || "").trim() ? catalog?.[key] : undefined
   return {
@@ -523,7 +540,21 @@ function localize(source: SiteData, locale: LangCode): SiteData {
 export function useLocaleSite() {
   const { data: source, ready } = useSiteData()
   const { locale } = useI18n()
-  const data = useMemo(() => (locale === "nl" ? source : localize(source, locale)), [source, locale])
+  const [packsReady, setPacksReady] = useState(locale === "nl")
+  useEffect(() => {
+    if (locale === "nl") {
+      setPacksReady(true)
+      return
+    }
+    let cancelled = false
+    void ensurePacks().then(() => {
+      if (!cancelled) setPacksReady(true)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [locale])
+  const data = useMemo(() => (locale === "nl" || !packsReady ? source : localize(source, locale)), [source, locale, packsReady])
   return { data, source, ready, locale }
 }
 
