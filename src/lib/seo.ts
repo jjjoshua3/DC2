@@ -51,7 +51,16 @@ export function pageTitle(title: string) {
   return `${clean} | DE CONNECTORS`
 }
 
-export function pageHead(input: { title: string; description: string; path: string; origin: string; index?: boolean; canonical?: boolean }) {
+export function pageHead(input: {
+  title: string
+  description: string
+  path: string
+  origin: string
+  index?: boolean
+  canonical?: boolean
+  image?: string
+  type?: string
+}) {
   const title = pageTitle(input.title)
   const description = clip(input.description)
   const origin = (input.origin || SITE_ORIGIN_FALLBACK).replace(/\/$/, "")
@@ -59,6 +68,11 @@ export function pageHead(input: { title: string; description: string; path: stri
   const url = `${origin}${path}`
   const index = input.index !== false
   const canonical = index && input.canonical !== false
+  const image = input.image
+    ? input.image.startsWith("http")
+      ? input.image
+      : `${origin}${input.image.startsWith("/") ? input.image : `/${input.image}`}`
+    : ""
   return {
     meta: [
       { title },
@@ -66,6 +80,20 @@ export function pageHead(input: { title: string; description: string; path: stri
       { name: "robots", content: index ? "index, follow, max-image-preview:large" : "noindex, nofollow" },
       { property: "og:locale", content: "nl_NL" },
       { property: "og:site_name", content: "DE CONNECTORS" },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:type", content: input.type || "website" },
+      { property: "og:url", content: url },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: title },
+      { name: "twitter:description", content: description },
+      ...(image
+        ? [
+            { name: "share-image", content: image },
+            { property: "og:image", content: image },
+            { name: "twitter:image", content: image },
+          ]
+        : []),
     ],
     links: canonical ? [{ rel: "canonical", href: url }] : [],
   }
@@ -85,6 +113,19 @@ export function seoContext(matches: ReadonlyArray<{ routeId: string; loaderData?
     }
   }
   return { origin, site }
+}
+
+export function cleanLinkedIn(url: string) {
+  const raw = url.trim()
+  if (!raw) return ""
+  try {
+    const parsed = new URL(raw.startsWith("http") ? raw : `https://${raw}`)
+    if (!parsed.hostname.endsWith("linkedin.com")) return raw
+    const path = parsed.pathname.replace(/\/+$/, "")
+    return `https://www.linkedin.com${path}`
+  } catch {
+    return raw
+  }
 }
 
 export function organizationJsonLd(origin: string) {
@@ -108,7 +149,7 @@ export function organizationJsonLd(origin: string) {
         jobTitle: "Journalist en producer",
         url: `${base}/`,
         worksFor: { "@id": `${base}/#organization` },
-        sameAs: ["https://www.linkedin.com/in/stefanie-vermeulen-89424111"],
+        sameAs: [cleanLinkedIn("https://www.linkedin.com/in/stefanie-vermeulen-89424111")],
       },
       {
         "@type": "WebSite",

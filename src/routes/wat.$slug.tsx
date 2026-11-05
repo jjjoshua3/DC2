@@ -14,12 +14,14 @@ export const Route = createFileRoute("/wat/$slug")({
     const fallback = PAGES.wat[params.slug as keyof typeof PAGES.wat]
     const page = site?.wat?.find((item) => item.slug === params.slug)
     const poem = search?.gedicht ? page?.poems?.find((item) => item.id === search.gedicht) : undefined
+    const image = page?.mediaType === "image" ? page.mediaUrl : ""
     if (poem) {
       return pageHead({
         title: poem.title,
         description: clip(poem.body || fallback?.description || page?.lead || ""),
         path: `/wat/${params.slug}?gedicht=${encodeURIComponent(poem.id)}`,
         origin,
+        image: poem.image || image,
       })
     }
     return pageHead({
@@ -27,6 +29,7 @@ export const Route = createFileRoute("/wat/$slug")({
       description: clip(page?.lead || fallback?.description || "Het werk van Stefanie Vermeulen, DE CONNECTORS."),
       path: `/wat/${params.slug}`,
       origin,
+      image,
     })
   },
   component: function WatSlug() {

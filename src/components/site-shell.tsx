@@ -6,6 +6,7 @@ import type { Socials } from "@/lib/site-types"
 import { toEmbedUrl } from "@/lib/media"
 import { EditBar, EditableText, publishSite, useEditor } from "@/components/live-edit"
 import { SITE_VERSION } from "@/lib/site-version"
+import { cleanLinkedIn } from "@/lib/seo"
 
 const LINKS = [
   { to: "/projecten", key: "projects" },
@@ -91,7 +92,7 @@ export function SocialsRow({ socials, tone = "ink" }: { socials: Socials; tone?:
       <SocialLink href={socials.vimeo} label="Vimeo" tone={tone}><VimeoIcon /></SocialLink>
       <SocialLink href={socials.x} label="X" tone={tone}><Twitter className="h-4 w-4" /></SocialLink>
       <SocialLink href={socials.flickr} label="Flickr" tone={tone}><FlickrIcon /></SocialLink>
-      <SocialLink href={socials.linkedin} label="LinkedIn" tone={tone}><Linkedin className="h-4 w-4" /></SocialLink>
+      <SocialLink href={cleanLinkedIn(socials.linkedin)} label="LinkedIn" tone={tone}><Linkedin className="h-4 w-4" /></SocialLink>
     </div>
   )
 }

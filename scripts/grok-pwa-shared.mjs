@@ -314,6 +314,16 @@ export function descriptionFromDocument(html) {
   return "";
 }
 
+export function shareImageFromDocument(html) {
+  const tags = String(html ?? "").match(/<meta\b[^>]*>/gi) ?? [];
+  for (const tag of tags) {
+    if (!/\bname\s*=\s*["']share-image["']/i.test(tag)) continue;
+    const content = tag.match(/\bcontent\s*=\s*["']([^"']*)["']/i);
+    if (content) return unescapeHtml(content[1]).trim();
+  }
+  return "";
+}
+
 export function resolveOgTitle(
   site = {},
   appName = DEFAULT_APP_NAME,
@@ -356,6 +366,7 @@ export function grokOgHeadTags({
   site = {},
   documentTitle = "",
   cwd = process.cwd(),
+  image = "",
 } = {}) {
   const title = resolveOgTitle(site, appName, host, documentTitle);
   const publicHost = resolvePublicHost(host);
@@ -371,14 +382,18 @@ export function grokOgHeadTags({
     tags.push(`<meta property="og:type" content="x:game">`);
   }
   if (publicHost) {
+    const override = String(image ?? "").trim();
     const asset = resolveOgCardAsset(site, cwd);
     const custom = Boolean(asset);
-    let image = custom
-      ? `https://${publicHost}${asset.startsWith("/") ? asset : `/${asset}`}`
-      : `${ogServiceUrl()}/v1/card.png?host=${encodeURIComponent(publicHost)}&title=${encodeURIComponent(title)}`;
-    const color = !custom ? placeholderCardColor(site) : "";
-    if (color) image += `&color=${encodeURIComponent(color)}`;
-    tags.push(`<meta property="og:image" content="${escapeHtml(image)}">`);
+    let imageUrl = override
+      ? override
+      : custom
+        ? `https://${publicHost}${asset.startsWith("/") ? asset : `/${asset}`}`
+        : `${ogServiceUrl()}/v1/card.png?host=${encodeURIComponent(publicHost)}&title=${encodeURIComponent(title)}`;
+    if (override && override.startsWith("/")) imageUrl = `https://${publicHost}${override}`;
+    const color = !override && !custom ? placeholderCardColor(site) : "";
+    if (color) imageUrl += `&color=${encodeURIComponent(color)}`;
+    tags.push(`<meta property="og:image" content="${escapeHtml(imageUrl)}">`);
     tags.push(`<meta property="og:image:width" content="1200">`);
     tags.push(`<meta property="og:image:height" content="630">`);
     const banner = String(site.banner ?? "").trim();
@@ -468,10 +483,11 @@ export function injectGrokPwaHead(html, ctx = {}) {
     .map(([, tag]) => tag);
 
   const fromDocument = descriptionFromDocument(next);
+  const shareImage = shareImageFromDocument(next);
   const siteForOg = fromDocument ? { ...site, description: fromDocument } : site;
   next = insertAfterHeadOpen(
     next,
-    grokOgHeadTags({ host, appName, site: siteForOg, documentTitle, cwd }).join(""),
+    grokOgHeadTags({ host, appName, site: siteForOg, documentTitle, cwd, image: shareImage }).join(""),
   );
 
   if (readGrokExtensionsEnabled() && !next.includes("/grok-app-builder/extensions.js")) {

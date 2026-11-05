@@ -37,10 +37,14 @@ export async function buildSitemap(origin: string) {
       updatedAt?: number
       posts?: { id?: string; status?: string }[]
       pages?: { slug?: string; status?: string }[]
+      projects?: { id?: string; status?: string }[]
     } | null
     if (site?.updatedAt) lastmod = new Date(site.updatedAt).toISOString().slice(0, 10)
     for (const post of site?.posts ?? []) {
       if (post.status === "published" && post.id) paths.push(`/blog/${encodeURIComponent(post.id)}`)
+    }
+    for (const project of site?.projects ?? []) {
+      if (project.status === "published" && project.id) paths.push(`/project/${encodeURIComponent(project.id)}`)
     }
     for (const page of site?.pages ?? []) {
       if (page.status === "published" && page.slug) paths.push(`/pagina/${encodeURIComponent(page.slug)}`)

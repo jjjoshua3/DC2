@@ -4,7 +4,7 @@ import { ArrowRight, BadgeCheck, Heart, Mail, Smile } from "lucide-react"
 import { useLocaleSite, useI18n } from "@/lib/i18n"
 import type { PoemItem, Project, WatPage } from "@/lib/site-types"
 import { CATEGORIES, projectCategories } from "@/lib/site-types"
-import { ProjectCard, ProjectDialog } from "@/components/project-views"
+import { ProjectCard } from "@/components/project-views"
 import { ClientLogos, MediaPane, Poem, SiteShell, SocialsRow } from "@/components/site-shell"
 import { EditablePhoto, EditableText, publishSite, useEditor } from "@/components/live-edit"
 import { compressImage } from "@/lib/media"
@@ -856,7 +856,6 @@ export function ProjectsPage() {
   const { data } = useLocaleSite()
   const { t } = useI18n()
   const [filter, setFilter] = useState("Alles")
-  const [active, setActive] = useState<Project | null>(null)
   const published = data.projects.filter((project) => project.status === "published")
   const visible = filter === "Alles" ? published : published.filter((project) => projectCategories(project).includes(filter))
   return (
@@ -881,14 +880,13 @@ export function ProjectsPage() {
         {visible.length ? (
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {visible.map((project) => (
-              <ProjectCard key={project.id} project={project} onOpen={() => setActive(project)} />
+              <ProjectCard key={project.id} project={project} />
             ))}
           </div>
         ) : (
           <p className="mt-10 text-ink-soft">{t("noProjects")}</p>
         )}
       </section>
-      <ProjectDialog project={active} onClose={() => setActive(null)} />
     </SiteShell>
   )
 }

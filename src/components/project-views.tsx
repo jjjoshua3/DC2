@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 import * as Dialog from "@radix-ui/react-dialog"
 import { Play, X } from "lucide-react"
@@ -10,15 +11,11 @@ export function ProjectCard({
   onOpen,
 }: {
   project: Project
-  onOpen: () => void
+  onOpen?: () => void
 }) {
   const image = project.mediaType === "image" ? project.mediaUrl : project.poster
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="group flex h-full flex-col overflow-hidden rounded-card border border-line bg-card text-left shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
-    >
+  const inner = (
+    <>
       <span className="relative block aspect-[4/3] overflow-hidden bg-ink">
         {image ? (
           <img
@@ -48,7 +45,20 @@ export function ProjectCard({
           <span className="line-clamp-3 text-sm leading-relaxed text-ink-soft">{project.lead}</span>
         ) : null}
       </span>
-    </button>
+    </>
+  )
+  const className = "group flex h-full flex-col overflow-hidden rounded-card border border-line bg-card text-left shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
+  if (onOpen) {
+    return (
+      <button type="button" onClick={onOpen} className={className}>
+        {inner}
+      </button>
+    )
+  }
+  return (
+    <Link to="/project/$projectId" params={{ projectId: project.id }} className={className}>
+      {inner}
+    </Link>
   )
 }
 
@@ -127,9 +137,9 @@ export function ArticleBody({ project, stacked = false }: { project: Project; st
         <p className="text-xs font-bold uppercase tracking-widest text-accent">
           {projectCategories(project).join(" · ") || "Project"}
         </p>
-        <h2 className="mt-2 font-display text-3xl font-extrabold leading-tight text-ink sm:text-4xl">
+        <h1 className="mt-2 font-display text-3xl font-extrabold leading-tight text-ink sm:text-4xl">
           {project.title || "Zonder titel"}
-        </h2>
+        </h1>
         {project.lead ? (
           <p className="mt-4 text-lg font-semibold leading-relaxed text-ink">{project.lead}</p>
         ) : null}

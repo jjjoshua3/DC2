@@ -6,7 +6,7 @@ export const Route = createFileRoute("/")({
   component: HomePage,
   head: ({ matches }) => {
     const { origin } = seoContext(matches)
-    return pageHead({ title: HOME.title, description: HOME.description, path: "/", origin })
+    return pageHead({ title: HOME.title, description: HOME.description, path: "/", origin, image: "/og.jpg" })
   },
 })
 

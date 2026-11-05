@@ -14,6 +14,8 @@ export const Route = createFileRoute("/blog/$postId")({
       description: clip(post.lead || post.body || PAGES.blog.description),
       path: `/blog/${post.id}`,
       origin,
+      image: post.image,
+      type: "article",
     })
   },
   component: function PostRoute() {
