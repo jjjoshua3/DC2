@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import { useSiteData } from "@/lib/data-service"
-import type { I18nMap, LangCode, PageCopy, PoemItem, Post, Project, SiteData, WatPage } from "@/lib/site-types"
+import type { I18nMap, LangCode, PageCopy, PoemItem, Post, Project, SiteData, TextPack, WatPage } from "@/lib/site-types"
+import { postPacks, projectPacks } from "@/lib/content-i18n"
 
 export const LOCALES = [
   { id: "nl", label: "Nederlands", short: "NL" },
@@ -237,6 +238,11 @@ const watText: Record<Exclude<Locale, "nl">, Record<string, Partial<WatPage> & {
       body: "That is often where I find progress, and people who change things for the better. I make journalistic work in which people speak for themselves, with a voice that is truly heard.",
       offerTitle: "What I can do for you",
       offerText: "A report, a series, or a conversation that stays. From the first idea to the story that carries the organisation and the people.",
+      cards: [
+        { title: "Report", text: "People and places, and the question nobody asked out loud.", image: "" },
+        { title: "Interview", text: "A conversation that reaches the core, not the talk around it.", image: "" },
+        { title: "Series", text: "Several stories that together show a larger picture.", image: "" },
+      ],
     },
     artistiek: {
       title: "Artistic",
@@ -244,6 +250,11 @@ const watText: Record<Exclude<Locale, "nl">, Record<string, Partial<WatPage> & {
       body: "For me, artistic work is about making something together. Live, on screen, or in a room where people meet and leave something behind.",
       offerTitle: "What I can do for you",
       offerText: "An evening, a series of images, or a form that carries the story. I shape it around what you need.",
+      cards: [
+        { title: "Live", text: "An open event, where the audience does more than watch.", image: "" },
+        { title: "Image", text: "Photography and film that hold the atmosphere.", image: "" },
+        { title: "Stage", text: "Spoken word, debate, or a form that closes the evening.", image: "" },
+      ],
       poemPageTitle: "Poems",
     },
     "artistiek-journalistiek": {
@@ -252,6 +263,11 @@ const watText: Record<Exclude<Locale, "nl">, Record<string, Partial<WatPage> & {
       body: "This is where journalism and art meet. The same care for what is true, in a form that moves people and takes them along.",
       offerTitle: "What I can do for you",
       offerText: "A production in which the story is right and the form does something. A paper, a film, a live evening, or a mix.",
+      cards: [
+        { title: "Paper", text: "A publication that holds you, with voices from the city.", image: "" },
+        { title: "Film", text: "A documentary line, short or long, with the people themselves.", image: "" },
+        { title: "Live story", text: "An evening where the research and the audience find each other.", image: "" },
+      ],
     },
   },
   fr: {
@@ -261,6 +277,11 @@ const watText: Record<Exclude<Locale, "nl">, Record<string, Partial<WatPage> & {
       body: "C’est souvent là que je trouve le progrès, et des gens qui font bouger les choses. Je fais des productions journalistiques où les personnes parlent elles-mêmes, avec une voix vraiment entendue.",
       offerTitle: "Ce que je peux faire pour vous",
       offerText: "Un reportage, une série ou une conversation qui reste. De la première idée au récit qui porte l’organisation et les gens.",
+      cards: [
+        { title: "Reportage", text: "Des gens et des lieux, et la question que personne n’a posée à voix haute.", image: "" },
+        { title: "Entretien", text: "Une conversation qui touche le cœur, pas les bavardages autour.", image: "" },
+        { title: "Série", text: "Plusieurs récits qui, ensemble, donnent une image plus large.", image: "" },
+      ],
     },
     artistiek: {
       title: "Artistique",
@@ -268,6 +289,11 @@ const watText: Record<Exclude<Locale, "nl">, Record<string, Partial<WatPage> & {
       body: "Pour moi, le travail artistique consiste à faire ensemble. En direct, à l’image, ou dans un lieu où les gens se rencontrent et laissent quelque chose.",
       offerTitle: "Ce que je peux faire pour vous",
       offerText: "Une soirée, une série d’images, ou une forme qui porte le récit. Je l’accorde à ce dont vous avez besoin.",
+      cards: [
+        { title: "Live", text: "Un événement ouvert, où le public ne se contente pas de regarder.", image: "" },
+        { title: "Image", text: "Photographie et film qui gardent l’atmosphère.", image: "" },
+        { title: "Scène", text: "Spoken word, débat, ou une forme qui clôt la soirée.", image: "" },
+      ],
       poemPageTitle: "Poèmes",
     },
     "artistiek-journalistiek": {
@@ -276,6 +302,11 @@ const watText: Record<Exclude<Locale, "nl">, Record<string, Partial<WatPage> & {
       body: "Ici, journalisme et art se rejoignent. Le même soin pour ce qui est vrai, dans une forme qui touche et emmène.",
       offerTitle: "Ce que je peux faire pour vous",
       offerText: "Une production où le récit est juste et la forme agit. Journal, film, soirée, ou un mélange.",
+      cards: [
+        { title: "Journal", text: "Une publication qui vous retient, avec des voix de la ville.", image: "" },
+        { title: "Film", text: "Une ligne documentaire, courte ou plus longue, avec les gens eux-mêmes.", image: "" },
+        { title: "Récit live", text: "Une soirée où l’enquête et le public se rencontrent.", image: "" },
+      ],
     },
   },
   de: {
@@ -285,6 +316,11 @@ const watText: Record<Exclude<Locale, "nl">, Record<string, Partial<WatPage> & {
       body: "Dort finde ich oft den Fortschritt und Menschen, die etwas zum Besseren verändern. Ich mache journalistische Arbeiten, in denen die Menschen selbst sprechen, mit einer Stimme, die wirklich gehört wird.",
       offerTitle: "Was ich für Sie tun kann",
       offerText: "Eine Reportage, eine Serie oder ein Gespräch, das bleibt. Von der ersten Idee bis zur Geschichte, die Organisation und Menschen trägt.",
+      cards: [
+        { title: "Reportage", text: "Menschen und Orte, und die Frage, die niemand laut gestellt hat.", image: "" },
+        { title: "Interview", text: "Ein Gespräch, das den Kern trifft, nicht das Gerede drumherum.", image: "" },
+        { title: "Serie", text: "Mehrere Geschichten, die zusammen ein größeres Bild ergeben.", image: "" },
+      ],
     },
     artistiek: {
       title: "Künstlerisch",
@@ -292,6 +328,11 @@ const watText: Record<Exclude<Locale, "nl">, Record<string, Partial<WatPage> & {
       body: "Künstlerische Arbeit heißt für mich: gemeinsam machen. Live, im Bild oder in einem Raum, wo Menschen sich begegnen und etwas zurücklassen.",
       offerTitle: "Was ich für Sie tun kann",
       offerText: "Ein Abend, eine Bildreihe oder eine Form, die die Geschichte trägt. Ich richte sie nach dem, was Sie brauchen.",
+      cards: [
+        { title: "Live", text: "Ein offenes Event, bei dem das Publikum nicht nur zusieht.", image: "" },
+        { title: "Bild", text: "Fotografie und Film, die die Stimmung halten.", image: "" },
+        { title: "Bühne", text: "Spoken Word, Debatte oder eine Form, die den Abend schließt.", image: "" },
+      ],
       poemPageTitle: "Gedichte",
     },
     "artistiek-journalistiek": {
@@ -300,6 +341,11 @@ const watText: Record<Exclude<Locale, "nl">, Record<string, Partial<WatPage> & {
       body: "Hier treffen Journalismus und Kunst aufeinander. Dieselbe Sorgfalt für das, was stimmt, in einer Form, die Menschen berührt und mitnimmt.",
       offerTitle: "Was ich für Sie tun kann",
       offerText: "Eine Produktion, in der die Geschichte stimmt und die Form etwas tut. Zeitung, Film, Live, oder eine Mischung.",
+      cards: [
+        { title: "Zeitung", text: "Eine Publikation, die Sie festhält, mit Stimmen aus der Stadt.", image: "" },
+        { title: "Film", text: "Eine dokumentarische Linie, kurz oder länger, mit den Menschen selbst.", image: "" },
+        { title: "Live-Geschichte", text: "Ein Abend, an dem Recherche und Publikum zueinander finden.", image: "" },
+      ],
     },
   },
 }
@@ -370,22 +416,37 @@ function translated(dutch: string, map: I18nMap | undefined, locale: LangCode, k
   return packValue(map, locale, key) || (fallback && fallback.trim() ? fallback : dutch)
 }
 
+function mergedMap(stored: I18nMap | undefined, catalog: Partial<Record<LangCode, TextPack>> | undefined, locale: LangCode): I18nMap | undefined {
+  const extra = catalog?.[locale]
+  const own = stored?.[locale]
+  if (!extra && !own) return stored
+  const pack: TextPack = { ...extra }
+  if (own) {
+    for (const [key, value] of Object.entries(own)) {
+      if (typeof value === "string" && value.trim()) pack[key] = value
+    }
+  }
+  return { ...stored, [locale]: pack }
+}
+
 function translatePost(post: Post, locale: LangCode): Post {
+  const map = mergedMap(post.i18n, postPacks[post.id], locale)
   return {
     ...post,
-    title: translated(post.title, post.i18n, locale, "title"),
-    lead: translated(post.lead, post.i18n, locale, "lead"),
-    body: translated(post.body, post.i18n, locale, "body"),
+    title: translated(post.title, map, locale, "title"),
+    lead: translated(post.lead, map, locale, "lead"),
+    body: translated(post.body, map, locale, "body"),
   }
 }
 
 function translateProject(project: Project, locale: LangCode): Project {
+  const map = mergedMap(project.i18n, projectPacks[project.id], locale)
   return {
     ...project,
-    title: translated(project.title, project.i18n, locale, "title"),
-    lead: translated(project.lead, project.i18n, locale, "lead"),
-    body: translated(project.body, project.i18n, locale, "body"),
-    ctaLabel: translated(project.ctaLabel, project.i18n, locale, "ctaLabel"),
+    title: translated(project.title, map, locale, "title"),
+    lead: translated(project.lead, map, locale, "lead"),
+    body: translated(project.body, map, locale, "body"),
+    ctaLabel: translated(project.ctaLabel, map, locale, "ctaLabel"),
   }
 }
 
