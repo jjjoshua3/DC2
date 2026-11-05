@@ -5,8 +5,7 @@ import { VisitTracker } from "@/components/visit-tracker";
 import { NotFoundPage } from "@/components/not-found";
 import { LocaleProvider } from "@/lib/i18n";
 import { seedSite } from "@/lib/data-service";
-import { fetchSiteDocument } from "@/lib/site-store";
-import { fetchPublicOrigin } from "@/lib/origin.server";
+import { fetchPublicOrigin, fetchSiteDocument } from "@/lib/site-store";
 import { HOME, SITE_ORIGIN_FALLBACK, organizationJsonLd, pageHead } from "@/lib/seo";
 import appCss from "../styles.css?url";
 
