@@ -6,6 +6,7 @@ const ROLE_KEY = "dc.admin.role"
 const TOKEN_KEY = "dc.admin.token"
 const SEEN_KEY = "dc.admin.seen"
 const IDLE_KEY = "dc.admin.idle"
+const FORCED_KEY = "dc.admin.forced"
 const IDLE_MS = 60 * 60 * 1000
 
 export type AdminSession = {
@@ -61,6 +62,17 @@ export function markIdleLogout() {
 export function takeIdleNotice() {
   const on = sessionStorage.getItem(IDLE_KEY) === "1"
   if (on) sessionStorage.removeItem(IDLE_KEY)
+  return on
+}
+
+export function markForcedLogout() {
+  clearAdminSession()
+  sessionStorage.setItem(FORCED_KEY, "1")
+}
+
+export function takeForcedNotice() {
+  const on = sessionStorage.getItem(FORCED_KEY) === "1"
+  if (on) sessionStorage.removeItem(FORCED_KEY)
   return on
 }
 

@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { CmsPage } from "@/components/cms-page"
-import { clearAdminSession, setAdminSession, adminSession, adminIdleDue, markIdleLogout, takeIdleNotice, touchAdminActivity } from "@/lib/admin-session"
+import { clearAdminSession, setAdminSession, adminSession, adminIdleDue, markIdleLogout, markForcedLogout, takeIdleNotice, takeForcedNotice, touchAdminActivity } from "@/lib/admin-session"
 import { logLogout, postAudit } from "@/lib/audit-client"
 import { adminAccount } from "@/lib/admins"
+import { SITE_VERSION } from "@/lib/site-version"
 
 type Pending = {
   token: string
@@ -17,6 +18,7 @@ export function AdminGate() {
   const [ready, setReady] = useState(false)
   const [pending, setPending] = useState<Pending | null>(null)
   const [idleNotice, setIdleNotice] = useState(false)
+  const [forcedNotice, setForcedNotice] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -47,6 +49,8 @@ export function AdminGate() {
         }
       } else if (takeIdleNotice()) {
         setIdleNotice(true)
+      } else if (takeForcedNotice()) {
+        setForcedNotice(true)
       }
       if (!cancelled) setReady(true)
     })()
@@ -68,8 +72,23 @@ export function AdminGate() {
       setAuthed(false)
       setIdleNotice(true)
     }, 15000)
+    const check = window.setInterval(() => {
+      void checkRemoteSession().then((alive) => {
+        if (alive) return
+        markForcedLogout()
+        setAuthed(false)
+        setForcedNotice(true)
+      })
+    }, 30000)
+    void checkRemoteSession().then((alive) => {
+      if (alive) return
+      markForcedLogout()
+      setAuthed(false)
+      setForcedNotice(true)
+    })
     return () => {
       window.clearInterval(timer)
+      window.clearInterval(check)
       for (const name of events) window.removeEventListener(name, mark)
     }
   }, [authed])
@@ -90,7 +109,7 @@ export function AdminGate() {
       />
     )
   }
-  if (!authed) return <AdminLogin idleNotice={idleNotice} onCloseIdle={() => setIdleNotice(false)} />
+  if (!authed) return <AdminLogin idleNotice={idleNotice} forcedNotice={forcedNotice} onCloseIdle={() => { setIdleNotice(false); setForcedNotice(false) }} />
   return (
     <CmsPage
       onLogout={() => {
@@ -104,6 +123,21 @@ export function AdminGate() {
 function magicUrl() {
   const match = window.location.pathname.match(/^(\/hds-[a-z0-9]+-\d+-[a-z0-9]+)(?=\/|$)/i)
   return `${match?.[1] ?? ""}/api/magic`
+}
+
+async function checkRemoteSession() {
+  const session = adminSession()
+  if (!session) return true
+  try {
+    const response = await fetch(magicUrl(), {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "session-check", token: session.token }),
+    })
+    return response.ok
+  } catch {
+    return true
+  }
 }
 
 async function sessionFromUrl() {
@@ -124,7 +158,7 @@ async function sessionFromUrl() {
   return { ...data.account, token: data.token, totp: data.totp || "skip" }
 }
 
-function AdminLogin({ idleNotice, onCloseIdle }: { idleNotice: boolean; onCloseIdle: () => void }) {
+function AdminLogin({ idleNotice, forcedNotice, onCloseIdle }: { idleNotice: boolean; forcedNotice: boolean; onCloseIdle: () => void }) {
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
   const [sent, setSent] = useState("")
@@ -166,12 +200,14 @@ function AdminLogin({ idleNotice, onCloseIdle }: { idleNotice: boolean; onCloseI
 
   return (
     <div className="grid min-h-screen place-items-center bg-ink px-4 py-10 text-paper">
-      {idleNotice ? (
+      {idleNotice || forcedNotice ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-ink/70 px-4" role="dialog" aria-modal="true" aria-labelledby="idle-title">
           <div className="w-full max-w-md rounded-card bg-card p-8 text-ink shadow-2xl">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Beheer</p>
-            <h2 id="idle-title" className="mt-3 font-display text-2xl font-extrabold">Automatisch uitgelogd</h2>
-            <p className="mt-3 text-sm leading-relaxed text-ink-soft">Vanwege veiligheidsredenen bent u automatisch uitgelogd.</p>
+            <h2 id="idle-title" className="mt-3 font-display text-2xl font-extrabold">{forcedNotice ? "Sessie beëindigd" : "Automatisch uitgelogd"}</h2>
+            <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+              {forcedNotice ? "Je sessie is beëindigd. Log opnieuw in." : "Vanwege veiligheidsredenen bent u automatisch uitgelogd."}
+            </p>
             <button type="button" onClick={onCloseIdle} className="mt-6 inline-flex min-h-11 items-center rounded-full bg-accent px-5 text-sm font-bold text-accent-ink">
               Opnieuw inloggen
             </button>
@@ -184,6 +220,7 @@ function AdminLogin({ idleNotice, onCloseIdle }: { idleNotice: boolean; onCloseI
         <p className="mt-2 text-sm leading-relaxed text-muted">
           Vul je e-mailadres in. Je krijgt een magische link om in te loggen.
         </p>
+        <p className="mt-2 text-xs text-muted">Versie {SITE_VERSION}</p>
         <label className="mt-6 block text-sm font-semibold" htmlFor="email">
           E-mailadres
         </label>

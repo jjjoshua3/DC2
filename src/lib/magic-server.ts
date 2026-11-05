@@ -99,6 +99,11 @@ export async function handleMagicRequest(request: Request): Promise<Response> {
     return await withDb(async (pool) => {
       await ensureTables(pool)
       const action = typeof body?.action === "string" ? body.action : ""
+      if (action === "session-check") {
+        const account = await sessionAccount(String(body?.token || ""))
+        if (!account) return Response.json({ ok: false, error: "Sessie ongeldig." }, { status: 401 })
+        return Response.json({ ok: true, email: account.email, role: account.role })
+      }
       if (action === "totp-setup" || action === "totp-confirm" || action === "totp-verify") {
         const account = await sessionAccount(String(body?.token || ""))
         if (!account) return Response.json({ error: "Log opnieuw in." }, { status: 401 })

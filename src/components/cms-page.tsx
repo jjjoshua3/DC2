@@ -17,6 +17,7 @@ import { ArticleBody, ProjectCard } from "@/components/project-views"
 import { DropImage, RichText } from "@/components/editor-fields"
 import { compressImage, newId, toEmbedUrl } from "@/lib/media"
 import { adminSession, clearAdminSession } from "@/lib/admin-session"
+import { SITE_VERSION } from "@/lib/site-version"
 import { saveSiteDocument } from "@/lib/site-store"
 import { BlogAdmin } from "@/components/blog-admin"
 import { LangPicker } from "@/components/lang-picker"
@@ -179,6 +180,7 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
           >
             Uitloggen
           </button>
+          <p className="px-1 text-[11px] leading-snug text-paper/50">Versie {SITE_VERSION}</p>
           <Link
             to="/"
             className="inline-flex min-h-11 items-center justify-center rounded-full bg-paper px-4 text-sm font-bold text-ink"

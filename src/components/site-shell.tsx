@@ -1,10 +1,12 @@
-import { useState, type ReactNode } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { Link, useRouterState } from "@tanstack/react-router"
 import { ChevronDown, Globe, Linkedin, Menu, Twitter, X, Youtube } from "lucide-react"
 import { LOCALES, useI18n, useLocaleSite, type Locale } from "@/lib/i18n"
 import type { Socials } from "@/lib/site-types"
 import { toEmbedUrl } from "@/lib/media"
 import { EditBar, EditableText, publishSite, useEditor } from "@/components/live-edit"
+import { adminSession, markForcedLogout } from "@/lib/admin-session"
+import { SITE_VERSION } from "@/lib/site-version"
 
 const LINKS = [
   { to: "/projecten", key: "projects" },
@@ -133,6 +135,36 @@ function WatMenu({ path }: { path: string }) {
   )
 }
 
+function SessionGuard() {
+  useEffect(() => {
+    let stop = false
+    async function check() {
+      const session = adminSession()
+      if (!session) return
+      try {
+        const match = window.location.pathname.match(/^(\/hds-[a-z0-9]+-\d+-[a-z0-9]+)(?=\/|$)/i)
+        const response = await fetch(`${match?.[1] ?? ""}/api/magic`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action: "session-check", token: session.token }),
+        })
+        if (stop || response.ok) return
+        markForcedLogout()
+        window.location.href = "/admin"
+      } catch {
+        // offline: keep the local session
+      }
+    }
+    void check()
+    const timer = window.setInterval(check, 45000)
+    return () => {
+      stop = true
+      window.clearInterval(timer)
+    }
+  }, [])
+  return null
+}
+
 export function SiteShell({ children }: { children: ReactNode }) {
   const { data } = useLocaleSite()
   const { t } = useI18n()
@@ -140,6 +172,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
   return (
     <div className="min-h-screen bg-paper text-ink">
+      <SessionGuard />
       <header className="sticky top-0 z-40 border-b border-line bg-paper/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
           <Link to="/" className="flex min-w-0 items-center gap-3">
@@ -220,6 +253,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                 aa0271n8@gmail.com
               </a>
             </p>
+            <p className="mt-1 text-xs">Versie {SITE_VERSION}</p>
           </div>
           <SocialsRow socials={data.design.socials} />
         </div>
