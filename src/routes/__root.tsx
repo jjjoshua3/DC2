@@ -26,7 +26,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "DE CONNECTORS viert mensen. Journalistieke producties, corporate stories, live events en co-creaties door Stefanie Vermeulen.",
+          "Stefanie Vermeulen maakt journalistieke en artistieke projecten die mensen verbinden. Freelance journalist, producer en maker van verhalen, films en events.",
       },
       { name: "theme-color", content: "#1E293B" },
     ],
