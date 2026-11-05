@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { useSiteData } from "@/lib/data-service"
 import type { I18nMap, LangCode, PageCopy, PoemItem, Post, Project, SiteData, TextPack, WatPage } from "@/lib/site-types"
 import { defaultSite } from "@/lib/site-defaults"
+import { phraseTranslation } from "@/lib/phrase-i18n"
 
 type Packs = {
   postPacks: Record<string, Partial<Record<LangCode, TextPack>>>
@@ -433,6 +434,8 @@ function packValue(map: I18nMap | undefined, locale: LangCode, key: string) {
 function translated(dutch: string, map: I18nMap | undefined, locale: LangCode, key: string, fallback?: string, original?: string) {
   const own = packValue(map, locale, key)
   if (own) return own
+  const phrase = phraseTranslation(dutch, locale)
+  if (phrase) return phrase
   const unchanged = original === undefined || dutch.trim() === original.trim()
   if (unchanged && fallback && fallback.trim()) return fallback
   return dutch
@@ -525,9 +528,13 @@ function localize(source: SiteData, locale: LangCode): SiteData {
       blogButton: line("blogButton", copy.blogButton),
       poem: line("poem", copy.poem),
       whoRole: line("whoRole", copy.whoRole),
-      people: copy.people.map((person, index) =>
-        index === 0 ? { ...person, role: line("whoRole", person.role) } : person,
-      ),
+      bannerText: translated(copy.bannerText, stored, locale, "bannerText"),
+      smaakmaker: translated(copy.smaakmaker, stored, locale, "smaakmaker"),
+      people: copy.people.map((person, index) => ({
+        ...person,
+        role: index === 0 ? line("whoRole", person.role) : person.role,
+        text: translated(person.text, undefined, locale, "text"),
+      })),
     },
     wat: source.wat.map((page) =>
       translateWat(page, locale, pages[page.slug], page.slug === "artistiek" ? poems[locale] : undefined, page.slug === "artistiek" ? text.poemLead : undefined),
