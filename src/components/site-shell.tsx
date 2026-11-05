@@ -148,17 +148,21 @@ function SessionGuard() {
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ action: "session-check", token: session.token }),
         })
-        if (stop || response.ok) return
+        if (!response.ok) {
+          const data = (await response.json().catch(() => null)) as { error?: string } | null
+          if (data?.error !== "Sessie ongeldig.") return
+        } else return
         hardLeave("forced")
       } catch {
         // offline: keep the local session
       }
     }
-    void check()
-    const timer = window.setInterval(check, 45000)
+    const timer = window.setInterval(check, 120000)
+    const start = window.setTimeout(check, 90000)
     return () => {
       stop = true
       window.clearInterval(timer)
+      window.clearTimeout(start)
     }
   }, [])
   return null
