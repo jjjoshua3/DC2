@@ -23,7 +23,7 @@ export function ProjectCard({
         {image ? (
           <img
             src={image}
-            alt=""
+            alt={project.title || "Project"}
             className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
           />
         ) : (
@@ -110,7 +110,7 @@ export function ArticleBody({ project, stacked = false }: { project: Project; st
         ) : image ? (
           <img
             src={image}
-            alt=""
+            alt={project.title || "Project"}
             className={
               stacked
                 ? "h-56 w-full object-cover"

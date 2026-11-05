@@ -513,7 +513,7 @@ function ArtistiekPage({ page, gedicht }: { page: WatPage; gedicht: string }) {
             >
               <span className="block aspect-[4/3] overflow-hidden bg-ink">
                 {item.image ? (
-                  <img src={item.image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" />
+                  <img src={item.image} alt={item.title} loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" />
                 ) : (
                   <span className="grid h-full place-items-center px-6 text-center font-story text-3xl italic text-paper">{item.title}</span>
                 )}
@@ -836,7 +836,7 @@ function WatBody({ page }: { page: WatPage }) {
           {page.cards.map((card) => (
             <article key={card.title} className="flex h-full flex-col overflow-hidden rounded-card border border-line bg-card shadow-sm">
               {card.image ? (
-                <img src={card.image} alt="" loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover" />
+                <img src={card.image} alt={card.title} loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover" />
               ) : (
                 <div className="grid aspect-[4/3] place-items-center bg-ink px-6 text-center font-display text-lg font-bold text-paper">{card.title}</div>
               )}

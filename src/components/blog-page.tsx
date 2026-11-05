@@ -78,7 +78,7 @@ export function BlogArticle({ postId }: { postId: string }) {
             <h1 className="mt-3 font-display text-4xl font-extrabold leading-tight sm:text-5xl">{post.title}</h1>
             {post.lead ? <p className="mt-5 text-lg font-semibold leading-relaxed">{post.lead}</p> : null}
             {post.image ? (
-              <img src={post.image} alt="" className="mt-6 aspect-[16/9] w-full rounded-card object-cover" />
+              <img src={post.image} alt={post.title} className="mt-6 aspect-[16/9] w-full rounded-card object-cover" />
             ) : null}
             <div
               className="story mt-6 font-story text-base leading-relaxed text-ink-soft"

@@ -17,6 +17,8 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as GedichtenRouteImport } from './routes/gedichten'
 import { Route as OverRouteImport } from './routes/over'
 import { Route as ProjectenRouteImport } from './routes/projecten'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as WatRouteImport } from './routes/wat'
 import { Route as ApiStatsRouteImport } from './routes/api.stats'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
@@ -65,6 +67,16 @@ const ProjectenRoute = ProjectenRouteImport.update({
   path: '/projecten',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WatRoute = WatRouteImport.update({
   id: '/wat',
   path: '/wat',
@@ -110,6 +122,8 @@ export interface FileRoutesByFullPath {
   '/gedichten': typeof GedichtenRoute
   '/over': typeof OverRoute
   '/projecten': typeof ProjectenRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/wat': typeof WatRouteWithChildren
   '/api/stats': typeof ApiStatsRoute
   '/blog/$postId': typeof BlogPostIdRoute
@@ -126,6 +140,8 @@ export interface FileRoutesByTo {
   '/gedichten': typeof GedichtenRoute
   '/over': typeof OverRoute
   '/projecten': typeof ProjectenRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/stats': typeof ApiStatsRoute
   '/blog/$postId': typeof BlogPostIdRoute
   '/pagina/$slug': typeof PaginaSlugRoute
@@ -143,6 +159,8 @@ export interface FileRoutesById {
   '/gedichten': typeof GedichtenRoute
   '/over': typeof OverRoute
   '/projecten': typeof ProjectenRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/wat': typeof WatRouteWithChildren
   '/api/stats': typeof ApiStatsRoute
   '/blog/$postId': typeof BlogPostIdRoute
@@ -162,6 +180,8 @@ export interface FileRouteTypes {
     | '/gedichten'
     | '/over'
     | '/projecten'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/wat'
     | '/api/stats'
     | '/blog/$postId'
@@ -178,6 +198,8 @@ export interface FileRouteTypes {
     | '/gedichten'
     | '/over'
     | '/projecten'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/api/stats'
     | '/blog/$postId'
     | '/pagina/$slug'
@@ -194,6 +216,8 @@ export interface FileRouteTypes {
     | '/gedichten'
     | '/over'
     | '/projecten'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/wat'
     | '/api/stats'
     | '/blog/$postId'
@@ -212,6 +236,8 @@ export interface RootRouteChildren {
   GedichtenRoute: typeof GedichtenRoute
   OverRoute: typeof OverRoute
   ProjectenRoute: typeof ProjectenRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WatRoute: typeof WatRouteWithChildren
   ApiStatsRoute: typeof ApiStatsRoute
   PaginaSlugRoute: typeof PaginaSlugRoute
@@ -273,6 +299,20 @@ declare module '@tanstack/react-router' {
       path: '/projecten'
       fullPath: '/projecten'
       preLoaderRoute: typeof ProjectenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wat': {
@@ -360,6 +400,8 @@ const rootRouteChildren: RootRouteChildren = {
   GedichtenRoute: GedichtenRoute,
   OverRoute: OverRoute,
   ProjectenRoute: ProjectenRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   WatRoute: WatRouteWithChildren,
   ApiStatsRoute: ApiStatsRoute,
   PaginaSlugRoute: PaginaSlugRoute,
