@@ -110,7 +110,7 @@ export function HomePage() {
           {data.wat.map((page) => (
             <Link key={page.slug} to="/wat/$slug" params={{ slug: page.slug }} className="group flex h-full flex-col rounded-card border border-line bg-card p-6 transition hover:-translate-y-0.5 hover:border-accent">
               <span className="font-display text-2xl font-extrabold">{page.title}</span>
-              <span className="mt-3 flex-1 text-sm leading-relaxed text-ink-soft">{page.slug === "artistiek" ? "Gedichten" : page.lead}</span>
+              <span className="mt-3 flex-1 text-sm leading-relaxed text-ink-soft">{page.lead}</span>
               <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-accent">
                 Lees meer <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
               </span>
@@ -250,20 +250,42 @@ export function WatIndexPage() {
   )
 }
 
+export function GedichtenPage() {
+  const { data } = useSiteData()
+  const source = data.wat.find((item) => item.slug === "artistiek")
+  const photo = source?.poemPhoto || ""
+  const lead = source?.poemLead || ""
+  return (
+    <SiteShell>
+      <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Artistiek</p>
+        <h1 className="mt-3 font-display text-5xl font-extrabold tracking-tight sm:text-7xl">{source?.poemPageTitle || "Gedichten"}</h1>
+        {photo || lead || source?.body ? (
+          <div className="mt-10 grid items-center gap-10 lg:grid-cols-2">
+            <div className="relative max-w-md">
+              <div className="absolute -bottom-3 -left-3 h-full w-full rounded-card bg-accent" />
+              <div className="relative">
+                {photo ? (
+                  <img src={photo} alt="" className="aspect-[4/5] w-full rounded-card object-cover object-top" />
+                ) : (
+                  <div className="grid aspect-[4/5] place-items-center rounded-card bg-ink px-6 text-center font-display text-lg font-bold text-paper">Foto volgt</div>
+                )}
+              </div>
+            </div>
+            <div>
+              {lead ? <p className="text-xl font-semibold leading-relaxed">{lead}</p> : null}
+            </div>
+          </div>
+        ) : null}
+      </section>
+      <GedichtenZaal poems={source?.poems ?? []} />
+    </SiteShell>
+  )
+}
+
 export function WatDetailPage({ slug }: { slug: string }) {
   const { data } = useSiteData()
   const page = data.wat.find((item) => item.slug === slug)
-  if (page?.layout === "poems") {
-    return (
-      <SiteShell>
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
-          <WatTabs current={slug} />
-          <PoemsIntro page={page} />
-        </section>
-        <GedichtenZaal poems={page.poems ?? []} />
-      </SiteShell>
-    )
-  }
   return (
     <SiteShell>
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
@@ -295,30 +317,6 @@ function WatTabs({ current }: { current: string }) {
   )
 }
 
-function PoemsIntro({ page }: { page: WatPage }) {
-  return (
-    <div className="mt-10">
-      <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-6xl">{page.poemPageTitle || "Gedichten"}</h1>
-      <div className="mt-10 grid items-center gap-10 lg:grid-cols-2">
-        <div className="relative max-w-md">
-          <div className="absolute -bottom-3 -left-3 h-full w-full rounded-card bg-accent" />
-          <div className="relative">
-            {page.mediaUrl ? (
-              <img src={page.mediaUrl} alt="" className="aspect-[4/5] w-full rounded-card object-cover object-top" />
-            ) : (
-              <div className="grid aspect-[4/5] place-items-center rounded-card bg-ink px-6 text-center font-display text-lg font-bold text-paper">Foto volgt</div>
-            )}
-          </div>
-        </div>
-        <div>
-          {page.lead ? <p className="text-xl font-semibold leading-relaxed">{page.lead}</p> : null}
-          {page.body ? <p className="mt-4 leading-relaxed text-ink-soft">{page.body}</p> : null}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function GedichtenZaal({ poems }: { poems: PoemItem[] }) {
   if (!poems.length) return null
   return (
@@ -326,7 +324,6 @@ function GedichtenZaal({ poems }: { poems: PoemItem[] }) {
       <div className="bg-ink text-paper">
         <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-12 sm:py-16 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.32em] text-accent">Een eigen plek</p>
             <p className="mt-3 font-display text-5xl font-extrabold leading-none tracking-tight sm:text-7xl">De gedichten</p>
           </div>
           <nav className="flex flex-col gap-2">

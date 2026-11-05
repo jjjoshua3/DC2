@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as BeheerRouteImport } from './routes/beheer'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as GedichtenRouteImport } from './routes/gedichten'
 import { Route as OverRouteImport } from './routes/over'
 import { Route as ProjectenRouteImport } from './routes/projecten'
 import { Route as WatRouteImport } from './routes/wat'
@@ -46,6 +47,11 @@ const BlogRoute = BlogRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GedichtenRoute = GedichtenRouteImport.update({
+  id: '/gedichten',
+  path: '/gedichten',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OverRoute = OverRouteImport.update({
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/beheer': typeof BeheerRoute
   '/blog': typeof BlogRouteWithChildren
   '/contact': typeof ContactRoute
+  '/gedichten': typeof GedichtenRoute
   '/over': typeof OverRoute
   '/projecten': typeof ProjectenRoute
   '/wat': typeof WatRouteWithChildren
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/beheer': typeof BeheerRoute
   '/contact': typeof ContactRoute
+  '/gedichten': typeof GedichtenRoute
   '/over': typeof OverRoute
   '/projecten': typeof ProjectenRoute
   '/api/stats': typeof ApiStatsRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/beheer': typeof BeheerRoute
   '/blog': typeof BlogRouteWithChildren
   '/contact': typeof ContactRoute
+  '/gedichten': typeof GedichtenRoute
   '/over': typeof OverRoute
   '/projecten': typeof ProjectenRoute
   '/wat': typeof WatRouteWithChildren
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/beheer'
     | '/blog'
     | '/contact'
+    | '/gedichten'
     | '/over'
     | '/projecten'
     | '/wat'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/beheer'
     | '/contact'
+    | '/gedichten'
     | '/over'
     | '/projecten'
     | '/api/stats'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/beheer'
     | '/blog'
     | '/contact'
+    | '/gedichten'
     | '/over'
     | '/projecten'
     | '/wat'
@@ -185,6 +197,7 @@ export interface RootRouteChildren {
   BeheerRoute: typeof BeheerRoute
   BlogRoute: typeof BlogRouteWithChildren
   ContactRoute: typeof ContactRoute
+  GedichtenRoute: typeof GedichtenRoute
   OverRoute: typeof OverRoute
   ProjectenRoute: typeof ProjectenRoute
   WatRoute: typeof WatRouteWithChildren
@@ -226,6 +239,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gedichten': {
+      id: '/gedichten'
+      path: '/gedichten'
+      fullPath: '/gedichten'
+      preLoaderRoute: typeof GedichtenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/over': {
@@ -317,6 +337,7 @@ const rootRouteChildren: RootRouteChildren = {
   BeheerRoute: BeheerRoute,
   BlogRoute: BlogRouteWithChildren,
   ContactRoute: ContactRoute,
+  GedichtenRoute: GedichtenRoute,
   OverRoute: OverRoute,
   ProjectenRoute: ProjectenRoute,
   WatRoute: WatRouteWithChildren,

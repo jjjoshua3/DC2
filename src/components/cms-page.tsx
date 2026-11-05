@@ -535,64 +535,11 @@ function WatForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =>
   return (
     <section className="max-w-3xl">
       <h1 className="font-display text-2xl font-extrabold">Wat-pagina’s</h1>
-      <p className="mt-2 text-sm text-muted">Journalistiek en Artistiek journalistiek houden beeld, tekst en blokken. Artistiek is de gedichtenpagina.</p>
-      {data.wat.map((page, index) => {
-        const poems = page.layout === "poems"
-        return (
+      <p className="mt-2 text-sm text-muted">Journalistiek, Artistiek en Artistiek journalistiek. De gedichten zelf staan op de pagina Gedichten.</p>
+      {data.wat.map((page, index) => (
         <div key={page.slug} className="mt-8 rounded-card border border-line bg-card p-4">
           <h2 className="font-display text-xl font-extrabold">{page.title}</h2>
           <Field label="Naam in het menu" value={page.title} onChange={(value) => patch(data, save, index, { title: value })} />
-          {poems ? (
-            <>
-              <Field label="Paginatitel" value={page.poemPageTitle || "Gedichten"} onChange={(value) => patch(data, save, index, { poemPageTitle: value })} />
-              <Area label="Korte tekst naast de foto" value={page.lead} onChange={(value) => patch(data, save, index, { lead: value })} />
-              <Area label="Extra tekst, optioneel" value={page.body} onChange={(value) => patch(data, save, index, { body: value })} />
-              <Field label="Foto-URL" value={page.mediaUrl} onChange={(value) => patch(data, save, index, { mediaUrl: value, mediaType: "image" })} />
-              <DropImage label="Upload foto" onFile={(url) => patch(data, save, index, { mediaUrl: url, mediaType: "image" })} />
-              <p className="mt-6 text-sm text-muted">Gedichten. Elke regel op een nieuwe regel. Ze draaien in de carrousel.</p>
-              {(page.poems ?? []).map((poem, poemIndex) => (
-                <div key={poem.id} className="mt-4 rounded-xl border border-line bg-paper p-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-bold">{poem.title || `Gedicht ${poemIndex + 1}`}</p>
-                    <button
-                      type="button"
-                      className="text-sm font-semibold text-accent"
-                      onClick={() => patch(data, save, index, { poems: (page.poems ?? []).filter((item) => item.id !== poem.id) })}
-                    >
-                      Verwijder
-                    </button>
-                  </div>
-                  <Field
-                    label="Titel"
-                    value={poem.title}
-                    onChange={(value) => {
-                      const next = (page.poems ?? []).map((item) => (item.id === poem.id ? { ...item, title: value } : item))
-                      patch(data, save, index, { poems: next })
-                    }}
-                  />
-                  <Area
-                    label="Tekst"
-                    value={poem.body}
-                    onChange={(value) => {
-                      const next = (page.poems ?? []).map((item) => (item.id === poem.id ? { ...item, body: value } : item))
-                      patch(data, save, index, { poems: next })
-                    }}
-                  />
-                </div>
-              ))}
-              <button
-                type="button"
-                className="mt-4 inline-flex min-h-11 items-center rounded-full border border-line px-4 text-sm font-semibold"
-                onClick={() => {
-                  const item: PoemItem = { id: newId(), title: "Nieuw gedicht", body: "" }
-                  patch(data, save, index, { poems: [...(page.poems ?? []), item] })
-                }}
-              >
-                Gedicht toevoegen
-              </button>
-            </>
-          ) : (
-            <>
           <Area label="Korte tekst rechts" value={page.lead} onChange={(value) => patch(data, save, index, { lead: value })} />
           <Area label="Tekst" value={page.body} onChange={(value) => patch(data, save, index, { body: value })} />
           <MediaFields
@@ -663,11 +610,59 @@ function WatForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =>
           >
             Blok toevoegen
           </button>
-            </>
-          )}
+          {page.slug === "artistiek" ? (
+            <div className="mt-8 border-t border-line pt-6">
+              <h3 className="font-display text-lg font-extrabold">Pagina Gedichten</h3>
+              <p className="mt-1 text-sm text-muted">Dit staat op /gedichten, niet op de Wat-pagina.</p>
+              <Field label="Paginatitel" value={page.poemPageTitle || "Gedichten"} onChange={(value) => patch(data, save, index, { poemPageTitle: value })} />
+              <Area label="Korte tekst naast de foto" value={page.poemLead || ""} onChange={(value) => patch(data, save, index, { poemLead: value })} />
+              <Field label="Foto-URL" value={page.poemPhoto || ""} onChange={(value) => patch(data, save, index, { poemPhoto: value })} />
+              <DropImage label="Upload foto" onFile={(url) => patch(data, save, index, { poemPhoto: url })} />
+              <p className="mt-6 text-sm text-muted">Gedichten. Elke regel op een nieuwe regel.</p>
+              {(page.poems ?? []).map((poem) => (
+                <div key={poem.id} className="mt-4 rounded-xl border border-line bg-paper p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-bold">{poem.title || "Gedicht"}</p>
+                    <button
+                      type="button"
+                      className="text-sm font-semibold text-accent"
+                      onClick={() => patch(data, save, index, { poems: (page.poems ?? []).filter((item) => item.id !== poem.id) })}
+                    >
+                      Verwijder
+                    </button>
+                  </div>
+                  <Field
+                    label="Titel"
+                    value={poem.title}
+                    onChange={(value) => {
+                      const next = (page.poems ?? []).map((item) => (item.id === poem.id ? { ...item, title: value } : item))
+                      patch(data, save, index, { poems: next })
+                    }}
+                  />
+                  <Area
+                    label="Tekst"
+                    value={poem.body}
+                    onChange={(value) => {
+                      const next = (page.poems ?? []).map((item) => (item.id === poem.id ? { ...item, body: value } : item))
+                      patch(data, save, index, { poems: next })
+                    }}
+                  />
+                </div>
+              ))}
+              <button
+                type="button"
+                className="mt-4 inline-flex min-h-11 items-center rounded-full border border-line px-4 text-sm font-semibold"
+                onClick={() => {
+                  const item: PoemItem = { id: newId(), title: "Nieuw gedicht", body: "" }
+                  patch(data, save, index, { poems: [...(page.poems ?? []), item] })
+                }}
+              >
+                Gedicht toevoegen
+              </button>
+            </div>
+          ) : null}
         </div>
-        )
-      })}
+      ))}
     </section>
   )
 }

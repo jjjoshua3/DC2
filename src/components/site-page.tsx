@@ -466,7 +466,9 @@ export function SitePage() {
           <div className="text-sm text-muted">
             <p>© De Connectors · Celebrating People</p>
             <p className="mt-1">
-              Ontworpen door Joshua. Beveiligingslek melden? Dat kan via:{" "}
+              <a className="underline decoration-line underline-offset-2 hover:text-ink" href="https://jjjoshua3.netlify.app/" target="_blank" rel="noreferrer">
+                Ontworpen door Joshua
+              </a>. Beveiligingslek melden? Dat kan via:{" "}
               <a className="underline decoration-line underline-offset-2 hover:text-ink" href="mailto:aa0271n8@gmail.com">
                 aa0271n8@gmail.com
               </a>

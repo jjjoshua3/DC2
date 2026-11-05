@@ -27,7 +27,7 @@ function placeholderPoems(poems: { body?: string }[] | undefined) {
 
 function placeholderLead(lead: string | undefined) {
   if (!lead) return true
-  return lead.startsWith("Drie gedichten. De rest") || lead.startsWith("Vorm, podium")
+  return lead.startsWith("Drie gedichten")
 }
 
 export function normalizeSite(value: SiteData): SiteData {
@@ -73,10 +73,16 @@ export function normalizeSite(value: SiteData): SiteData {
           cards: Array.isArray(found.cards) && found.cards.length ? found.cards : page.cards,
           poems: placeholderPoems(found.poems) ? page.poems : found.poems,
           poemPageTitle: found.poemPageTitle || page.poemPageTitle,
+          poemLead: found.poemLead || (placeholderLead(found.lead) ? found.lead : page.poemLead),
+          poemPhoto: found.poemPhoto || (placeholderLead(found.lead) ? found.mediaUrl : page.poemPhoto),
           lead: placeholderLead(found.lead) ? page.lead : found.lead,
+          body: placeholderLead(found.lead) && !found.body ? page.body : found.body,
+          mediaUrl: placeholderLead(found.lead) ? page.mediaUrl : found.mediaUrl,
+          exampleUrl: found.exampleUrl || page.exampleUrl,
+          offerText: found.offerText || page.offerText,
         }
     if (merged.slug === "artistiek") {
-      return { ...merged, layout: "poems" as const, poemPageTitle: merged.poemPageTitle || "Gedichten" }
+      return { ...merged, layout: "default" as const, poemPageTitle: merged.poemPageTitle || "Gedichten" }
     }
     return merged
   })

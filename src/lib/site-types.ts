@@ -42,6 +42,8 @@ export type WatPage = {
   cards: OfferCard[]
   layout?: "default" | "poems"
   poemPageTitle?: string
+  poemLead?: string
+  poemPhoto?: string
   poems?: PoemItem[]
 }
 

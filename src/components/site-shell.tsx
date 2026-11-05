@@ -117,6 +117,12 @@ export function SiteShell({ children }: { children: ReactNode }) {
               Over mij
             </Link>
             <WatMenu path={path} />
+            <Link
+              to="/gedichten"
+              className={`rounded-full px-2.5 py-2 text-sm font-semibold ${active(path, "/gedichten") ? "text-accent" : "text-ink-soft hover:text-ink"}`}
+            >
+              Gedichten
+            </Link>
             {LINKS.slice(1).map((item) => (
               <Link
                 key={item.to}
@@ -154,6 +160,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
                 {page.title}
               </Link>
             ))}
+            <Link to="/gedichten" onClick={() => setOpen(false)} className="flex min-h-11 items-center text-base font-semibold">
+              Gedichten
+            </Link>
             {LINKS.slice(1).map((item) => (
               <Link key={item.to} to={item.to} onClick={() => setOpen(false)} className="flex min-h-11 items-center text-base font-semibold">
                 {item.label}
@@ -171,7 +180,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
           <div className="text-sm text-muted">
             <p>© De Connectors · Celebrating People</p>
             <p className="mt-1">
-              Ontworpen door Joshua. Beveiligingslek melden? Dat kan via:{" "}
+              <a className="underline decoration-line underline-offset-2 hover:text-ink" href="https://jjjoshua3.netlify.app/" target="_blank" rel="noreferrer">
+                Ontworpen door Joshua
+              </a>. Beveiligingslek melden? Dat kan via:{" "}
               <a className="underline decoration-line underline-offset-2 hover:text-ink" href="mailto:aa0271n8@gmail.com">
                 aa0271n8@gmail.com
               </a>
