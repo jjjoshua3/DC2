@@ -98,11 +98,9 @@ export function HomePage() {
           <h1 className="mt-3 font-display text-5xl font-extrabold tracking-tight sm:text-6xl">
             <EditableText value={copy.heroTitle} onSave={(heroTitle) => setCopy({ heroTitle }, "Hoofdtitel aangepast")} />
           </h1>
-          {(copy.heroSubtitle.trim() || editing) ? (
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
-              <EditableText value={copy.heroSubtitle} multiline onSave={(heroSubtitle) => setCopy({ heroSubtitle }, "Intro aangepast")} />
-            </p>
-          ) : null}
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
+            <EditableText value={copy.heroSubtitle} multiline onSave={(heroSubtitle) => setCopy({ heroSubtitle }, "Intro aangepast")} />
+          </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/projecten" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink">
               {t("seeProjects")} <ArrowRight className="h-4 w-4" />

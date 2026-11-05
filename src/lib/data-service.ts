@@ -70,12 +70,6 @@ export function normalizeSite(value: SiteData): SiteData {
     next.copy.clientsTitle = "Organisaties waarvoor ik werkte"
   }
   if (next.copy.blogButton === "Naar de blogs") next.copy.blogButton = "Naar mijn blogs"
-  if (next.copy.heroSubtitle.startsWith("Journalistieke en artistieke projecten die mensen verbinden")) {
-    next.copy.heroSubtitle = ""
-  }
-  if (next.copy.aboutLead.startsWith("DE CONNECTORS is het bureau van Stefanie Vermeulen")) {
-    next.copy.aboutLead = ""
-  }
   const savedPeople = Array.isArray(value.copy?.people) ? value.copy.people : []
   if (savedPeople.length === 0) {
     next.copy.people = [
