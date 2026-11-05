@@ -107,7 +107,10 @@ export function AuditPanel() {
                         {passwordLabel(event)}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3 font-mono text-xs">{event.ip || "Onbekend"}</td>
+                    <td className="px-3 py-3 font-mono text-xs">
+                      <span className="block max-w-[16rem] break-all">{event.ip || "Onbekend"}</span>
+                      {event.ip?.includes(":") ? <span className="mt-1 block font-sans text-[11px] text-muted">IPv6-adres</span> : null}
+                    </td>
                     <td className="px-3 py-3">{placeLabel(event)}</td>
                   </tr>
                 )
