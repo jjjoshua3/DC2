@@ -160,6 +160,12 @@ export default async (request) => {
         if (!account) return Response.json({ ok: false, error: "Sessie ongeldig." }, { status: 401 })
         return Response.json({ ok: true, email: account.email, role: account.role })
       }
+      if (action === "logout") {
+        if (typeof body?.token === "string" && body.token) {
+          await pool.query(`delete from site_session where token_hash = $1`, [hashToken(body.token)])
+        }
+        return Response.json({ ok: true })
+      }
       if (action === "totp-setup" || action === "totp-confirm" || action === "totp-verify") {
         const account = await accountFromSession(pool, body?.token)
         if (!account) return Response.json({ error: "Log opnieuw in." }, { status: 401 })

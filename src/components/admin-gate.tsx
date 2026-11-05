@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { CmsPage } from "@/components/cms-page"
-import { clearAdminSession, setAdminSession, adminSession, adminIdleDue, markIdleLogout, markForcedLogout, takeIdleNotice, takeForcedNotice, touchAdminActivity } from "@/lib/admin-session"
+import { clearAdminSession, setAdminSession, adminSession, adminIdleDue, markIdleLogout, markForcedLogout, takeIdleNotice, takeForcedNotice, touchAdminActivity, hardLeave } from "@/lib/admin-session"
 import { logLogout, postAudit } from "@/lib/audit-client"
 import { adminAccount } from "@/lib/admins"
 import { SITE_VERSION } from "@/lib/site-version"
@@ -68,23 +68,17 @@ export function AdminGate() {
     const timer = window.setInterval(() => {
       if (!adminIdleDue()) return
       logLogout()
-      markIdleLogout()
-      setAuthed(false)
-      setIdleNotice(true)
+      hardLeave("idle")
     }, 15000)
     const check = window.setInterval(() => {
       void checkRemoteSession().then((alive) => {
         if (alive) return
-        markForcedLogout()
-        setAuthed(false)
-        setForcedNotice(true)
+        hardLeave("forced")
       })
     }, 30000)
     void checkRemoteSession().then((alive) => {
       if (alive) return
-      markForcedLogout()
-      setAuthed(false)
-      setForcedNotice(true)
+      hardLeave("forced")
     })
     return () => {
       window.clearInterval(timer)

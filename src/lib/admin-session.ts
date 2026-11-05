@@ -70,6 +70,30 @@ export function markForcedLogout() {
   sessionStorage.setItem(FORCED_KEY, "1")
 }
 
+function magicUrl() {
+  const match = window.location.pathname.match(/^(\/hds-[a-z0-9]+-\d+-[a-z0-9]+)(?=\/|$)/i)
+  return `${match?.[1] ?? ""}/api/magic`
+}
+
+export function hardLeave(flag?: "idle" | "forced") {
+  const token = adminSession()?.token || ""
+  if (token) {
+    void fetch(magicUrl(), {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "logout", token }),
+      keepalive: true,
+    }).catch(() => {})
+  }
+  clearAdminSession()
+  if (flag === "idle") sessionStorage.setItem(IDLE_KEY, "1")
+  if (flag === "forced") sessionStorage.setItem(FORCED_KEY, "1")
+  const match = window.location.pathname.match(/^(\/hds-[a-z0-9]+-\d+-[a-z0-9]+)(?=\/|$)/i)
+  const admin = `${match?.[1] ?? ""}/admin`
+  if (window.location.pathname.replace(/\/$/, "").endsWith("/admin")) window.location.reload()
+  else window.location.assign(admin)
+}
+
 export function takeForcedNotice() {
   const on = sessionStorage.getItem(FORCED_KEY) === "1"
   if (on) sessionStorage.removeItem(FORCED_KEY)

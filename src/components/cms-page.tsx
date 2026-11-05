@@ -16,7 +16,7 @@ import { CATEGORIES, projectCategories, type PageCopy, type PoemItem, type Proje
 import { ArticleBody, ProjectCard } from "@/components/project-views"
 import { DropImage, RichText } from "@/components/editor-fields"
 import { compressImage, newId, toEmbedUrl } from "@/lib/media"
-import { adminSession, clearAdminSession } from "@/lib/admin-session"
+import { adminSession, clearAdminSession, hardLeave } from "@/lib/admin-session"
 import { SITE_VERSION } from "@/lib/site-version"
 import { saveSiteDocument } from "@/lib/site-store"
 import { BlogAdmin } from "@/components/blog-admin"
@@ -174,8 +174,7 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
             className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/20 px-4 text-sm font-semibold"
             onClick={() => {
               logLogout()
-              clearAdminSession()
-              onLogout?.()
+              hardLeave()
             }}
           >
             Uitloggen

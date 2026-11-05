@@ -104,6 +104,11 @@ export async function handleMagicRequest(request: Request): Promise<Response> {
         if (!account) return Response.json({ ok: false, error: "Sessie ongeldig." }, { status: 401 })
         return Response.json({ ok: true, email: account.email, role: account.role })
       }
+      if (action === "logout") {
+        const token = String(body?.token || "")
+        if (token) await pool.query(`delete from site_session where token_hash = $1`, [hashToken(token)])
+        return Response.json({ ok: true })
+      }
       if (action === "totp-setup" || action === "totp-confirm" || action === "totp-verify") {
         const account = await sessionAccount(String(body?.token || ""))
         if (!account) return Response.json({ error: "Log opnieuw in." }, { status: 401 })

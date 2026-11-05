@@ -5,7 +5,7 @@ import { LOCALES, useI18n, useLocaleSite, type Locale } from "@/lib/i18n"
 import type { Socials } from "@/lib/site-types"
 import { toEmbedUrl } from "@/lib/media"
 import { EditBar, EditableText, publishSite, useEditor } from "@/components/live-edit"
-import { adminSession, markForcedLogout } from "@/lib/admin-session"
+import { adminSession, hardLeave } from "@/lib/admin-session"
 import { SITE_VERSION } from "@/lib/site-version"
 
 const LINKS = [
@@ -149,8 +149,7 @@ function SessionGuard() {
           body: JSON.stringify({ action: "session-check", token: session.token }),
         })
         if (stop || response.ok) return
-        markForcedLogout()
-        window.location.href = "/admin"
+        hardLeave("forced")
       } catch {
         // offline: keep the local session
       }
