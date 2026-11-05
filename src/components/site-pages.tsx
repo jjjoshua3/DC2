@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react"
 import { Link } from "@tanstack/react-router"
 import { ArrowRight, BadgeCheck, Heart, Mail, Smile } from "lucide-react"
 import { useSiteData } from "@/lib/data-service"
-import type { Project, WatPage } from "@/lib/site-types"
+import type { PoemItem, Project, WatPage } from "@/lib/site-types"
 import { CATEGORIES, projectCategories } from "@/lib/site-types"
 import { ProjectCard, ProjectDialog } from "@/components/project-views"
 import { ClientLogos, MediaPane, Poem, SiteShell, SocialsRow } from "@/components/site-shell"
@@ -45,6 +45,7 @@ function PhotoShow({ photos, alt }: { photos: string[]; alt: string }) {
 export function HomePage() {
   const { data } = useSiteData()
   const { copy } = data
+  const aboutText = [copy.aboutLead, copy.aboutLeft, copy.aboutRight].filter(Boolean)
   return (
     <SiteShell>
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 sm:py-24 lg:grid-cols-12">
@@ -77,6 +78,67 @@ export function HomePage() {
           </p>
         </div>
       </section>
+
+      <section className="bg-card">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-2">
+          <div className="relative">
+            <div className="absolute -bottom-3 -left-3 h-full w-full rounded-card bg-accent" />
+            <div className="relative">
+              {copy.aboutPhoto ? (
+                <img src={copy.aboutPhoto} alt={copy.whoName} className="aspect-[4/5] w-full rounded-card object-cover object-top" />
+              ) : (
+                <div className="grid aspect-[4/5] place-items-center rounded-card bg-ink px-6 text-center font-display text-lg font-bold text-paper">Foto volgt</div>
+              )}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Over mij</p>
+            <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight">{copy.aboutTitle}</h2>
+            <div className="mt-6 space-y-4">
+              {aboutText.map((paragraph) => (
+                <p key={paragraph.slice(0, 24)} className="leading-relaxed text-ink-soft">{paragraph}</p>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 py-16">
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wat ik doe</p>
+        <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight">Drie lijnen</h2>
+        <div className="mt-8 grid gap-5 md:grid-cols-3">
+          {data.wat.map((page) => (
+            <Link key={page.slug} to="/wat/$slug" params={{ slug: page.slug }} className="group flex h-full flex-col rounded-card border border-line bg-card p-6 transition hover:-translate-y-0.5 hover:border-accent">
+              <span className="font-display text-2xl font-extrabold">{page.title}</span>
+              <span className="mt-3 flex-1 text-sm leading-relaxed text-ink-soft">{page.slug === "artistiek" ? "Gedichten" : page.lead}</span>
+              <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-accent">
+                Lees meer <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {copy.bannerText ? (
+        <section className="bg-ink text-paper">
+          <p className="mx-auto max-w-4xl px-4 py-16 text-center font-story text-3xl italic sm:text-5xl">{copy.bannerText}</p>
+        </section>
+      ) : null}
+
+      <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-2">
+        <Poem bare />
+        <div className="relative">
+          <div className="absolute -bottom-3 -right-3 h-full w-full rounded-card bg-accent" />
+          <div className="relative">
+            {copy.poemPhoto ? (
+              <img src={copy.poemPhoto} alt="" className="aspect-[4/5] w-full rounded-card object-cover object-top" />
+            ) : (
+              <div className="grid aspect-[4/5] place-items-center rounded-card bg-ink px-6 text-center font-display text-lg font-bold text-paper">Foto volgt</div>
+            )}
+          </div>
+        </div>
+      </section>
+
       <ClientLogos />
     </SiteShell>
   )
@@ -195,7 +257,7 @@ export function WatDetailPage({ slug }: { slug: string }) {
     <SiteShell>
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
         <WatTabs current={slug} />
-        {page ? <WatBody page={page} /> : <p className="mt-10 text-ink-soft">Deze pagina bestaat niet.</p>}
+        {page ? page.layout === "poems" ? <PoemsPage page={page} /> : <WatBody page={page} /> : <p className="mt-10 text-ink-soft">Deze pagina bestaat niet.</p>}
       </section>
     </SiteShell>
   )
@@ -218,6 +280,80 @@ function WatTabs({ current }: { current: string }) {
           {page.title}
         </Link>
       ))}
+    </div>
+  )
+}
+
+function PoemsPage({ page }: { page: WatPage }) {
+  return (
+    <div className="mt-10">
+      <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-6xl">{page.poemPageTitle || "Gedichten"}</h1>
+      <div className="mt-10 grid items-center gap-10 lg:grid-cols-2">
+        <div className="relative max-w-md">
+          <div className="absolute -bottom-3 -left-3 h-full w-full rounded-card bg-accent" />
+          <div className="relative">
+            {page.mediaUrl ? (
+              <img src={page.mediaUrl} alt="" className="aspect-[4/5] w-full rounded-card object-cover object-top" />
+            ) : (
+              <div className="grid aspect-[4/5] place-items-center rounded-card bg-ink px-6 text-center font-display text-lg font-bold text-paper">Foto volgt</div>
+            )}
+          </div>
+        </div>
+        <div>
+          {page.lead ? <p className="text-xl font-semibold leading-relaxed">{page.lead}</p> : null}
+          {page.body ? <p className="mt-4 leading-relaxed text-ink-soft">{page.body}</p> : null}
+        </div>
+      </div>
+      {page.poems?.length ? <PoemCarousel poems={page.poems} /> : null}
+    </div>
+  )
+}
+
+function PoemCarousel({ poems }: { poems: PoemItem[] }) {
+  const [index, setIndex] = useState(0)
+  const count = poems.length
+  useEffect(() => {
+    if (count < 2) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    const timer = window.setInterval(() => setIndex((current) => (current + 1) % count), 8000)
+    return () => window.clearInterval(timer)
+  }, [count])
+  const poem = poems[index % count]
+  const lines = poem.body.split("\n").map((line) => line.trim()).filter(Boolean)
+  function step(delta: number) {
+    setIndex((current) => (current + delta + count) % count)
+  }
+  return (
+    <div className="mt-16">
+      <article className="rounded-card border border-line bg-card px-6 py-10 sm:px-12">
+        {poem.title ? <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{poem.title}</p> : null}
+        <div className="mt-6 flex flex-col gap-3">
+          {lines.map((line) => (
+            <p key={line} className="font-story text-2xl italic leading-snug sm:text-3xl">{line}</p>
+          ))}
+        </div>
+      </article>
+      {count > 1 ? (
+        <div className="mt-6 flex items-center justify-between gap-4">
+          <button type="button" onClick={() => step(-1)} className="min-h-11 rounded-full border border-line px-4 text-sm font-semibold">
+            Vorige
+          </button>
+          <div className="flex gap-2">
+            {poems.map((item, dot) => (
+              <button
+                key={item.id}
+                type="button"
+                aria-label={item.title || `Gedicht ${dot + 1}`}
+                onClick={() => setIndex(dot)}
+                className={`h-2.5 w-2.5 rounded-full ${dot === index % count ? "bg-accent" : "bg-line"}`}
+              />
+            ))}
+          </div>
+          <button type="button" onClick={() => step(1)} className="min-h-11 rounded-full border border-line px-4 text-sm font-semibold">
+            Volgende
+          </button>
+        </div>
+      ) : null}
     </div>
   )
 }

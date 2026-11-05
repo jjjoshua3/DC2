@@ -1,14 +1,12 @@
 import { useState, type ReactNode } from "react"
 import { Link, useRouterState } from "@tanstack/react-router"
-import { Linkedin, Menu, Twitter, X, Youtube } from "lucide-react"
+import { ChevronDown, Linkedin, Menu, Twitter, X, Youtube } from "lucide-react"
 import { useSiteData } from "@/lib/data-service"
 import type { Socials } from "@/lib/site-types"
 import { toEmbedUrl } from "@/lib/media"
 
 const LINKS = [
-  { to: "/", label: "Home" },
-  { to: "/over", label: "Over mij" },
-  { to: "/wat", label: "Wat" },
+  { to: "/", label: "Over mij" },
   { to: "/projecten", label: "Projecten" },
   { to: "/blog", label: "Blog" },
   { to: "/contact", label: "Contact" },
@@ -57,8 +55,40 @@ export function SocialsRow({ socials, tone = "ink" }: { socials: Socials; tone?:
 }
 
 function active(path: string, to: string) {
-  if (to === "/") return path === "/"
+  if (to === "/") return path === "/" || path === "/over"
   return path === to || path.startsWith(`${to}/`)
+}
+
+function WatMenu({ path }: { path: string }) {
+  const { data } = useSiteData()
+  const open = path.startsWith("/wat")
+  return (
+    <div className="group relative">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        className={`inline-flex min-h-11 items-center gap-1 rounded-full px-2.5 text-sm font-semibold ${open ? "text-accent" : "text-ink-soft hover:text-ink"}`}
+      >
+        Wat
+        <ChevronDown className="h-4 w-4" />
+      </button>
+      <div className="invisible absolute left-0 top-full z-50 min-w-56 pt-2 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+        <div className="rounded-card border border-line bg-card p-2 shadow-lg" role="menu">
+          {data.wat.map((page) => (
+            <Link
+              key={page.slug}
+              to="/wat/$slug"
+              params={{ slug: page.slug }}
+              role="menuitem"
+              className={`block rounded-xl px-3 py-2 text-sm font-semibold ${path.endsWith(page.slug) ? "text-accent" : "text-ink hover:bg-paper"}`}
+            >
+              {page.title}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export function SiteShell({ children }: { children: ReactNode }) {
@@ -80,7 +110,14 @@ export function SiteShell({ children }: { children: ReactNode }) {
             </span>
           </Link>
           <nav className="ml-auto hidden items-center lg:flex">
-            {LINKS.map((item) => (
+            <Link
+              to="/"
+              className={`rounded-full px-2.5 py-2 text-sm font-semibold ${active(path, "/") ? "text-accent" : "text-ink-soft hover:text-ink"}`}
+            >
+              Over mij
+            </Link>
+            <WatMenu path={path} />
+            {LINKS.slice(1).map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
@@ -102,7 +139,22 @@ export function SiteShell({ children }: { children: ReactNode }) {
         </div>
         {open ? (
           <nav className="border-t border-line px-4 py-3 lg:hidden">
-            {LINKS.map((item) => (
+            <Link to="/" onClick={() => setOpen(false)} className="flex min-h-11 items-center text-base font-semibold">
+              Over mij
+            </Link>
+            <p className="mt-2 text-xs font-bold uppercase tracking-widest text-muted">Wat</p>
+            {data.wat.map((page) => (
+              <Link
+                key={page.slug}
+                to="/wat/$slug"
+                params={{ slug: page.slug }}
+                onClick={() => setOpen(false)}
+                className="flex min-h-11 items-center pl-3 text-base font-semibold"
+              >
+                {page.title}
+              </Link>
+            ))}
+            {LINKS.slice(1).map((item) => (
               <Link key={item.to} to={item.to} onClick={() => setOpen(false)} className="flex min-h-11 items-center text-base font-semibold">
                 {item.label}
               </Link>
@@ -170,21 +222,21 @@ export function MediaPane({ type, url, label }: { type: "image" | "video"; url: 
   return <div className="grid aspect-[4/3] place-items-center rounded-card bg-ink px-6 text-center font-display text-lg font-bold text-paper">Beeld volgt</div>
 }
 
-export function Poem() {
+export function Poem({ bare = false }: { bare?: boolean }) {
   const { data } = useSiteData()
   const lines = data.copy.poem.split("\n").map((line) => line.trim()).filter(Boolean)
   if (!lines.length) return null
+  const body = lines.map((line) =>
+    /geschreven door/i.test(line) ? (
+      <p key={line} className="mt-4 text-sm text-muted">{line}</p>
+    ) : (
+      <p key={line} className={`font-story italic leading-snug text-ink ${bare ? "text-xl sm:text-2xl" : "text-2xl sm:text-4xl"}`}>{line}</p>
+    ),
+  )
+  if (bare) return <div className="flex flex-col gap-3">{body}</div>
   return (
     <div className="border-y border-line bg-paper">
-      <div className="mx-auto flex max-w-3xl flex-col gap-3 px-4 py-14">
-        {lines.map((line) =>
-          /geschreven door/i.test(line) ? (
-            <p key={line} className="mt-4 text-sm text-muted">{line}</p>
-          ) : (
-            <p key={line} className="font-story text-2xl italic leading-snug text-ink sm:text-4xl">{line}</p>
-          ),
-        )}
-      </div>
+      <div className="mx-auto flex max-w-3xl flex-col gap-3 px-4 py-14">{body}</div>
     </div>
   )
 }

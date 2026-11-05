@@ -26,6 +26,8 @@ export type WhoPerson = {
 
 export type OfferCard = { title: string; text: string; image: string }
 
+export type PoemItem = { id: string; title: string; body: string }
+
 export type WatPage = {
   slug: "journalistiek" | "artistiek" | "artistiek-journalistiek"
   title: string
@@ -38,6 +40,9 @@ export type WatPage = {
   offerTitle: string
   offerText: string
   cards: OfferCard[]
+  layout?: "default" | "poems"
+  poemPageTitle?: string
+  poems?: PoemItem[]
 }
 
 export type PageCopy = {
@@ -48,6 +53,7 @@ export type PageCopy = {
   aboutLead: string
   aboutLeft: string
   aboutRight: string
+  aboutPhoto: string
   stylesTitle: string
   styles: StyleCard[]
   servicesTitle: string
@@ -61,6 +67,7 @@ export type PageCopy = {
   people: WhoPerson[]
   quote: string
   poem: string
+  poemPhoto: string
   clientsTitle: string
   contactTitle: string
   contactLead: string

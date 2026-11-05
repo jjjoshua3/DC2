@@ -1,4 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router"
-import { OverPage } from "@/components/site-pages"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 
-export const Route = createFileRoute("/over")({ component: OverPage })
+export const Route = createFileRoute("/over")({
+  beforeLoad: () => {
+    throw redirect({ to: "/" })
+  },
+  component: () => null,
+})

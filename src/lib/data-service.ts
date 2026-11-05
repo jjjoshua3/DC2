@@ -55,12 +55,19 @@ export function normalizeSite(value: SiteData): SiteData {
   const saved = Array.isArray(next.wat) ? next.wat : []
   next.wat = watBase.map((page) => {
     const found = saved.find((item) => item.slug === page.slug)
-    if (!found) return page
-    return {
-      ...page,
-      ...found,
-      cards: Array.isArray(found.cards) && found.cards.length ? found.cards : page.cards,
+    const merged = !found
+      ? page
+      : {
+          ...page,
+          ...found,
+          cards: Array.isArray(found.cards) && found.cards.length ? found.cards : page.cards,
+          poems: Array.isArray(found.poems) && found.poems.length ? found.poems : page.poems,
+          poemPageTitle: found.poemPageTitle || page.poemPageTitle,
+        }
+    if (merged.slug === "artistiek") {
+      return { ...merged, layout: "poems" as const, poemPageTitle: merged.poemPageTitle || "Gedichten" }
     }
+    return merged
   })
   next.projects = next.projects.map((project) => {
     const categories = projectCategories(project)

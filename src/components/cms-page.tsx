@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 import { DataService, useSiteData } from "@/lib/data-service"
 import { defaultSite } from "@/lib/site-defaults"
-import { CATEGORIES, projectCategories, type PageCopy, type Project, type SiteData, type WatPage, type WhoPerson } from "@/lib/site-types"
+import { CATEGORIES, projectCategories, type PageCopy, type PoemItem, type Project, type SiteData, type WatPage, type WhoPerson } from "@/lib/site-types"
 import { ArticleBody, ProjectCard } from "@/components/project-views"
 import { DropImage, RichText } from "@/components/editor-fields"
 import { compressImage, newId, toEmbedUrl } from "@/lib/media"
@@ -535,11 +535,64 @@ function WatForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =>
   return (
     <section className="max-w-3xl">
       <h1 className="font-display text-2xl font-extrabold">Wat-pagina’s</h1>
-      <p className="mt-2 text-sm text-muted">Journalistiek, Artistiek en Artistiek journalistiek. Beeld links, tekst rechts, daaronder een voorbeeld en de blokken.</p>
-      {data.wat.map((page, index) => (
+      <p className="mt-2 text-sm text-muted">Journalistiek en Artistiek journalistiek houden beeld, tekst en blokken. Artistiek is de gedichtenpagina.</p>
+      {data.wat.map((page, index) => {
+        const poems = page.layout === "poems"
+        return (
         <div key={page.slug} className="mt-8 rounded-card border border-line bg-card p-4">
           <h2 className="font-display text-xl font-extrabold">{page.title}</h2>
-          <Field label="Titel" value={page.title} onChange={(value) => patch(data, save, index, { title: value })} />
+          <Field label="Naam in het menu" value={page.title} onChange={(value) => patch(data, save, index, { title: value })} />
+          {poems ? (
+            <>
+              <Field label="Paginatitel" value={page.poemPageTitle || "Gedichten"} onChange={(value) => patch(data, save, index, { poemPageTitle: value })} />
+              <Area label="Korte tekst naast de foto" value={page.lead} onChange={(value) => patch(data, save, index, { lead: value })} />
+              <Area label="Extra tekst, optioneel" value={page.body} onChange={(value) => patch(data, save, index, { body: value })} />
+              <Field label="Foto-URL" value={page.mediaUrl} onChange={(value) => patch(data, save, index, { mediaUrl: value, mediaType: "image" })} />
+              <DropImage label="Upload foto" onFile={(url) => patch(data, save, index, { mediaUrl: url, mediaType: "image" })} />
+              <p className="mt-6 text-sm text-muted">Gedichten. Elke regel op een nieuwe regel. Ze draaien in de carrousel.</p>
+              {(page.poems ?? []).map((poem, poemIndex) => (
+                <div key={poem.id} className="mt-4 rounded-xl border border-line bg-paper p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-bold">{poem.title || `Gedicht ${poemIndex + 1}`}</p>
+                    <button
+                      type="button"
+                      className="text-sm font-semibold text-accent"
+                      onClick={() => patch(data, save, index, { poems: (page.poems ?? []).filter((item) => item.id !== poem.id) })}
+                    >
+                      Verwijder
+                    </button>
+                  </div>
+                  <Field
+                    label="Titel"
+                    value={poem.title}
+                    onChange={(value) => {
+                      const next = (page.poems ?? []).map((item) => (item.id === poem.id ? { ...item, title: value } : item))
+                      patch(data, save, index, { poems: next })
+                    }}
+                  />
+                  <Area
+                    label="Tekst"
+                    value={poem.body}
+                    onChange={(value) => {
+                      const next = (page.poems ?? []).map((item) => (item.id === poem.id ? { ...item, body: value } : item))
+                      patch(data, save, index, { poems: next })
+                    }}
+                  />
+                </div>
+              ))}
+              <button
+                type="button"
+                className="mt-4 inline-flex min-h-11 items-center rounded-full border border-line px-4 text-sm font-semibold"
+                onClick={() => {
+                  const item: PoemItem = { id: newId(), title: "Nieuw gedicht", body: "" }
+                  patch(data, save, index, { poems: [...(page.poems ?? []), item] })
+                }}
+              >
+                Gedicht toevoegen
+              </button>
+            </>
+          ) : (
+            <>
           <Area label="Korte tekst rechts" value={page.lead} onChange={(value) => patch(data, save, index, { lead: value })} />
           <Area label="Tekst" value={page.body} onChange={(value) => patch(data, save, index, { body: value })} />
           <MediaFields
@@ -610,8 +663,11 @@ function WatForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =>
           >
             Blok toevoegen
           </button>
+            </>
+          )}
         </div>
-      ))}
+        )
+      })}
     </section>
   )
 }
@@ -683,6 +739,8 @@ function CopyForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =
       <Area label="Over-intro" value={copy.aboutLead} onChange={(value) => set("aboutLead", value)} />
       <Area label="Over, linker kolom" value={copy.aboutLeft} onChange={(value) => set("aboutLeft", value)} />
       <Area label="Over, rechter kolom" value={copy.aboutRight} onChange={(value) => set("aboutRight", value)} />
+      <Field label="Over-foto URL" value={copy.aboutPhoto} onChange={(value) => set("aboutPhoto", value)} />
+      <DropImage label="Upload foto bij Over mij" onFile={(url) => set("aboutPhoto", url)} />
       <Field label="Stijl-titel" value={copy.stylesTitle} onChange={(value) => set("stylesTitle", value)} />
       {copy.styles.map((card, index) => (
         <div key={index} className="mt-4 rounded-xl border border-line bg-card p-4">
@@ -767,6 +825,8 @@ function CopyForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =
       </button>
       <Field label="Citaat" value={copy.quote} onChange={(value) => set("quote", value)} />
       <Area label="Spoken word" value={copy.poem} onChange={(value) => set("poem", value)} />
+      <Field label="Foto naast spoken word" value={copy.poemPhoto} onChange={(value) => set("poemPhoto", value)} />
+      <DropImage label="Upload foto naast spoken word" onFile={(url) => set("poemPhoto", url)} />
       <Field label="Klanten-titel" value={copy.clientsTitle} onChange={(value) => set("clientsTitle", value)} />
       <Field label="Contacttitel" value={copy.contactTitle} onChange={(value) => set("contactTitle", value)} />
       <Area label="Contacttekst" value={copy.contactLead} onChange={(value) => set("contactLead", value)} />

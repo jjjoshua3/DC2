@@ -383,18 +383,21 @@ const wat: WatPage[] = [
   {
     slug: "artistiek",
     title: "Artistiek",
-    lead: "Vorm, podium en een publiek dat meedoet.",
-    body: "Artistiek werk gaat bij mij over samen maken. Live, op beeld of in een ruimte waar mensen elkaar tegenkomen en iets achterlaten.",
+    lead: "Drie gedichten. De rest van deze pagina volgt later.",
+    body: "",
     mediaType: "image",
-    mediaUrl: "/media/projects/festival.jpg",
+    mediaUrl: "",
     exampleType: "image",
-    exampleUrl: "/media/projects/tedx.jpg",
+    exampleUrl: "",
     offerTitle: "Wat ik voor je kan doen",
-    offerText: "Een avond, een beeldreeks of een vorm die het verhaal draagt. Ik stem het aantal en de vorm af op wat jij nodig hebt.",
-    cards: [
-      { title: "Live", text: "Een event dat open is, en waarbij het publiek niet alleen toekijkt.", image: "/media/projects/festival.jpg" },
-      { title: "Beeld", text: "Fotografie en film die de sfeer vasthouden.", image: "/media/projects/tedx.jpg" },
-      { title: "Podium", text: "Spoken word, debat of een vorm die de avond sluit.", image: "/media/projects/spotprent.jpg" },
+    offerText: "",
+    cards: [],
+    layout: "poems",
+    poemPageTitle: "Gedichten",
+    poems: [
+      { id: "gedicht-1", title: "Gedicht 1", body: "Plak hier het eerste gedicht.\nElke regel op een nieuwe regel." },
+      { id: "gedicht-2", title: "Gedicht 2", body: "Plak hier het tweede gedicht.\nElke regel op een nieuwe regel." },
+      { id: "gedicht-3", title: "Gedicht 3", body: "Plak hier het derde gedicht.\nElke regel op een nieuwe regel." },
     ],
   },
   {
@@ -432,6 +435,7 @@ export const defaultSite: SiteData = {
       "DE CONNECTORS snapt hoe je vertrouwen opbouwt bij mensen en ze verbindt en betrekt bij het geheel. In onze projecten zijn het de mensen die het voor het zeggen krijgen. We geven ze een stem, een podium en teugels en plaatsen ze midden in jouw project of organisatie.",
     aboutRight:
       "We noemen het Celebrating People. Onze interesse en nieuwsgierigheid zijn oprecht. We luisteren naar wat mensen werkelijk te zeggen hebben en checken of we ze goed hebben gehoord. We gebruiken allerlei vormen van interactieve media om hun waardevolle boodschap aan jouw organisatie en de community over te brengen.",
+    aboutPhoto: "",
     stylesTitle: "Onze stijl",
     styles: [
       {
@@ -500,6 +504,7 @@ Worden deuren ingetrapt
 Om af te dwingen samen te werken
 Aan een vernieuwende toekomst vol moderne idealen
 geschreven door Jimmy Rockx`,
+    poemPhoto: "",
     clientsTitle: "Organisaties waarvoor ik werkte",
     contactTitle: "Get in touch",
     contactLead:
