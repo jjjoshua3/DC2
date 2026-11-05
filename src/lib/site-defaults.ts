@@ -383,7 +383,7 @@ const wat: WatPage[] = [
   {
     slug: "artistiek",
     title: "Artistiek",
-    lead: "Drie gedichten. De rest van deze pagina volgt later.",
+    lead: "Drie gedichten. Over offeren, over de stad, en over wie niet in het vak past.",
     body: "",
     mediaType: "image",
     mediaUrl: "",
@@ -395,9 +395,100 @@ const wat: WatPage[] = [
     layout: "poems",
     poemPageTitle: "Gedichten",
     poems: [
-      { id: "gedicht-1", title: "Gedicht 1", body: "Plak hier het eerste gedicht.\nElke regel op een nieuwe regel." },
-      { id: "gedicht-2", title: "Gedicht 2", body: "Plak hier het tweede gedicht.\nElke regel op een nieuwe regel." },
-      { id: "gedicht-3", title: "Gedicht 3", body: "Plak hier het derde gedicht.\nElke regel op een nieuwe regel." },
+      {
+        id: "offer",
+        title: "Offer",
+        body: `Niet mijn vermogen
+Niet mijn winst
+Niet mijn hypotheek
+Niet mijn villa in het grind
+Niet mijn tweede auto
+Niet mijn screens en hightech
+Niet mijn 130 km per uur
+Niet mijn eigen parkeerplek
+Niet mijn dorp
+Niet mijn uitzicht
+Niet mijn achtertuin
+Niet mijn cameratoezicht
+Niet mijn bonus
+Niet mijn vrije dagen
+Niet mijn kerstpakket
+Niet mijn secundaire arbeidsvoorwaarden
+Niet mijn jaarlijkse sebattical
+Niet mijn retreat in safaritent
+Niet mijn vakantie vanaf Schiphol
+Niet mijn stedentrip in het weekend
+Verder wil ik in de notulen
+Van deze bijeenkomst
+Vastleggen
+En
+Benadrukken
+Dat ik ten alle tijden
+Wil kunnen
+Terugkomen
+Op het offer
+Dat ik zal brengen
+Voor de kansarmen
+Voor de chronisch zieken
+Voor de dak- en thuislozen
+Voor de vreemdeling
+Wie zal het zeggen
+We denken nog na
+Over een geschikte doelgroep
+In een nader te bepalen
+Vervolg op deze bijeenkomst
+Zal ik bovendien uiteenzetten
+Wat de volgende verkennende
+Fase van mogelijke offers
+In de onvoorziene toekomst
+Heeft gebracht
+Ik wens u allen een prettige voortzetting van het jaar
+Vergeet uw spullen niet
+De afgrond is daar`,
+      },
+      {
+        id: "stad-van-ons",
+        title: "Stad van Ons",
+        body: `Je ochtendgloren
+Ganzen scheren langs mijn dak
+Het grind dat knarst onder mijn hak
+Uit de mist duikt een fietser op
+Meisjes kwetteren met hun helmpjes op
+Richting school en werk en sport
+Gaan wij
+Jij en ik
+En
+Jij en jij
+Binnen de noordelijke en zuidelijke rondwegen
+Brengen ons in de haarvaten
+Waar ontmoetingen vanzelf gaan
+Breda, de stad
+Van mij
+En jou
+En jou
+Van ons
+Allemaal`,
+      },
+      {
+        id: "passen-in-het-vak",
+        title: "Passen in het vak",
+        body: `Strakke rechte lijnen
+Scheiden doelen en groepen
+Willen wel ontmoeten
+Doch ingericht om te vermijden
+Recht vooruit te blijven kijken
+In de pas lopen onze voeten
+Door hobbels en kuilen
+Gevuld met regels en
+Formulieren die de chaos gladstrijken
+De gevestigde orde zit strak
+Rommelt en struikelt binnen het vak
+Waar uniformen en netten je vangen
+Bij je lurven pakken
+En de regels nogmaals toefluisteren, zacht
+Harde hand bewaren we voor de vreemdeling
+Die past in geen enkel vak`,
+      },
     ],
   },
   {

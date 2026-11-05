@@ -309,15 +309,17 @@ function PoemsPage({ page }: { page: WatPage }) {
   )
 }
 
+function poemKind(title: string) {
+  const name = title.toLowerCase()
+  if (name.includes("offer")) return "offer"
+  if (name.includes("stad")) return "stad"
+  if (name.includes("passen") || name.includes("vak")) return "vak"
+  return "plain"
+}
+
 function PoemCarousel({ poems }: { poems: PoemItem[] }) {
   const [index, setIndex] = useState(0)
   const count = poems.length
-  useEffect(() => {
-    if (count < 2) return
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
-    const timer = window.setInterval(() => setIndex((current) => (current + 1) % count), 8000)
-    return () => window.clearInterval(timer)
-  }, [count])
   const poem = poems[index % count]
   const lines = poem.body.split("\n").map((line) => line.trim()).filter(Boolean)
   function step(delta: number) {
@@ -325,28 +327,22 @@ function PoemCarousel({ poems }: { poems: PoemItem[] }) {
   }
   return (
     <div className="mt-16">
-      <article className="rounded-card border border-line bg-card px-6 py-10 sm:px-12">
-        {poem.title ? <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{poem.title}</p> : null}
-        <div className="mt-6 flex flex-col gap-3">
-          {lines.map((line) => (
-            <p key={line} className="font-story text-2xl italic leading-snug sm:text-3xl">{line}</p>
-          ))}
-        </div>
-      </article>
+      <PoemPoster title={poem.title} lines={lines} />
       {count > 1 ? (
         <div className="mt-6 flex items-center justify-between gap-4">
           <button type="button" onClick={() => step(-1)} className="min-h-11 rounded-full border border-line px-4 text-sm font-semibold">
             Vorige
           </button>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-2">
             {poems.map((item, dot) => (
               <button
                 key={item.id}
                 type="button"
-                aria-label={item.title || `Gedicht ${dot + 1}`}
                 onClick={() => setIndex(dot)}
-                className={`h-2.5 w-2.5 rounded-full ${dot === index % count ? "bg-accent" : "bg-line"}`}
-              />
+                className={`min-h-11 rounded-full px-3 text-sm font-semibold ${dot === index % count ? "bg-ink text-paper" : "text-ink-soft"}`}
+              >
+                {item.title}
+              </button>
             ))}
           </div>
           <button type="button" onClick={() => step(1)} className="min-h-11 rounded-full border border-line px-4 text-sm font-semibold">
@@ -355,6 +351,92 @@ function PoemCarousel({ poems }: { poems: PoemItem[] }) {
         </div>
       ) : null}
     </div>
+  )
+}
+
+function PoemPoster({ title, lines }: { title: string; lines: string[] }) {
+  const kind = poemKind(title)
+  if (kind === "offer") return <OfferPoster title={title} lines={lines} />
+  if (kind === "stad") return <StadPoster title={title} lines={lines} />
+  if (kind === "vak") return <VakPoster title={title} lines={lines} />
+  return (
+    <article className="rounded-card border border-line bg-card px-6 py-10 sm:px-12">
+      {title ? <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{title}</p> : null}
+      <div className="mt-6 flex flex-col gap-3">
+        {lines.map((line, i) => (
+          <p key={`${i}-${line}`} className="font-story text-2xl italic leading-snug sm:text-3xl">{line}</p>
+        ))}
+      </div>
+    </article>
+  )
+}
+
+function OfferPoster({ title, lines }: { title: string; lines: string[] }) {
+  const cliff = lines[lines.length - 1]
+  const rest = lines.slice(0, -1)
+  const cut = rest.findIndex((line) => !/^niet\b/i.test(line))
+  const refusals = cut === -1 ? rest : rest.slice(0, cut)
+  const minutes = cut === -1 ? [] : rest.slice(cut)
+  return (
+    <article className="overflow-hidden rounded-card bg-ink text-paper">
+      <div className="px-6 py-12 sm:px-14 sm:py-16">
+        <p className="text-xs font-bold uppercase tracking-[0.32em] text-accent">{title}</p>
+        <div className="mt-8 max-w-xl">
+          {refusals.map((line, i) => (
+            <p key={`${i}-${line}`} className="border-b border-white/10 py-2 font-story text-xl leading-snug sm:text-2xl">
+              <span className="text-accent">Niet</span>
+              {line.replace(/^niet/i, "")}
+            </p>
+          ))}
+        </div>
+        {minutes.length ? (
+          <div className="mt-10 max-w-lg border-l border-accent pl-5">
+            {minutes.map((line, i) => (
+              <p key={`${i}-${line}`} className="py-0.5 text-sm uppercase tracking-[0.14em] text-paper/80">{line}</p>
+            ))}
+          </div>
+        ) : null}
+        <p className="mt-14 max-w-3xl font-story text-4xl italic leading-tight sm:text-6xl">{cliff}</p>
+      </div>
+    </article>
+  )
+}
+
+function StadPoster({ title, lines }: { title: string; lines: string[] }) {
+  const close = lines.slice(-2)
+  const open = lines.slice(0, -2)
+  return (
+    <article className="rounded-card border border-line bg-card px-6 py-14 text-center sm:px-16">
+      <p className="text-xs font-bold uppercase tracking-[0.32em] text-accent">{title}</p>
+      <div className="mx-auto mt-10 flex max-w-md flex-col gap-2">
+        {open.map((line, i) => (
+          <p key={`${i}-${line}`} className="font-story text-xl italic leading-snug text-ink-soft sm:text-2xl">{line}</p>
+        ))}
+      </div>
+      <div className="mt-10">
+        {close.map((line, i) => (
+          <p key={`${i}-${line}`} className="font-display text-4xl font-extrabold tracking-tight text-ink sm:text-6xl">{line}</p>
+        ))}
+      </div>
+    </article>
+  )
+}
+
+function VakPoster({ title, lines }: { title: string; lines: string[] }) {
+  const last = lines[lines.length - 1]
+  const boxed = lines.slice(0, -1)
+  return (
+    <article>
+      <div className="rounded-card border border-ink bg-paper px-6 py-10 sm:px-12">
+        <p className="font-display text-xs font-bold uppercase tracking-[0.32em]">{title}</p>
+        <div className="mt-8 max-w-xl">
+          {boxed.map((line, i) => (
+            <p key={`${i}-${line}`} className="border-b border-line py-2.5 font-story text-lg leading-snug sm:text-xl">{line}</p>
+          ))}
+        </div>
+      </div>
+      <p className="mt-6 max-w-3xl font-story text-3xl italic leading-tight text-accent sm:text-5xl">{last}</p>
+    </article>
   )
 }
 

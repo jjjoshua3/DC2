@@ -20,6 +20,16 @@ function isSite(value: unknown): value is SiteData {
   return Array.isArray(v.projects) && !!v.copy && !!v.design && Array.isArray(v.design.clients)
 }
 
+function placeholderPoems(poems: { body?: string }[] | undefined) {
+  if (!Array.isArray(poems) || poems.length === 0) return true
+  return poems.every((poem) => /plak hier/i.test(poem.body || "") || /^gedicht \d/i.test(poem.body || ""))
+}
+
+function placeholderLead(lead: string | undefined) {
+  if (!lead) return true
+  return lead.startsWith("Drie gedichten. De rest") || lead.startsWith("Vorm, podium")
+}
+
 export function normalizeSite(value: SiteData): SiteData {
   const next = clone(value)
   if (!Array.isArray(next.posts)) next.posts = clone(defaultSite.posts)
@@ -61,8 +71,9 @@ export function normalizeSite(value: SiteData): SiteData {
           ...page,
           ...found,
           cards: Array.isArray(found.cards) && found.cards.length ? found.cards : page.cards,
-          poems: Array.isArray(found.poems) && found.poems.length ? found.poems : page.poems,
+          poems: placeholderPoems(found.poems) ? page.poems : found.poems,
           poemPageTitle: found.poemPageTitle || page.poemPageTitle,
+          lead: placeholderLead(found.lead) ? page.lead : found.lead,
         }
     if (merged.slug === "artistiek") {
       return { ...merged, layout: "poems" as const, poemPageTitle: merged.poemPageTitle || "Gedichten" }
