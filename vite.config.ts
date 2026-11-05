@@ -227,27 +227,10 @@ function authPopupPlugin(): Plugin {
   };
 }
 
-function siteVersion() {
-  const sha = (process.env.COMMIT_REF || process.env.GITHUB_SHA || "").slice(0, 7) || "dev"
-  const stamp = new Intl.DateTimeFormat("nl-NL", {
-    timeZone: "Europe/Amsterdam",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).format(new Date())
-  return `${sha} · ${stamp}`
-}
-
 // `0.0.0.0:8080` is the live-preview contract — don't change host/port.
 // The dev server starts once `src/router.tsx` and `src/routes/` exist — see
 // AGENTS.md § "First scaffold".
 export default defineConfig(({ command, isPreview }) => ({
-  define: {
-    __SITE_VERSION__: JSON.stringify(siteVersion()),
-  },
   server: {
     host: "0.0.0.0",
     port: 8080,
