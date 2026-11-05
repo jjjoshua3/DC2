@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { CmsPage } from "@/components/cms-page"
-import { clearAdminSession, setAdminSession, adminSession } from "@/lib/admin-session"
-import { postAudit } from "@/lib/audit-client"
+import { clearAdminSession, setAdminSession, adminSession, adminIdleDue, markIdleLogout, takeIdleNotice, touchAdminActivity } from "@/lib/admin-session"
+import { logLogout, postAudit } from "@/lib/audit-client"
 import { adminAccount } from "@/lib/admins"
 
 type Pending = {
@@ -16,6 +16,7 @@ export function AdminGate() {
   const [authed, setAuthed] = useState(false)
   const [ready, setReady] = useState(false)
   const [pending, setPending] = useState<Pending | null>(null)
+  const [idleNotice, setIdleNotice] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -35,13 +36,43 @@ export function AdminGate() {
         return
       }
       const existing = adminSession()
-      if (existing) setAuthed(true)
+      if (existing) {
+        if (!sessionStorage.getItem("dc.admin.seen")) touchAdminActivity()
+        if (adminIdleDue()) {
+          logLogout()
+          markIdleLogout()
+          setIdleNotice(true)
+        } else {
+          setAuthed(true)
+        }
+      } else if (takeIdleNotice()) {
+        setIdleNotice(true)
+      }
       if (!cancelled) setReady(true)
     })()
     return () => {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    if (!authed) return
+    touchAdminActivity()
+    const mark = () => touchAdminActivity()
+    const events = ["pointerdown", "keydown", "scroll", "touchstart"] as const
+    for (const name of events) window.addEventListener(name, mark, { passive: true })
+    const timer = window.setInterval(() => {
+      if (!adminIdleDue()) return
+      logLogout()
+      markIdleLogout()
+      setAuthed(false)
+      setIdleNotice(true)
+    }, 15000)
+    return () => {
+      window.clearInterval(timer)
+      for (const name of events) window.removeEventListener(name, mark)
+    }
+  }, [authed])
 
   if (!ready) {
     return <div className="grid min-h-screen place-items-center bg-ink text-paper">Admin laden…</div>
@@ -59,7 +90,7 @@ export function AdminGate() {
       />
     )
   }
-  if (!authed) return <AdminLogin />
+  if (!authed) return <AdminLogin idleNotice={idleNotice} onCloseIdle={() => setIdleNotice(false)} />
   return (
     <CmsPage
       onLogout={() => {
@@ -93,7 +124,7 @@ async function sessionFromUrl() {
   return { ...data.account, token: data.token, totp: data.totp || "skip" }
 }
 
-function AdminLogin() {
+function AdminLogin({ idleNotice, onCloseIdle }: { idleNotice: boolean; onCloseIdle: () => void }) {
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
   const [sent, setSent] = useState("")
@@ -135,6 +166,18 @@ function AdminLogin() {
 
   return (
     <div className="grid min-h-screen place-items-center bg-ink px-4 py-10 text-paper">
+      {idleNotice ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-ink/70 px-4" role="dialog" aria-modal="true" aria-labelledby="idle-title">
+          <div className="w-full max-w-md rounded-card bg-card p-8 text-ink shadow-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Beheer</p>
+            <h2 id="idle-title" className="mt-3 font-display text-2xl font-extrabold">Automatisch uitgelogd</h2>
+            <p className="mt-3 text-sm leading-relaxed text-ink-soft">Vanwege veiligheidsredenen bent u automatisch uitgelogd.</p>
+            <button type="button" onClick={onCloseIdle} className="mt-6 inline-flex min-h-11 items-center rounded-full bg-accent px-5 text-sm font-bold text-accent-ink">
+              Opnieuw inloggen
+            </button>
+          </div>
+        </div>
+      ) : null}
       <form onSubmit={submit} className="w-full max-w-md rounded-card bg-card p-8 text-ink">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">DE CONNECTORS</p>
         <h1 className="mt-3 font-display text-3xl font-extrabold">Admin</h1>

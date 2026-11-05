@@ -156,13 +156,33 @@ export function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{t("whatIDo")}</p>
-        <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight">{t("threeLines")}</h2>
+        <h2 className="font-display text-4xl font-extrabold tracking-tight">{t("whatIDo")}</h2>
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {data.wat.map((page) => (
             <Link key={page.slug} to="/wat/$slug" params={{ slug: page.slug }} className="group flex h-full flex-col rounded-card border border-line bg-card p-6 transition hover:-translate-y-0.5 hover:border-accent">
-              <span className="font-display text-2xl font-extrabold">{page.title}</span>
-              <span className="mt-3 flex-1 text-sm leading-relaxed text-ink-soft">{page.lead}</span>
+              <span className="font-display text-2xl font-extrabold">
+                <EditableText
+                  value={page.title}
+                  onSave={(title) =>
+                    publishSite(
+                      { ...data, wat: data.wat.map((item) => (item.slug === page.slug ? { ...item, title } : item)) },
+                      "Titel Wat ik doe aangepast",
+                    )
+                  }
+                />
+              </span>
+              <span className="mt-3 flex-1 text-sm leading-relaxed text-ink-soft">
+                <EditableText
+                  value={page.lead}
+                  multiline
+                  onSave={(lead) =>
+                    publishSite(
+                      { ...data, wat: data.wat.map((item) => (item.slug === page.slug ? { ...item, lead } : item)) },
+                      "Korte tekst Wat ik doe aangepast",
+                    )
+                  }
+                />
+              </span>
               <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-accent">
                 {t("readMore")} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
               </span>
@@ -194,7 +214,42 @@ export function HomePage() {
         ) : null}
       </section>
 
+      {(copy.smaakmaker || editing) ? (
+        <section className="mx-auto max-w-3xl px-4 pb-4">
+          <div className="rounded-card border border-line bg-card px-6 py-5">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent">Smaakmaker</p>
+            <p className="mt-2 leading-relaxed text-ink-soft">
+              <EditableText
+                value={copy.smaakmaker}
+                multiline
+                onSave={(smaakmaker) => setCopy({ smaakmaker }, "Tekst Smaakmaker aangepast")}
+              />
+            </p>
+          </div>
+        </section>
+      ) : null}
+
       <ClientLogos />
+
+      <section className="bg-ink text-paper">
+        <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-16 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-xl">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{t("contact")}</p>
+            <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight">
+              <EditableText value={copy.contactTitle} onSave={(contactTitle) => setCopy({ contactTitle }, "Contacttitel aangepast")} />
+            </h2>
+            <p className="mt-3 leading-relaxed text-paper/80">
+              <EditableText value={copy.contactLead} multiline onSave={(contactLead) => setCopy({ contactLead }, "Contacttekst aangepast")} />
+            </p>
+            <a href={`mailto:${copy.email}`} className="mt-4 inline-flex font-bold underline decoration-accent underline-offset-4">
+              {copy.email}
+            </a>
+          </div>
+          <Link to="/contact" className="inline-flex min-h-11 items-center rounded-full bg-accent px-5 text-sm font-bold text-accent-ink">
+            {t("touch")}
+          </Link>
+        </div>
+      </section>
     </SiteShell>
   )
 }

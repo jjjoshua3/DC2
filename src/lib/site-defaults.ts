@@ -574,6 +574,7 @@ Om af te dwingen samen te werken
 Aan een vernieuwende toekomst vol moderne idealen
 geschreven door Jimmy Rockx`,
     poemPhoto: "",
+    smaakmaker: "",
     clientsTitle: "Organisaties waarvoor ik werkte",
     contactTitle: "Get in touch",
     contactLead:

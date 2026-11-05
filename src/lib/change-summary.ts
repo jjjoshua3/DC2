@@ -24,6 +24,7 @@ const COPY_LABELS: Record<Exclude<keyof PageCopy, "i18n">, string> = {
   quote: "quote",
   poem: "spoken word",
   poemPhoto: "gedicht-foto",
+  smaakmaker: "smaakmaker",
   clientsTitle: "klanten-titel",
   contactTitle: "contact-titel",
   contactLead: "contact-lead",

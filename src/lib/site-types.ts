@@ -76,6 +76,7 @@ export type PageCopy = {
   quote: string
   poem: string
   poemPhoto: string
+  smaakmaker: string
   clientsTitle: string
   contactTitle: string
   contactLead: string

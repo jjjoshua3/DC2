@@ -540,12 +540,12 @@ function WatForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =>
   return (
     <section className="max-w-3xl">
       <h1 className="font-display text-2xl font-extrabold">Wat-pagina’s</h1>
-      <p className="mt-2 text-sm text-muted">Journalistiek, Artistiek en Artistiek journalistiek. De gedichten zelf staan op de pagina Gedichten.</p>
+      <p className="mt-2 text-sm text-muted">Journalistiek, Artistiek en Artistiek journalistiek. De korte tekst hieronder is ook de tekst in het vak op de homepage. Het vak linkt naar deze pagina.</p>
       {data.wat.map((page, index) => (
         <div key={page.slug} className="mt-8 rounded-card border border-line bg-card p-4">
           <h2 className="font-display text-xl font-extrabold">{page.title}</h2>
           <Field label="Naam in het menu" value={page.title} onChange={(value) => patch(data, save, index, { title: value })} />
-          <Area label="Korte tekst rechts" value={page.lead} onChange={(value) => patch(data, save, index, { lead: value })} />
+          <Area label="Korte tekst in het vak op de homepage" value={page.lead} onChange={(value) => patch(data, save, index, { lead: value })} />
           <Area label="Tekst" value={page.body} onChange={(value) => patch(data, save, index, { body: value })} />
           <MediaFields
             label="Hoofdbeeld"
@@ -827,6 +827,7 @@ function CopyForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =
       <Area label="Spoken word" value={copy.poem} onChange={(value) => set("poem", value)} />
       <Field label="Foto naast spoken word" value={copy.poemPhoto} onChange={(value) => set("poemPhoto", value)} />
       <DropImage label="Upload foto naast spoken word" onFile={(url) => set("poemPhoto", url)} />
+      <Area label="Smaakmaker, onder de spoken word" value={copy.smaakmaker || ""} onChange={(value) => set("smaakmaker", value)} />
       <Field label="Klanten-titel" value={copy.clientsTitle} onChange={(value) => set("clientsTitle", value)} />
       <Field label="Contacttitel" value={copy.contactTitle} onChange={(value) => set("contactTitle", value)} />
       <Area label="Contacttekst" value={copy.contactLead} onChange={(value) => set("contactLead", value)} />

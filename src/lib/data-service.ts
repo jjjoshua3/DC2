@@ -40,6 +40,7 @@ export function normalizeSite(value: SiteData): SiteData {
   if (!Array.isArray(next.posts)) next.posts = clone(defaultSite.posts)
   const base = clone(defaultSite.copy)
   next.copy = { ...base, ...next.copy }
+  if (typeof next.copy.smaakmaker !== "string") next.copy.smaakmaker = ""
   if (!next.copy.poem) next.copy.poem = base.poem
   if (next.copy.aboutTitle === "Over De Connectors") next.copy.aboutTitle = "Over mij"
   if (next.copy.clientsTitle === "Organisaties voor wie we werkten") {
