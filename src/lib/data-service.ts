@@ -25,6 +25,11 @@ function placeholderPoems(poems: { body?: string }[] | undefined) {
   return poems.every((poem) => /plak hier/i.test(poem.body || "") || /^gedicht \d/i.test(poem.body || ""))
 }
 
+function withoutMinutes(body: string) {
+  const cut = body.search(/verder wil ik in de notulen/i)
+  return cut === -1 ? body : body.slice(0, cut).trim()
+}
+
 function placeholderLead(lead: string | undefined) {
   if (!lead) return true
   return lead.startsWith("Drie gedichten")
@@ -71,7 +76,10 @@ export function normalizeSite(value: SiteData): SiteData {
           ...page,
           ...found,
           cards: Array.isArray(found.cards) && found.cards.length ? found.cards : page.cards,
-          poems: placeholderPoems(found.poems) ? page.poems : found.poems,
+          poems: (placeholderPoems(found.poems) ? page.poems : found.poems)?.map((poem) => ({
+            ...poem,
+            body: withoutMinutes(poem.body),
+          })),
           poemPageTitle: found.poemPageTitle || page.poemPageTitle,
           poemLead: found.poemLead || (placeholderLead(found.lead) ? found.lead : page.poemLead),
           poemPhoto: found.poemPhoto || (placeholderLead(found.lead) ? found.mediaUrl : page.poemPhoto),

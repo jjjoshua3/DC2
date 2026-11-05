@@ -422,34 +422,7 @@ Niet mijn secundaire arbeidsvoorwaarden
 Niet mijn jaarlijkse sebattical
 Niet mijn retreat in safaritent
 Niet mijn vakantie vanaf Schiphol
-Niet mijn stedentrip in het weekend
-Verder wil ik in de notulen
-Van deze bijeenkomst
-Vastleggen
-En
-Benadrukken
-Dat ik ten alle tijden
-Wil kunnen
-Terugkomen
-Op het offer
-Dat ik zal brengen
-Voor de kansarmen
-Voor de chronisch zieken
-Voor de dak- en thuislozen
-Voor de vreemdeling
-Wie zal het zeggen
-We denken nog na
-Over een geschikte doelgroep
-In een nader te bepalen
-Vervolg op deze bijeenkomst
-Zal ik bovendien uiteenzetten
-Wat de volgende verkennende
-Fase van mogelijke offers
-In de onvoorziene toekomst
-Heeft gebracht
-Ik wens u allen een prettige voortzetting van het jaar
-Vergeet uw spullen niet
-De afgrond is daar`,
+Niet mijn stedentrip in het weekend`,
       },
       {
         id: "stad-van-ons",

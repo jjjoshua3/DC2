@@ -365,11 +365,12 @@ function PoemPoster({ index, title, lines }: { index: number; title: string; lin
 }
 
 function OfferPoster({ index, title, lines }: { index: number; title: string; lines: string[] }) {
-  const cliff = lines[lines.length - 1]
-  const rest = lines.slice(0, -1)
-  const cut = rest.findIndex((line) => !/^niet\b/i.test(line))
-  const refusals = cut === -1 ? rest : rest.slice(0, cut)
-  const minutes = cut === -1 ? [] : rest.slice(cut)
+  const last = lines[lines.length - 1] ?? ""
+  const hasCliff = Boolean(last) && !/^niet\b/i.test(last)
+  const body = hasCliff ? lines.slice(0, -1) : lines
+  const cut = body.findIndex((line) => !/^niet\b/i.test(line))
+  const refusals = cut === -1 ? body : body.slice(0, cut)
+  const minutes = cut === -1 ? [] : body.slice(cut)
   return (
     <article className="relative overflow-hidden bg-ink text-paper">
       <p aria-hidden className="pointer-events-none absolute -left-4 top-6 select-none font-display text-[22vw] font-extrabold leading-none text-white/[0.04]">
@@ -396,7 +397,7 @@ function OfferPoster({ index, title, lines }: { index: number; title: string; li
             ))}
           </div>
         ) : null}
-        <p className="mt-16 font-story text-5xl italic leading-[0.95] sm:text-7xl">{cliff}</p>
+        {hasCliff ? <p className="mt-16 font-story text-5xl italic leading-[0.95] sm:text-7xl">{last}</p> : null}
       </div>
     </article>
   )
