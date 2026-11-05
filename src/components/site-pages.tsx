@@ -253,11 +253,22 @@ export function WatIndexPage() {
 export function WatDetailPage({ slug }: { slug: string }) {
   const { data } = useSiteData()
   const page = data.wat.find((item) => item.slug === slug)
+  if (page?.layout === "poems") {
+    return (
+      <SiteShell>
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
+          <WatTabs current={slug} />
+          <PoemsIntro page={page} />
+        </section>
+        <GedichtenZaal poems={page.poems ?? []} />
+      </SiteShell>
+    )
+  }
   return (
     <SiteShell>
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
         <WatTabs current={slug} />
-        {page ? page.layout === "poems" ? <PoemsPage page={page} /> : <WatBody page={page} /> : <p className="mt-10 text-ink-soft">Deze pagina bestaat niet.</p>}
+        {page ? <WatBody page={page} /> : <p className="mt-10 text-ink-soft">Deze pagina bestaat niet.</p>}
       </section>
     </SiteShell>
   )
@@ -284,7 +295,7 @@ function WatTabs({ current }: { current: string }) {
   )
 }
 
-function PoemsPage({ page }: { page: WatPage }) {
+function PoemsIntro({ page }: { page: WatPage }) {
   return (
     <div className="mt-10">
       <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-6xl">{page.poemPageTitle || "Gedichten"}</h1>
@@ -304,7 +315,38 @@ function PoemsPage({ page }: { page: WatPage }) {
           {page.body ? <p className="mt-4 leading-relaxed text-ink-soft">{page.body}</p> : null}
         </div>
       </div>
-      {page.poems?.length ? <PoemCarousel poems={page.poems} /> : null}
+    </div>
+  )
+}
+
+function GedichtenZaal({ poems }: { poems: PoemItem[] }) {
+  if (!poems.length) return null
+  return (
+    <div>
+      <div className="bg-ink text-paper">
+        <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-12 sm:py-16 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.32em] text-accent">Een eigen plek</p>
+            <p className="mt-3 font-display text-5xl font-extrabold leading-none tracking-tight sm:text-7xl">De gedichten</p>
+          </div>
+          <nav className="flex flex-col gap-2">
+            {poems.map((poem, index) => (
+              <a key={poem.id} href={`#gedicht-${poem.id}`} className="group inline-flex items-baseline gap-3 font-story text-2xl italic text-paper/80 hover:text-paper">
+                <span className="font-display text-sm font-bold not-italic tracking-widest text-accent">{String(index + 1).padStart(2, "0")}</span>
+                {poem.title}
+              </a>
+            ))}
+          </nav>
+        </div>
+      </div>
+      {poems.map((poem, index) => {
+        const lines = poem.body.split("\n").map((line) => line.trim()).filter(Boolean)
+        return (
+          <section id={`gedicht-${poem.id}`} key={poem.id} className="scroll-mt-16">
+            <PoemPoster index={index} title={poem.title} lines={lines} />
+          </section>
+        )
+      })}
     </div>
   )
 }
@@ -317,125 +359,125 @@ function poemKind(title: string) {
   return "plain"
 }
 
-function PoemCarousel({ poems }: { poems: PoemItem[] }) {
-  const [index, setIndex] = useState(0)
-  const count = poems.length
-  const poem = poems[index % count]
-  const lines = poem.body.split("\n").map((line) => line.trim()).filter(Boolean)
-  function step(delta: number) {
-    setIndex((current) => (current + delta + count) % count)
-  }
-  return (
-    <div className="mt-16">
-      <PoemPoster title={poem.title} lines={lines} />
-      {count > 1 ? (
-        <div className="mt-6 flex items-center justify-between gap-4">
-          <button type="button" onClick={() => step(-1)} className="min-h-11 rounded-full border border-line px-4 text-sm font-semibold">
-            Vorige
-          </button>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {poems.map((item, dot) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setIndex(dot)}
-                className={`min-h-11 rounded-full px-3 text-sm font-semibold ${dot === index % count ? "bg-ink text-paper" : "text-ink-soft"}`}
-              >
-                {item.title}
-              </button>
-            ))}
-          </div>
-          <button type="button" onClick={() => step(1)} className="min-h-11 rounded-full border border-line px-4 text-sm font-semibold">
-            Volgende
-          </button>
-        </div>
-      ) : null}
-    </div>
-  )
-}
-
-function PoemPoster({ title, lines }: { title: string; lines: string[] }) {
+function PoemPoster({ index, title, lines }: { index: number; title: string; lines: string[] }) {
   const kind = poemKind(title)
-  if (kind === "offer") return <OfferPoster title={title} lines={lines} />
-  if (kind === "stad") return <StadPoster title={title} lines={lines} />
-  if (kind === "vak") return <VakPoster title={title} lines={lines} />
-  return (
-    <article className="rounded-card border border-line bg-card px-6 py-10 sm:px-12">
-      {title ? <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{title}</p> : null}
-      <div className="mt-6 flex flex-col gap-3">
-        {lines.map((line, i) => (
-          <p key={`${i}-${line}`} className="font-story text-2xl italic leading-snug sm:text-3xl">{line}</p>
-        ))}
-      </div>
-    </article>
-  )
+  if (kind === "offer") return <OfferPoster index={index} title={title} lines={lines} />
+  if (kind === "stad") return <StadPoster index={index} title={title} lines={lines} />
+  if (kind === "vak") return <VakPoster index={index} title={title} lines={lines} />
+  return <PlainPoster index={index} title={title} lines={lines} />
 }
 
-function OfferPoster({ title, lines }: { title: string; lines: string[] }) {
+function OfferPoster({ index, title, lines }: { index: number; title: string; lines: string[] }) {
   const cliff = lines[lines.length - 1]
   const rest = lines.slice(0, -1)
   const cut = rest.findIndex((line) => !/^niet\b/i.test(line))
   const refusals = cut === -1 ? rest : rest.slice(0, cut)
   const minutes = cut === -1 ? [] : rest.slice(cut)
   return (
-    <article className="overflow-hidden rounded-card bg-ink text-paper">
-      <div className="px-6 py-12 sm:px-14 sm:py-16">
-        <p className="text-xs font-bold uppercase tracking-[0.32em] text-accent">{title}</p>
-        <div className="mt-8 max-w-xl">
+    <article className="relative overflow-hidden bg-ink text-paper">
+      <p aria-hidden className="pointer-events-none absolute -left-4 top-6 select-none font-display text-[22vw] font-extrabold leading-none text-white/[0.04]">
+        {title}
+      </p>
+      <div className="relative mx-auto max-w-6xl px-4 py-20 lg:py-28">
+        <p className="text-xs font-bold uppercase tracking-[0.32em] text-accent">
+          {String(index + 1).padStart(2, "0")} — {title}
+        </p>
+        <div className="mt-10 columns-1 sm:columns-2 sm:gap-x-16">
           {refusals.map((line, i) => (
-            <p key={`${i}-${line}`} className="border-b border-white/10 py-2 font-story text-xl leading-snug sm:text-2xl">
+            <p key={`${i}-${line}`} className="break-inside-avoid border-b border-white/10 py-2.5 font-story text-2xl leading-snug sm:text-3xl">
               <span className="text-accent">Niet</span>
               {line.replace(/^niet/i, "")}
             </p>
           ))}
         </div>
         {minutes.length ? (
-          <div className="mt-10 max-w-lg border-l border-accent pl-5">
+          <div className="mt-14 max-w-lg border-l border-accent pl-5">
             {minutes.map((line, i) => (
-              <p key={`${i}-${line}`} className="py-0.5 text-sm uppercase tracking-[0.14em] text-paper/80">{line}</p>
+              <p key={`${i}-${line}`} className="py-0.5 text-xs uppercase leading-relaxed tracking-[0.16em] text-paper/75">
+                {line}
+              </p>
             ))}
           </div>
         ) : null}
-        <p className="mt-14 max-w-3xl font-story text-4xl italic leading-tight sm:text-6xl">{cliff}</p>
+        <p className="mt-16 font-story text-5xl italic leading-[0.95] sm:text-7xl">{cliff}</p>
       </div>
     </article>
   )
 }
 
-function StadPoster({ title, lines }: { title: string; lines: string[] }) {
+function StadPoster({ index, title, lines }: { index: number; title: string; lines: string[] }) {
   const close = lines.slice(-2)
   const open = lines.slice(0, -2)
   return (
-    <article className="rounded-card border border-line bg-card px-6 py-14 text-center sm:px-16">
-      <p className="text-xs font-bold uppercase tracking-[0.32em] text-accent">{title}</p>
-      <div className="mx-auto mt-10 flex max-w-md flex-col gap-2">
-        {open.map((line, i) => (
-          <p key={`${i}-${line}`} className="font-story text-xl italic leading-snug text-ink-soft sm:text-2xl">{line}</p>
-        ))}
-      </div>
-      <div className="mt-10">
-        {close.map((line, i) => (
-          <p key={`${i}-${line}`} className="font-display text-4xl font-extrabold tracking-tight text-ink sm:text-6xl">{line}</p>
-        ))}
+    <article className="relative overflow-hidden bg-[#f4efe6]">
+      <div aria-hidden className="absolute -right-16 top-16 h-72 w-72 rounded-full border border-accent/40 sm:h-[28rem] sm:w-[28rem]" />
+      <div aria-hidden className="absolute -right-8 top-24 h-56 w-56 rounded-full bg-accent/10 sm:h-96 sm:w-96" />
+      <div className="relative mx-auto max-w-3xl px-4 py-24 text-center sm:py-32">
+        <p className="text-xs font-bold uppercase tracking-[0.32em] text-accent">
+          {String(index + 1).padStart(2, "0")} — {title}
+        </p>
+        <div className="mt-12 flex flex-col gap-2">
+          {open.map((line, i) => (
+            <p key={`${i}-${line}`} className="font-story text-xl italic leading-snug text-ink-soft sm:text-2xl">
+              {line}
+            </p>
+          ))}
+        </div>
+        <div className="mt-14">
+          {close.map((line, i) => (
+            <p key={`${i}-${line}`} className={`font-display font-extrabold leading-none tracking-tight ${i === close.length - 1 ? "text-5xl text-accent sm:text-8xl" : "text-4xl text-ink sm:text-6xl"}`}>
+              {line}
+            </p>
+          ))}
+        </div>
       </div>
     </article>
   )
 }
 
-function VakPoster({ title, lines }: { title: string; lines: string[] }) {
-  const last = lines[lines.length - 1]
+function VakPoster({ index, title, lines }: { index: number; title: string; lines: string[] }) {
+  const last = lines[lines.length - 1] ?? ""
   const boxed = lines.slice(0, -1)
   return (
-    <article>
-      <div className="rounded-card border border-ink bg-paper px-6 py-10 sm:px-12">
-        <p className="font-display text-xs font-bold uppercase tracking-[0.32em]">{title}</p>
-        <div className="mt-8 max-w-xl">
-          {boxed.map((line, i) => (
-            <p key={`${i}-${line}`} className="border-b border-line py-2.5 font-story text-lg leading-snug sm:text-xl">{line}</p>
+    <article className="bg-paper px-4 py-20 sm:py-28">
+      <div className="relative mx-auto max-w-3xl pb-8">
+        <div className="relative border border-ink px-6 py-10 sm:px-12 sm:py-14">
+          <span aria-hidden className="absolute -left-px -top-px h-8 w-8 border-l-2 border-t-2 border-accent" />
+          <span aria-hidden className="absolute -right-px -top-px h-8 w-8 border-r-2 border-t-2 border-accent" />
+          <span aria-hidden className="absolute -bottom-px -left-px h-8 w-8 border-b-2 border-l-2 border-accent" />
+          <span aria-hidden className="absolute -bottom-px -right-px h-8 w-8 border-b-2 border-r-2 border-accent" />
+          <p className="font-display text-xs font-bold uppercase tracking-[0.32em]">
+            {String(index + 1).padStart(2, "0")} — {title}
+          </p>
+          <div className="mt-8">
+            {boxed.map((line, i) => (
+              <p key={`${i}-${line}`} className="border-b border-dashed border-line py-2.5 font-story text-lg leading-snug sm:text-2xl">
+                {line}
+              </p>
+            ))}
+          </div>
+        </div>
+        <p className="-mt-6 ml-6 max-w-4xl bg-paper pr-4 font-story text-4xl italic leading-tight text-accent sm:ml-16 sm:text-6xl">{last}</p>
+      </div>
+    </article>
+  )
+}
+
+function PlainPoster({ index, title, lines }: { index: number; title: string; lines: string[] }) {
+  return (
+    <article className="bg-card px-4 py-20">
+      <div className="mx-auto max-w-3xl">
+        <p className="text-xs font-bold uppercase tracking-[0.32em] text-accent">
+          {String(index + 1).padStart(2, "0")} — {title}
+        </p>
+        <div className="mt-8 flex flex-col gap-3">
+          {lines.map((line, i) => (
+            <p key={`${i}-${line}`} className="font-story text-2xl italic leading-snug sm:text-4xl">
+              {line}
+            </p>
           ))}
         </div>
       </div>
-      <p className="mt-6 max-w-3xl font-story text-3xl italic leading-tight text-accent sm:text-5xl">{last}</p>
     </article>
   )
 }
