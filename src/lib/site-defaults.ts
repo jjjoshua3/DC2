@@ -492,6 +492,7 @@ export const defaultSite: SiteData = {
   projects,
   posts: defaultPosts,
   wat,
+  pages: [],
   copy: {
     heroTitle: "DE CONNECTORS",
     heroTagline: "Celebrating People",

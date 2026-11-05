@@ -170,6 +170,16 @@ export function SiteShell({ children }: { children: ReactNode }) {
                 {t(item.key)}
               </Link>
             ))}
+            {(data.pages ?? []).filter((page) => page.inMenu && page.status === "published").map((page) => (
+              <Link
+                key={page.id}
+                to="/pagina/$slug"
+                params={{ slug: page.slug }}
+                className={`rounded-full px-2.5 py-2 text-sm font-semibold ${path === `/pagina/${page.slug}` ? "text-accent" : "text-ink-soft hover:text-ink"}`}
+              >
+                {page.title}
+              </Link>
+            ))}
           </nav>
           <div className="hidden items-center xl:flex">
             <SocialsRow socials={data.design.socials} />
@@ -201,6 +211,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
             {LINKS.map((item) => (
               <Link key={item.to} to={item.to} onClick={() => setOpen(false)} className="flex min-h-11 items-center text-base font-semibold">
                 {t(item.key)}
+              </Link>
+            ))}
+            {(data.pages ?? []).filter((page) => page.inMenu && page.status === "published").map((page) => (
+              <Link key={page.id} to="/pagina/$slug" params={{ slug: page.slug }} onClick={() => setOpen(false)} className="flex min-h-11 items-center text-base font-semibold">
+                {page.title}
               </Link>
             ))}
           </nav>

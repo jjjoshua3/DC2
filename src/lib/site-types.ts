@@ -108,6 +108,30 @@ export type DesignSettings = {
   socials: Socials
 }
 
+export type PageBlockKind = "text" | "split" | "cards" | "banner" | "contact"
+
+export type PageCard = { title: string; text: string; image: string }
+
+export type PageBlock = {
+  id: string
+  kind: PageBlockKind
+  title: string
+  text: string
+  mediaType: "image" | "video"
+  mediaUrl: string
+  mediaSide: "left" | "right"
+  cards: PageCard[]
+}
+
+export type CustomPage = {
+  id: string
+  slug: string
+  title: string
+  status: "published" | "draft"
+  inMenu: boolean
+  blocks: PageBlock[]
+}
+
 export type Post = {
   id: string
   title: string
@@ -123,6 +147,7 @@ export type SiteData = {
   projects: Project[]
   posts: Post[]
   wat: WatPage[]
+  pages: CustomPage[]
   copy: PageCopy
   design: DesignSettings
   updatedAt?: number

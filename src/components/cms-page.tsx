@@ -27,8 +27,9 @@ import { AuditPanel } from "@/components/audit-panel"
 import { describeChange } from "@/lib/change-summary"
 import { logChange, logLogout } from "@/lib/audit-client"
 import { FeedbackDock } from "@/components/feedback-dock"
+import { PagesAdmin } from "@/components/pages-admin"
 
-type Tab = "projects" | "posts" | "copy" | "wat" | "design" | "stats" | "audit"
+type Tab = "projects" | "posts" | "copy" | "wat" | "pages" | "design" | "stats" | "audit"
 
 const field =
   "mt-1 w-full rounded-xl border border-line bg-card px-3 py-2.5 text-sm text-ink outline-none focus:border-accent"
@@ -136,6 +137,7 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
       ["posts", "Blogs"],
       ["copy", "Paginateksten"],
       ["wat", "Wat-pagina’s"],
+      ["pages", "Eigen pagina’s"],
       ["design", "Vormgeving"],
       ["stats", "Bezoekers"],
       ["audit", "Audit"],
@@ -500,6 +502,7 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
 
         {tab === "copy" ? <CopyForm data={data} commit={commit} /> : null}
         {tab === "wat" ? <WatForm data={data} commit={commit} /> : null}
+        {tab === "pages" ? <PagesAdmin data={data} commit={commit} /> : null}
         {tab === "design" ? (
           <DesignForm
             data={data}

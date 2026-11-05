@@ -21,6 +21,7 @@ import { Route as WatRouteImport } from './routes/wat'
 import { Route as ApiStatsRouteImport } from './routes/api.stats'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogPostIdRouteImport } from './routes/blog.$postId'
+import { Route as PaginaSlugRouteImport } from './routes/pagina.$slug'
 import { Route as WatIndexRouteImport } from './routes/wat.index'
 import { Route as WatSlugRouteImport } from './routes/wat.$slug'
 
@@ -84,6 +85,11 @@ const BlogPostIdRoute = BlogPostIdRouteImport.update({
   path: '/$postId',
   getParentRoute: () => BlogRoute,
 } as any)
+const PaginaSlugRoute = PaginaSlugRouteImport.update({
+  id: '/pagina/$slug',
+  path: '/pagina/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WatIndexRoute = WatIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/wat': typeof WatRouteWithChildren
   '/api/stats': typeof ApiStatsRoute
   '/blog/$postId': typeof BlogPostIdRoute
+  '/pagina/$slug': typeof PaginaSlugRoute
   '/wat/$slug': typeof WatSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/wat/': typeof WatIndexRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByTo {
   '/projecten': typeof ProjectenRoute
   '/api/stats': typeof ApiStatsRoute
   '/blog/$postId': typeof BlogPostIdRoute
+  '/pagina/$slug': typeof PaginaSlugRoute
   '/wat/$slug': typeof WatSlugRoute
   '/blog': typeof BlogIndexRoute
   '/wat': typeof WatIndexRoute
@@ -138,6 +146,7 @@ export interface FileRoutesById {
   '/wat': typeof WatRouteWithChildren
   '/api/stats': typeof ApiStatsRoute
   '/blog/$postId': typeof BlogPostIdRoute
+  '/pagina/$slug': typeof PaginaSlugRoute
   '/wat/$slug': typeof WatSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/wat/': typeof WatIndexRoute
@@ -156,6 +165,7 @@ export interface FileRouteTypes {
     | '/wat'
     | '/api/stats'
     | '/blog/$postId'
+    | '/pagina/$slug'
     | '/wat/$slug'
     | '/blog/'
     | '/wat/'
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
     | '/projecten'
     | '/api/stats'
     | '/blog/$postId'
+    | '/pagina/$slug'
     | '/wat/$slug'
     | '/blog'
     | '/wat'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/wat'
     | '/api/stats'
     | '/blog/$postId'
+    | '/pagina/$slug'
     | '/wat/$slug'
     | '/blog/'
     | '/wat/'
@@ -202,6 +214,7 @@ export interface RootRouteChildren {
   ProjectenRoute: typeof ProjectenRoute
   WatRoute: typeof WatRouteWithChildren
   ApiStatsRoute: typeof ApiStatsRoute
+  PaginaSlugRoute: typeof PaginaSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -290,6 +303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogPostIdRouteImport
       parentRoute: typeof BlogRoute
     }
+    '/pagina/$slug': {
+      id: '/pagina/$slug'
+      path: '/pagina/$slug'
+      fullPath: '/pagina/$slug'
+      preLoaderRoute: typeof PaginaSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/wat/': {
       id: '/wat/'
       path: '/'
@@ -342,6 +362,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectenRoute: ProjectenRoute,
   WatRoute: WatRouteWithChildren,
   ApiStatsRoute: ApiStatsRoute,
+  PaginaSlugRoute: PaginaSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

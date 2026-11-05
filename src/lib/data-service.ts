@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { defaultSite } from "@/lib/site-defaults"
-import type { SiteData } from "@/lib/site-types"
+import type { CustomPage, PageBlock, SiteData } from "@/lib/site-types"
 import { projectCategories } from "@/lib/site-types"
 import { inkForAccent } from "@/lib/media"
 import { fetchSiteDocument } from "@/lib/site-store"
@@ -30,6 +30,29 @@ function placeholderLead(lead: string | undefined) {
   return lead.startsWith("Drie gedichten")
 }
 
+function cleanPages(value: unknown): CustomPage[] {
+  if (!Array.isArray(value)) return []
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return []
+    const page = item as CustomPage
+    if (!page.id || !page.slug) return []
+    const blocks = Array.isArray(page.blocks) ? page.blocks.map(cleanBlock) : []
+    return [{ ...page, title: page.title || "Pagina", status: page.status === "draft" ? "draft" : "published", inMenu: Boolean(page.inMenu), blocks }]
+  })
+}
+
+function cleanBlock(block: PageBlock): PageBlock {
+  return {
+    id: block.id || "blok",
+    kind: block.kind || "text",
+    title: block.title || "",
+    text: block.text || "",
+    mediaType: block.mediaType === "video" ? "video" : "image",
+    mediaUrl: block.mediaUrl || "",
+    mediaSide: block.mediaSide === "right" ? "right" : "left",
+    cards: Array.isArray(block.cards) ? block.cards.map((card) => ({ title: card.title || "", text: card.text || "", image: card.image || "" })) : [],
+  }
+}
 function sameBlocks(current: { title: string; text: string }[], original: { title: string; text: string }[]) {
   if (current.length !== original.length) return false
   return current.every((item, index) => item.title === original[index]?.title && item.text === original[index]?.text)
@@ -69,6 +92,8 @@ export function normalizeSite(value: SiteData): SiteData {
   if (!Array.isArray(next.copy.services)) next.copy.services = []
   if (sameBlocks(next.copy.styles, base.styles)) next.copy.styles = []
   if (sameBlocks(next.copy.services, base.services)) next.copy.services = []
+  if (!Array.isArray(next.pages)) next.pages = []
+  next.pages = cleanPages(next.pages)
   const watBase = clone(defaultSite.wat)
   const saved = Array.isArray(next.wat) ? next.wat : []
   next.wat = watBase.map((page) => {
