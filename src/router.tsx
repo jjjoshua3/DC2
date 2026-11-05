@@ -1,5 +1,6 @@
 import { createRouter } from "@tanstack/react-router";
 import { AppErrorComponent } from "@/lib/error-component";
+import { NotFoundPage } from "@/components/not-found";
 import { previewPathRewrite } from "@/lib/preview-path-prefix";
 import { installPreviewServerFnRewrite } from "@/lib/preview-server-fn";
 import { routeTree } from "./routeTree.gen";
@@ -11,5 +12,6 @@ export function getRouter() {
     routeTree,
     rewrite: previewPathRewrite(),
     defaultErrorComponent: AppErrorComponent,
+    defaultNotFoundComponent: NotFoundPage,
   });
 }
