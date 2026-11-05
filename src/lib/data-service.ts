@@ -130,6 +130,19 @@ export function normalizeSite(value: SiteData): SiteData {
 let memory: SiteData | null = null
 let remotePromise: Promise<void> | null = null
 
+export function seedSite(raw: string | null) {
+  if (!raw) {
+    if (typeof window === "undefined") memory = null
+    return
+  }
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    if (isSite(parsed)) memory = normalizeSite(parsed)
+  } catch {
+    if (typeof window === "undefined") memory = null
+  }
+}
+
 function slim(data: SiteData): SiteData {
   return JSON.parse(
     JSON.stringify(data, (_key, value) =>
@@ -186,13 +199,10 @@ export const DataService = {
 }
 
 export function useSiteData() {
-  const [data, setData] = useState<SiteData>(defaultSite)
-  const [ready, setReady] = useState(false)
+  const [data, setData] = useState<SiteData>(() => DataService.load())
+  const [ready, setReady] = useState(true)
 
   useEffect(() => {
-    const local = DataService.load()
-    setData(local)
-    setReady(true)
     let cancelled = false
     if (!remotePromise) {
       remotePromise = fetchSiteDocument()
@@ -202,7 +212,7 @@ export function useSiteData() {
           if (!isSite(parsed)) return
           const remote = normalizeSite(parsed)
           const current = DataService.load()
-          if ((remote.updatedAt ?? 0) >= (current.updatedAt ?? 0)) {
+          if ((remote.updatedAt ?? 0) > (current.updatedAt ?? 0)) {
             memory = remote
             listeners.forEach((listener) => listener())
           }

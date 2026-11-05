@@ -4,11 +4,20 @@ import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { VisitTracker } from "@/components/visit-tracker";
 import { NotFoundPage } from "@/components/not-found";
 import { LocaleProvider } from "@/lib/i18n";
+import { seedSite } from "@/lib/data-service";
+import { fetchSiteDocument } from "@/lib/site-store";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "DE CONNECTORS | Celebrating People";
 
 export const Route = createRootRoute({
+  loader: async () => {
+    try {
+      return { site: await fetchSiteDocument() }
+    } catch {
+      return { site: null }
+    }
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -36,7 +45,10 @@ export const Route = createRootRoute({
     ],
   }),
   notFoundComponent: NotFoundPage,
-  component: () => (
+  component: function Root() {
+    const { site } = Route.useLoaderData()
+    seedSite(site)
+    return (
     <html lang="nl" suppressHydrationWarning>
       <head>
         <HeadContent />
@@ -52,5 +64,6 @@ export const Route = createRootRoute({
         <Scripts />
       </body>
     </html>
-  ),
+    )
+  },
 });
