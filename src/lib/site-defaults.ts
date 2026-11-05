@@ -497,10 +497,10 @@ export const defaultSite: SiteData = {
     heroTitle: "DE CONNECTORS",
     heroTagline: "Celebrating People",
     heroSubtitle:
-      "Journalistieke en artistieke projecten die mensen verbinden. Stefanie Vermeulen is freelance journalist, producer en maker.",
+      "Wij zijn de nieuwe digital leaders. We reorganiseren en transformeren, verbinden mensen en geven ze een stem die gehoord moet worden.",
     aboutTitle: "Over mij",
     aboutLead:
-      "DE CONNECTORS is het bureau van Stefanie Vermeulen. Eén maker, met de mensen in het midden.",
+      "DE CONNECTORS zijn de nieuwe digital leaders. We reorganiseren en transformeren, verbinden mensen en geven ze een stem die gehoord moet worden.",
     aboutLeft:
       "DE CONNECTORS snapt hoe je vertrouwen opbouwt bij mensen en ze verbindt en betrekt bij het geheel. In onze projecten zijn het de mensen die het voor het zeggen krijgen. We geven ze een stem, een podium en teugels en plaatsen ze midden in jouw project of organisatie.",
     aboutRight:

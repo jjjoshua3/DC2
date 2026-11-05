@@ -175,9 +175,9 @@ type UiKey = keyof (typeof ui)["nl"]
 
 const copyText = {
   en: {
-    heroSubtitle: "Journalistic and artistic projects that connect people. Stefanie Vermeulen is a freelance journalist, producer and maker.",
+    heroSubtitle: "We are the new digital leaders. We reorganise and transform, connect people, and give them a voice that has to be heard.",
     aboutTitle: "About me",
-    aboutLead: "DE CONNECTORS is the practice of Stefanie Vermeulen. One maker, with people at the centre.",
+    aboutLead: "DE CONNECTORS are the new digital leaders. We reorganise and transform, connect people, and give them a voice that has to be heard.",
     aboutLeft: "DE CONNECTORS knows how to build trust and how to bring people into the whole. In our projects, the people are the ones who get to speak. We give them a voice, a stage and the reins, and place them in the middle of your project or organisation.",
     aboutRight: "We call it Celebrating People. Our interest and curiosity are real. We listen to what people actually have to say, and we check whether we heard them well. We use all kinds of interactive media to carry their message to your organisation and community.",
     clientsTitle: "Organisations I have worked for",
@@ -199,9 +199,9 @@ On a renewed future full of modern ideals
 written by Jimmy Rockx`,
   },
   fr: {
-    heroSubtitle: "Des projets journalistiques et artistiques qui relient les gens. Stefanie Vermeulen est journaliste freelance, productrice et créatrice.",
+    heroSubtitle: "Nous sommes les nouveaux leaders numériques. Nous réorganisons et transformons, nous relions les gens et leur donnons une voix qui doit être entendue.",
     aboutTitle: "À propos",
-    aboutLead: "DE CONNECTORS est le bureau de Stefanie Vermeulen. Une seule créatrice, avec les gens au centre.",
+    aboutLead: "DE CONNECTORS, ce sont les nouveaux leaders numériques. Nous réorganisons et transformons, nous relions les gens et leur donnons une voix qui doit être entendue.",
     aboutLeft: "DE CONNECTORS sait créer la confiance et relier les gens à l’ensemble. Dans nos projets, ce sont les personnes qui prennent la parole. Nous leur donnons une voix, une scène et les rênes, et nous les plaçons au cœur de votre projet ou de votre organisation.",
     aboutRight: "Nous appelons cela Celebrating People. Notre intérêt et notre curiosité sont sincères. Nous écoutons ce que les gens ont vraiment à dire, et nous vérifions si nous les avons bien entendus. Nous utilisons toutes sortes de médias interactifs pour porter leur message vers votre organisation et votre communauté.",
     clientsTitle: "Organisations pour lesquelles j’ai travaillé",
@@ -223,9 +223,9 @@ Pour imposer de travailler ensemble
 écrit par Jimmy Rockx`,
   },
   de: {
-    heroSubtitle: "Journalistische und künstlerische Projekte, die Menschen verbinden. Stefanie Vermeulen ist freie Journalistin, Produzentin und Gestalterin.",
+    heroSubtitle: "Wir sind die neuen digitalen Führungskräfte. Wir ordnen neu und verwandeln, verbinden Menschen und geben ihnen eine Stimme, die gehört werden muss.",
     aboutTitle: "Über mich",
-    aboutLead: "DE CONNECTORS ist das Büro von Stefanie Vermeulen. Eine Gestalterin, mit den Menschen in der Mitte.",
+    aboutLead: "DE CONNECTORS sind die neuen digitalen Führungskräfte. Wir ordnen neu und verwandeln, verbinden Menschen und geben ihnen eine Stimme, die gehört werden muss.",
     aboutLeft: "DE CONNECTORS weiß, wie man Vertrauen aufbaut und Menschen mit dem Ganzen verbindet. In unseren Projekten kommen die Menschen selbst zu Wort. Wir geben ihnen eine Stimme, eine Bühne und die Zügel, und stellen sie in die Mitte Ihres Projekts oder Ihrer Organisation.",
     aboutRight: "Wir nennen es Celebrating People. Unser Interesse und unsere Neugier sind echt. Wir hören, was Menschen wirklich zu sagen haben, und prüfen, ob wir sie richtig verstanden haben. Mit interaktiven Medien tragen wir ihre Botschaft in Ihre Organisation und Community.",
     clientsTitle: "Organisationen, für die ich gearbeitet habe",

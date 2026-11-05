@@ -98,12 +98,11 @@ export function HomePage() {
           <h1 className="mt-3 font-display text-5xl font-extrabold tracking-tight sm:text-6xl">
             <EditableText value={copy.heroTitle} onSave={(heroTitle) => setCopy({ heroTitle }, "Hoofdtitel aangepast")} />
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
-            <EditableText value={copy.heroSubtitle} multiline onSave={(heroSubtitle) => setCopy({ heroSubtitle }, "Intro aangepast")} />
-          </p>
-          <p className="mt-3 max-w-xl text-sm font-semibold text-ink">
-            <EditableText value={copy.aboutLead} multiline onSave={(aboutLead) => setCopy({ aboutLead }, "Bureau-tekst aangepast")} />
-          </p>
+          {(copy.heroSubtitle.trim() || editing) ? (
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
+              <EditableText value={copy.heroSubtitle} multiline onSave={(heroSubtitle) => setCopy({ heroSubtitle }, "Intro aangepast")} />
+            </p>
+          ) : null}
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/projecten" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink">
               {t("seeProjects")} <ArrowRight className="h-4 w-4" />
@@ -157,8 +156,6 @@ export function HomePage() {
           </p>
         </div>
       </section>
-
-      <WorkStrip />
 
       <section className="bg-card">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-2">
@@ -272,35 +269,6 @@ export function HomePage() {
       <ClientLogos />
       <ContactBand />
     </SiteShell>
-  )
-}
-
-function WorkStrip() {
-  const { data } = useLocaleSite()
-  const works = data.projects
-    .filter((project) => project.status === "published" && project.mediaType !== "video" && (project.poster || project.mediaUrl))
-    .slice(0, 5)
-  if (!works.length) return null
-  return (
-    <section className="mx-auto max-w-6xl px-4 pb-6">
-      <p className="mb-4 text-xs font-bold uppercase tracking-[0.22em] text-accent">Werk in beeld</p>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {works.map((project) => (
-          <Link key={project.id} to="/projecten" className="group relative overflow-hidden rounded-card">
-            <img
-              src={project.poster || project.mediaUrl}
-              alt={project.title}
-              loading="lazy"
-              decoding="async"
-              className="aspect-[4/5] w-full object-cover transition duration-300 group-hover:scale-[1.03]"
-            />
-            <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 to-transparent p-3 text-sm font-bold text-paper">
-              {project.title}
-            </span>
-          </Link>
-        ))}
-      </div>
-    </section>
   )
 }
 

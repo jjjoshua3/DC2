@@ -755,7 +755,7 @@ function CopyForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =
       <Field label="Tagline" value={copy.heroTagline} onChange={(value) => set("heroTagline", value)} />
       <Area label="Hero-subtitel" value={copy.heroSubtitle} onChange={(value) => set("heroSubtitle", value)} />
       <Field label="Over-titel" value={copy.aboutTitle} onChange={(value) => set("aboutTitle", value)} />
-      <Area label="Bureau, korte uitleg" value={copy.aboutLead} onChange={(value) => set("aboutLead", value)} />
+      <Area label="Over-intro" value={copy.aboutLead} onChange={(value) => set("aboutLead", value)} />
       <Area label="Over, linker kolom" value={copy.aboutLeft} onChange={(value) => set("aboutLeft", value)} />
       <Area label="Over, rechter kolom" value={copy.aboutRight} onChange={(value) => set("aboutRight", value)} />
       <Field label="Over-foto URL" value={copy.aboutPhoto} onChange={(value) => set("aboutPhoto", value)} />
