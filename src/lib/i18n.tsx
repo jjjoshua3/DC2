@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import { useSiteData } from "@/lib/data-service"
-import type { SiteData, WatPage } from "@/lib/site-types"
+import type { I18nMap, LangCode, PageCopy, PoemItem, Post, Project, SiteData, WatPage } from "@/lib/site-types"
 
 export const LOCALES = [
   { id: "nl", label: "Nederlands", short: "NL" },
@@ -361,28 +361,96 @@ export function useI18n() {
   return { locale, setLocale, t }
 }
 
-function localize(source: SiteData, locale: Exclude<Locale, "nl">): SiteData {
+function packValue(map: I18nMap | undefined, locale: LangCode, key: string) {
+  const value = map?.[locale]?.[key]
+  return typeof value === "string" && value.trim() ? value : ""
+}
+
+function translated(dutch: string, map: I18nMap | undefined, locale: LangCode, key: string, fallback?: string) {
+  return packValue(map, locale, key) || (fallback && fallback.trim() ? fallback : dutch)
+}
+
+function translatePost(post: Post, locale: LangCode): Post {
+  return {
+    ...post,
+    title: translated(post.title, post.i18n, locale, "title"),
+    lead: translated(post.lead, post.i18n, locale, "lead"),
+    body: translated(post.body, post.i18n, locale, "body"),
+  }
+}
+
+function translateProject(project: Project, locale: LangCode): Project {
+  return {
+    ...project,
+    title: translated(project.title, project.i18n, locale, "title"),
+    lead: translated(project.lead, project.i18n, locale, "lead"),
+    body: translated(project.body, project.i18n, locale, "body"),
+    ctaLabel: translated(project.ctaLabel, project.i18n, locale, "ctaLabel"),
+  }
+}
+
+function translatePoem(poem: PoemItem, locale: LangCode, fallback?: { title: string; body: string }) {
+  return {
+    ...poem,
+    title: translated(poem.title, poem.i18n, locale, "title", fallback?.title),
+    body: translated(poem.body, poem.i18n, locale, "body", fallback?.body),
+  }
+}
+
+function translateWat(page: WatPage, locale: LangCode, fallback?: Partial<WatPage>, poemFallbacks?: { id: string; title: string; body: string }[], poemLead?: string): WatPage {
+  const cards = page.cards.map((card, index) => {
+    const twin = fallback?.cards?.[index]
+    return {
+      ...card,
+      title: translated(card.title, card.i18n, locale, "title", twin?.title),
+      text: translated(card.text, card.i18n, locale, "text", twin?.text),
+    }
+  })
+  return {
+    ...page,
+    title: translated(page.title, page.i18n, locale, "title", fallback?.title),
+    lead: translated(page.lead, page.i18n, locale, "lead", fallback?.lead),
+    body: translated(page.body, page.i18n, locale, "body", fallback?.body),
+    offerTitle: translated(page.offerTitle, page.i18n, locale, "offerTitle", fallback?.offerTitle),
+    offerText: translated(page.offerText, page.i18n, locale, "offerText", fallback?.offerText),
+    poemPageTitle: translated(page.poemPageTitle || "", page.i18n, locale, "poemPageTitle", fallback?.poemPageTitle),
+    poemLead: translated(page.poemLead || "", page.i18n, locale, "poemLead", poemLead),
+    cards,
+    poems: page.poems?.map((poem) => translatePoem(poem, locale, poemFallbacks?.find((item) => item.id === poem.id))),
+  }
+}
+
+function localize(source: SiteData, locale: LangCode): SiteData {
   const text = copyText[locale]
   const pages = watText[locale]
+  const copy = source.copy
+  const stored = copy.i18n
   return {
     ...source,
     copy: {
-      ...source.copy,
-      ...text,
-      whoRole: text.whoRole,
-      people: source.copy.people.map((person, index) => (index === 0 ? { ...person, role: text.whoRole } : person)),
+      ...copy,
+      heroSubtitle: translated(copy.heroSubtitle, stored, locale, "heroSubtitle", text.heroSubtitle),
+      aboutTitle: translated(copy.aboutTitle, stored, locale, "aboutTitle", text.aboutTitle),
+      aboutLead: translated(copy.aboutLead, stored, locale, "aboutLead", text.aboutLead),
+      aboutLeft: translated(copy.aboutLeft, stored, locale, "aboutLeft", text.aboutLeft),
+      aboutRight: translated(copy.aboutRight, stored, locale, "aboutRight", text.aboutRight),
+      clientsTitle: translated(copy.clientsTitle, stored, locale, "clientsTitle", text.clientsTitle),
+      contactTitle: translated(copy.contactTitle, stored, locale, "contactTitle", text.contactTitle),
+      contactLead: translated(copy.contactLead, stored, locale, "contactLead", text.contactLead),
+      blogTitle: translated(copy.blogTitle, stored, locale, "blogTitle", text.blogTitle),
+      blogLead: translated(copy.blogLead, stored, locale, "blogLead", text.blogLead),
+      blogButton: translated(copy.blogButton, stored, locale, "blogButton", text.blogButton),
+      poem: translated(copy.poem, stored, locale, "poem", text.poem),
+      whoRole: translated(copy.whoRole, stored, locale, "whoRole", text.whoRole),
+      people: copy.people.map((person, index) =>
+        index === 0 ? { ...person, role: translated(person.role, stored, locale, "whoRole", text.whoRole) } : person,
+      ),
     },
-    wat: source.wat.map((page) => {
-      const next = pages[page.slug]
-      if (!next) return page
-      const translatedPoems = page.slug === "artistiek" ? poems[locale] : page.poems
-      return {
-        ...page,
-        ...next,
-        poemLead: page.slug === "artistiek" ? text.poemLead : page.poemLead,
-        poems: translatedPoems?.length ? translatedPoems : page.poems,
-      }
-    }),
+    wat: source.wat.map((page) =>
+      translateWat(page, locale, pages[page.slug], page.slug === "artistiek" ? poems[locale] : undefined, page.slug === "artistiek" ? text.poemLead : undefined),
+    ),
+    projects: source.projects.map((project) => translateProject(project, locale)),
+    posts: (source.posts ?? []).map((post) => translatePost(post, locale)),
   }
 }
 
@@ -391,4 +459,17 @@ export function useLocaleSite() {
   const { locale } = useI18n()
   const data = useMemo(() => (locale === "nl" ? source : localize(source, locale)), [source, locale])
   return { data, source, ready, locale }
+}
+
+export const EDIT_LANGS = ["nl", "en", "fr", "de"] as const
+export type EditLang = (typeof EDIT_LANGS)[number]
+
+export function readLang(map: I18nMap | undefined, lang: EditLang, key: string, dutch: string) {
+  if (lang === "nl") return dutch
+  return map?.[lang]?.[key] ?? ""
+}
+
+export function writeLang<T extends { i18n?: I18nMap }>(map: I18nMap | undefined, lang: EditLang, key: string, value: string): Partial<T> {
+  if (lang === "nl") return { [key]: value } as Partial<T>
+  return { i18n: { ...map, [lang]: { ...map?.[lang], [key]: value } } } as Partial<T>
 }

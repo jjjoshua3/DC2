@@ -1,7 +1,7 @@
 import type { PageCopy, Post, Project, SiteData } from "@/lib/site-types"
 import { projectCategories } from "@/lib/site-types"
 
-const COPY_LABELS: Record<keyof PageCopy, string> = {
+const COPY_LABELS: Record<Exclude<keyof PageCopy, "i18n">, string> = {
   heroTitle: "hoofdtitel",
   heroTagline: "ondertitel",
   heroSubtitle: "intro",
@@ -100,7 +100,7 @@ export function describeChange(before: SiteData, after: SiteData): { summary: st
   }
   if (orderChanged(before.posts ?? [], after.posts ?? [])) lines.push("Volgorde van blogs gewijzigd")
 
-  for (const key of Object.keys(COPY_LABELS) as (keyof PageCopy)[]) {
+  for (const key of Object.keys(COPY_LABELS) as Exclude<keyof PageCopy, "i18n">[]) {
     if (JSON.stringify(before.copy[key]) !== JSON.stringify(after.copy[key])) {
       lines.push(`Paginatekst aangepast: ${COPY_LABELS[key]}`)
     }

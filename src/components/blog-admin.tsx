@@ -1,7 +1,9 @@
 import { useState } from "react"
 import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react"
 import { DropImage, RichText } from "@/components/editor-fields"
+import { LangPicker } from "@/components/lang-picker"
 import { ArticleBody, ProjectCard } from "@/components/project-views"
+import { readLang, writeLang, type EditLang } from "@/lib/i18n"
 import { newId } from "@/lib/media"
 import type { Post, Project, SiteData } from "@/lib/site-types"
 
@@ -29,6 +31,7 @@ function asProject(post: Post): Project {
 export function BlogAdmin({ data, commit }: { data: SiteData; commit: (next: SiteData) => void }) {
   const [editing, setEditing] = useState<string | null>(null)
   const [preview, setPreview] = useState<"card" | "article">("article")
+  const [lang, setLang] = useState<EditLang>("nl")
   const posts = data.posts ?? []
   const current = posts.find((post) => post.id === editing) ?? null
 
@@ -108,7 +111,12 @@ export function BlogAdmin({ data, commit }: { data: SiteData; commit: (next: Sit
     )
   }
 
-  const view = asProject(current)
+  const view = asProject({
+    ...current,
+    title: readLang(current.i18n, lang, "title", current.title),
+    lead: readLang(current.i18n, lang, "lead", current.lead),
+    body: readLang(current.i18n, lang, "body", current.body),
+  })
   return (
     <section>
       <button type="button" className="text-sm font-semibold text-accent" onClick={() => setEditing(null)}>
@@ -128,17 +136,19 @@ export function BlogAdmin({ data, commit }: { data: SiteData; commit: (next: Sit
               {current.status === "published" ? "Live" : "Concept"}
             </button>
           </div>
+          <LangPicker lang={lang} onChange={setLang} />
+          {lang !== "nl" ? <p className="mt-2 text-xs text-muted">Leeg laten betekent: toon de Nederlandse tekst.</p> : null}
           <label className={label} htmlFor="blog-title">Titel</label>
-          <input id="blog-title" className={field} value={current.title} onChange={(event) => patch(current.id, { title: event.target.value })} />
+          <input id="blog-title" className={field} value={readLang(current.i18n, lang, "title", current.title)} onChange={(event) => patch(current.id, writeLang(current.i18n, lang, "title", event.target.value))} />
           <label className={label} htmlFor="blog-date">Datum</label>
           <input id="blog-date" type="date" className={field} value={current.date} onChange={(event) => patch(current.id, { date: event.target.value })} />
           <label className={label} htmlFor="blog-image">Cover-URL</label>
           <input id="blog-image" className={field} value={current.image} onChange={(event) => patch(current.id, { image: event.target.value })} />
           <DropImage label="Of upload een cover" onFile={(url) => patch(current.id, { image: url })} />
           <label className={label} htmlFor="blog-lead">Korte samenvatting</label>
-          <textarea id="blog-lead" rows={3} className={field} value={current.lead} onChange={(event) => patch(current.id, { lead: event.target.value })} />
+          <textarea id="blog-lead" rows={3} className={field} value={readLang(current.i18n, lang, "lead", current.lead)} onChange={(event) => patch(current.id, writeLang(current.i18n, lang, "lead", event.target.value))} />
           <p className={label}>Het verhaal</p>
-          <RichText key={current.id} value={current.body} onChange={(body) => patch(current.id, { body })} />
+          <RichText key={`${current.id}-${lang}`} value={readLang(current.i18n, lang, "body", current.body)} onChange={(body) => patch(current.id, writeLang(current.i18n, lang, "body", body))} />
           <button
             type="button"
             className="mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-accent"

@@ -19,6 +19,8 @@ import { compressImage, newId, toEmbedUrl } from "@/lib/media"
 import { adminSession, clearAdminSession } from "@/lib/admin-session"
 import { saveSiteDocument } from "@/lib/site-store"
 import { BlogAdmin } from "@/components/blog-admin"
+import { LangPicker } from "@/components/lang-picker"
+import { readLang, writeLang, type EditLang } from "@/lib/i18n"
 import { AnalyticsPanel } from "@/components/analytics-panel"
 import { AuditPanel } from "@/components/audit-panel"
 import { describeChange } from "@/lib/change-summary"
@@ -36,6 +38,7 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
   const [tab, setTab] = useState<Tab>("projects")
   const [editing, setEditing] = useState<string | null>(null)
   const [preview, setPreview] = useState<"card" | "article">("article")
+  const [lang, setLang] = useState<EditLang>("nl")
   const [notice, setNotice] = useState("")
   const [dragId, setDragId] = useState<string | null>(null)
   const [sync, setSync] = useState<"idle" | "saving" | "live" | "local">("idle")
@@ -294,6 +297,8 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
                     {current.status === "published" ? "Live" : "Concept"}
                   </button>
                 </div>
+                <LangPicker lang={lang} onChange={setLang} />
+                {lang !== "nl" ? <p className="mt-2 text-xs text-muted">Leeg laten betekent: toon de Nederlandse tekst.</p> : null}
 
                 <label className={label} htmlFor="title">
                   Titel
@@ -301,8 +306,8 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
                 <input
                   id="title"
                   className={field}
-                  value={current.title}
-                  onChange={(event) => patchProject(current.id, { title: event.target.value })}
+                  value={readLang(current.i18n, lang, "title", current.title)}
+                  onChange={(event) => patchProject(current.id, writeLang(current.i18n, lang, "title", event.target.value))}
                 />
 
                 <p className={label}>Categorieën</p>
@@ -386,15 +391,15 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
                   id="lead"
                   rows={3}
                   className={field}
-                  value={current.lead}
-                  onChange={(event) => patchProject(current.id, { lead: event.target.value })}
+                  value={readLang(current.i18n, lang, "lead", current.lead)}
+                  onChange={(event) => patchProject(current.id, writeLang(current.i18n, lang, "lead", event.target.value))}
                 />
 
                 <p className={label}>Het verhaal</p>
                 <RichText
-                  key={current.id}
-                  value={current.body}
-                  onChange={(body) => patchProject(current.id, { body })}
+                  key={`${current.id}-${lang}`}
+                  value={readLang(current.i18n, lang, "body", current.body)}
+                  onChange={(body) => patchProject(current.id, writeLang(current.i18n, lang, "body", body))}
                 />
 
                 <p className={label}>Extra foto’s</p>
@@ -431,8 +436,8 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
                   id="cta"
                   className={field}
                   placeholder="Lees de krant online"
-                  value={current.ctaLabel}
-                  onChange={(event) => patchProject(current.id, { ctaLabel: event.target.value })}
+                  value={readLang(current.i18n, lang, "ctaLabel", current.ctaLabel)}
+                  onChange={(event) => patchProject(current.id, writeLang(current.i18n, lang, "ctaLabel", event.target.value))}
                 />
                 <label className={label} htmlFor="ctaUrl">
                   Knop-link
@@ -479,10 +484,10 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
                 <div className="max-h-[78vh] overflow-auto rounded-card border border-line bg-card">
                   {preview === "card" ? (
                     <div className="p-4">
-                      <ProjectCard project={current} onOpen={() => setPreview("article")} />
+                      <ProjectCard project={{ ...current, title: readLang(current.i18n, lang, "title", current.title), lead: readLang(current.i18n, lang, "lead", current.lead), body: readLang(current.i18n, lang, "body", current.body), ctaLabel: readLang(current.i18n, lang, "ctaLabel", current.ctaLabel) }} onOpen={() => setPreview("article")} />
                     </div>
                   ) : (
-                    <ArticleBody project={current} stacked />
+                    <ArticleBody project={{ ...current, title: readLang(current.i18n, lang, "title", current.title), lead: readLang(current.i18n, lang, "lead", current.lead), body: readLang(current.i18n, lang, "body", current.body), ctaLabel: readLang(current.i18n, lang, "ctaLabel", current.ctaLabel) }} stacked />
                   )}
                 </div>
               </aside>

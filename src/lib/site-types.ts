@@ -1,3 +1,7 @@
+export type LangCode = "en" | "fr" | "de"
+export type TextPack = Partial<Record<string, string>>
+export type I18nMap = Partial<Record<LangCode, TextPack>>
+
 export type Project = {
   id: string
   title: string
@@ -12,6 +16,7 @@ export type Project = {
   gallery: string[]
   ctaLabel: string
   ctaUrl: string
+  i18n?: I18nMap
 }
 
 export type StyleCard = { title: string; text: string }
@@ -24,9 +29,9 @@ export type WhoPerson = {
   photos: string[]
 }
 
-export type OfferCard = { title: string; text: string; image: string }
+export type OfferCard = { title: string; text: string; image: string; i18n?: I18nMap }
 
-export type PoemItem = { id: string; title: string; body: string }
+export type PoemItem = { id: string; title: string; body: string; i18n?: I18nMap }
 
 export type WatPage = {
   slug: "journalistiek" | "artistiek" | "artistiek-journalistiek"
@@ -45,6 +50,7 @@ export type WatPage = {
   poemLead?: string
   poemPhoto?: string
   poems?: PoemItem[]
+  i18n?: I18nMap
 }
 
 export type PageCopy = {
@@ -77,6 +83,7 @@ export type PageCopy = {
   blogTitle: string
   blogLead: string
   blogButton: string
+  i18n?: I18nMap
 }
 
 export type ClientLogo = {
@@ -108,6 +115,7 @@ export type Post = {
   image: string
   lead: string
   body: string
+  i18n?: I18nMap
 }
 
 export type SiteData = {
