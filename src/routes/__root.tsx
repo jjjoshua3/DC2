@@ -6,7 +6,7 @@ import { NotFoundPage } from "@/components/not-found";
 import { LocaleProvider } from "@/lib/i18n";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "DE CONNECTORS | Celebrating";
+const APP_NAME = "DE CONNECTORS | Celebrating People";
 
 export const Route = createRootRoute({
   head: () => ({
