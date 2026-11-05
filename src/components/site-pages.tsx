@@ -6,6 +6,8 @@ import type { PoemItem, Project, WatPage } from "@/lib/site-types"
 import { CATEGORIES, projectCategories } from "@/lib/site-types"
 import { ProjectCard, ProjectDialog } from "@/components/project-views"
 import { ClientLogos, MediaPane, Poem, SiteShell, SocialsRow } from "@/components/site-shell"
+import { EditablePhoto, EditableText, publishSite, useEditor } from "@/components/live-edit"
+import { compressImage } from "@/lib/media"
 
 const STYLE_ICONS = [Heart, BadgeCheck, Smile]
 
@@ -44,15 +46,25 @@ function PhotoShow({ photos, alt }: { photos: string[]; alt: string }) {
 
 export function HomePage() {
   const { data } = useSiteData()
+  const editing = useEditor()
   const { copy } = data
-  const aboutText = [copy.aboutLead, copy.aboutLeft, copy.aboutRight].filter(Boolean)
+  function setCopy(part: Partial<typeof copy>, summary: string) {
+    publishSite({ ...data, copy: { ...copy, ...part } }, summary)
+  }
+  const person = copy.people[0]
   return (
     <SiteShell>
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 sm:py-24 lg:grid-cols-12">
         <div className="lg:col-span-7">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{copy.heroTagline}</p>
-          <h1 className="mt-3 font-display text-5xl font-extrabold tracking-tight sm:text-6xl">{copy.heroTitle}</h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">{copy.heroSubtitle}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">
+            <EditableText value={copy.heroTagline} onSave={(heroTagline) => setCopy({ heroTagline }, "Tagline aangepast")} />
+          </p>
+          <h1 className="mt-3 font-display text-5xl font-extrabold tracking-tight sm:text-6xl">
+            <EditableText value={copy.heroTitle} onSave={(heroTitle) => setCopy({ heroTitle }, "Hoofdtitel aangepast")} />
+          </h1>
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
+            <EditableText value={copy.heroSubtitle} multiline onSave={(heroSubtitle) => setCopy({ heroSubtitle }, "Intro aangepast")} />
+          </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/projecten" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink">
               Bekijk mijn projecten <ArrowRight className="h-4 w-4" />
@@ -61,7 +73,7 @@ export function HomePage() {
               Get in touch
             </Link>
             <Link to="/blog" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-card px-5 py-2.5 text-sm font-bold">
-              {copy.blogButton}
+              <EditableText value={copy.blogButton} onSave={(blogButton) => setCopy({ blogButton }, "Blogknop aangepast")} />
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -70,34 +82,73 @@ export function HomePage() {
           <div className="relative">
             <div className="absolute -bottom-3 -right-3 h-full w-full rounded-card bg-accent" />
             <div className="relative">
-              <PhotoShow photos={copy.people[0]?.photos ?? []} alt={copy.people[0]?.name || copy.whoName} />
+              <PhotoShow photos={person?.photos ?? []} alt={person?.name || copy.whoName} />
             </div>
           </div>
+          {editing ? (
+            <label className="relative mt-4 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-line bg-card px-4 text-sm font-semibold">
+              Foto toevoegen
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(event) => {
+                  const file = event.target.files?.[0]
+                  if (!file || !person) return
+                  void compressImage(file).then((url) => {
+                    const people = copy.people.map((item, index) => (index === 0 ? { ...item, photos: [...item.photos, url] } : item))
+                    publishSite({ ...data, copy: { ...copy, people, whoPhoto: people[0]?.photos[0] ?? "" } }, "Foto toegevoegd")
+                  })
+                }}
+              />
+            </label>
+          ) : null}
           <p className="relative mt-4 text-sm text-muted">
-            <span className="font-semibold text-ink">{copy.people[0]?.name || copy.whoName}</span> — {copy.people[0]?.role || copy.whoRole}
+            <span className="font-semibold text-ink">
+              <EditableText value={person?.name || copy.whoName} onSave={(name) => {
+                const people = copy.people.map((item, index) => (index === 0 ? { ...item, name } : item))
+                publishSite({ ...data, copy: { ...copy, people, whoName: name } }, "Naam aangepast")
+              }} />
+            </span>
+            {" — "}
+            <EditableText value={person?.role || copy.whoRole} onSave={(role) => {
+              const people = copy.people.map((item, index) => (index === 0 ? { ...item, role } : item))
+              publishSite({ ...data, copy: { ...copy, people, whoRole: role } }, "Rol aangepast")
+            }} />
           </p>
         </div>
       </section>
 
       <section className="bg-card">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-2">
-          <div className="relative">
-            <div className="absolute -bottom-3 -left-3 h-full w-full rounded-card bg-accent" />
+          {copy.aboutPhoto || editing ? (
             <div className="relative">
-              {copy.aboutPhoto ? (
-                <img src={copy.aboutPhoto} alt={copy.whoName} className="aspect-[4/5] w-full rounded-card object-cover object-top" />
-              ) : (
-                <div className="grid aspect-[4/5] place-items-center rounded-card bg-ink px-6 text-center font-display text-lg font-bold text-paper">Foto volgt</div>
-              )}
+              <div className="absolute -bottom-3 -left-3 h-full w-full rounded-card bg-accent" />
+              <div className="relative">
+                <EditablePhoto
+                  src={copy.aboutPhoto}
+                  alt={copy.whoName}
+                  className="aspect-[4/5] w-full rounded-card object-cover object-top"
+                  onSave={(aboutPhoto) => setCopy({ aboutPhoto }, "Foto bij Over mij toegevoegd")}
+                />
+              </div>
             </div>
-          </div>
+          ) : null}
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Over mij</p>
-            <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight">{copy.aboutTitle}</h2>
+            <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight">
+              <EditableText value={copy.aboutTitle} onSave={(aboutTitle) => setCopy({ aboutTitle }, "Over-titel aangepast")} />
+            </h2>
             <div className="mt-6 space-y-4">
-              {aboutText.map((paragraph) => (
-                <p key={paragraph.slice(0, 24)} className="leading-relaxed text-ink-soft">{paragraph}</p>
-              ))}
+              <p className="leading-relaxed text-ink-soft">
+                <EditableText value={copy.aboutLead} multiline onSave={(aboutLead) => setCopy({ aboutLead }, "Over-tekst aangepast")} />
+              </p>
+              <p className="leading-relaxed text-ink-soft">
+                <EditableText value={copy.aboutLeft} multiline onSave={(aboutLeft) => setCopy({ aboutLeft }, "Over-tekst aangepast")} />
+              </p>
+              <p className="leading-relaxed text-ink-soft">
+                <EditableText value={copy.aboutRight} multiline onSave={(aboutRight) => setCopy({ aboutRight }, "Over-tekst aangepast")} />
+              </p>
             </div>
           </div>
         </div>
@@ -119,24 +170,27 @@ export function HomePage() {
         </div>
       </section>
 
-      {copy.bannerText ? (
-        <section className="bg-ink text-paper">
-          <p className="mx-auto max-w-4xl px-4 py-16 text-center font-story text-3xl italic sm:text-5xl">{copy.bannerText}</p>
-        </section>
-      ) : null}
+      <section className="bg-ink text-paper">
+        <p className="mx-auto max-w-4xl px-4 py-16 text-center font-story text-3xl italic sm:text-5xl">
+          <EditableText value={copy.bannerText} onSave={(bannerText) => setCopy({ bannerText }, "Banner aangepast")} />
+        </p>
+      </section>
 
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-2">
         <Poem bare />
-        <div className="relative">
-          <div className="absolute -bottom-3 -right-3 h-full w-full rounded-card bg-accent" />
+        {(copy.poemPhoto || editing) ? (
           <div className="relative">
-            {copy.poemPhoto ? (
-              <img src={copy.poemPhoto} alt="" className="aspect-[4/5] w-full rounded-card object-cover object-top" />
-            ) : (
-              <div className="grid aspect-[4/5] place-items-center rounded-card bg-ink px-6 text-center font-display text-lg font-bold text-paper">Foto volgt</div>
-            )}
+            <div className="absolute -bottom-3 -right-3 h-full w-full rounded-card bg-accent" />
+            <div className="relative">
+              <EditablePhoto
+                src={copy.poemPhoto}
+                alt=""
+                className="aspect-[4/5] w-full rounded-card object-cover object-top"
+                onSave={(poemPhoto) => setCopy({ poemPhoto }, "Foto bij spoken word toegevoegd")}
+              />
+            </div>
           </div>
-        </div>
+        ) : null}
       </section>
 
       <ClientLogos />
@@ -252,28 +306,43 @@ export function WatIndexPage() {
 
 export function GedichtenPage() {
   const { data } = useSiteData()
+  const editing = useEditor()
   const source = data.wat.find((item) => item.slug === "artistiek")
   const photo = source?.poemPhoto || ""
   const lead = source?.poemLead || ""
+  function patch(part: Partial<NonNullable<typeof source>>, summary: string) {
+    if (!source) return
+    publishSite(
+      { ...data, wat: data.wat.map((item) => (item.slug === "artistiek" ? { ...item, ...part } : item)) },
+      summary,
+    )
+  }
   return (
     <SiteShell>
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Artistiek</p>
-        <h1 className="mt-3 font-display text-5xl font-extrabold tracking-tight sm:text-7xl">{source?.poemPageTitle || "Gedichten"}</h1>
-        {photo || lead || source?.body ? (
-          <div className="mt-10 grid items-center gap-10 lg:grid-cols-2">
-            <div className="relative max-w-md">
-              <div className="absolute -bottom-3 -left-3 h-full w-full rounded-card bg-accent" />
-              <div className="relative">
-                {photo ? (
-                  <img src={photo} alt="" className="aspect-[4/5] w-full rounded-card object-cover object-top" />
-                ) : (
-                  <div className="grid aspect-[4/5] place-items-center rounded-card bg-ink px-6 text-center font-display text-lg font-bold text-paper">Foto volgt</div>
-                )}
+        <h1 className="mt-3 font-display text-5xl font-extrabold tracking-tight sm:text-7xl">
+          <EditableText value={source?.poemPageTitle || "Gedichten"} onSave={(poemPageTitle) => patch({ poemPageTitle }, "Titel gedichten aangepast")} />
+        </h1>
+        {photo || lead || editing ? (
+          <div className={`mt-10 grid items-center gap-10 ${photo || editing ? "lg:grid-cols-2" : ""}`}>
+            {photo || editing ? (
+              <div className="relative max-w-md">
+                <div className="absolute -bottom-3 -left-3 h-full w-full rounded-card bg-accent" />
+                <div className="relative">
+                  <EditablePhoto
+                    src={photo}
+                    alt=""
+                    className="aspect-[4/5] w-full rounded-card object-cover object-top"
+                    onSave={(poemPhoto) => patch({ poemPhoto }, "Foto bij gedichten toegevoegd")}
+                  />
+                </div>
               </div>
-            </div>
+            ) : null}
             <div>
-              {lead ? <p className="text-xl font-semibold leading-relaxed">{lead}</p> : null}
+              <p className="text-xl font-semibold leading-relaxed">
+                <EditableText value={lead} multiline onSave={(poemLead) => patch({ poemLead }, "Intro bij gedichten aangepast")} />
+              </p>
             </div>
           </div>
         ) : null}
@@ -340,6 +409,7 @@ function GedichtenZaal({ poems }: { poems: PoemItem[] }) {
         const lines = poem.body.split("\n").map((line) => line.trim()).filter(Boolean)
         return (
           <section id={`gedicht-${poem.id}`} key={poem.id} className="scroll-mt-16">
+            <PoemEditor poem={poem} />
             <PoemPoster index={index} title={poem.title} lines={lines} />
           </section>
         )
@@ -480,21 +550,76 @@ function PlainPoster({ index, title, lines }: { index: number; title: string; li
   )
 }
 
+function PoemEditor({ poem }: { poem: PoemItem }) {
+  const editing = useEditor()
+  const { data } = useSiteData()
+  if (!editing) return null
+  function save(part: Partial<PoemItem>) {
+    publishSite(
+      {
+        ...data,
+        wat: data.wat.map((item) =>
+          item.slug === "artistiek"
+            ? { ...item, poems: (item.poems ?? []).map((entry) => (entry.id === poem.id ? { ...entry, ...part } : entry)) }
+            : item,
+        ),
+      },
+      "Gedicht aangepast",
+    )
+  }
+  return (
+    <div className="bg-paper px-4 py-4">
+      <div className="mx-auto max-w-3xl">
+        <p className="text-xs font-bold uppercase tracking-widest text-muted">Dit gedicht aanpassen</p>
+        <p className="mt-2 font-display text-2xl font-extrabold">
+          <EditableText value={poem.title} onSave={(title) => save({ title })} />
+        </p>
+        <div className="mt-2 text-sm">
+          <EditableText value={poem.body} multiline onSave={(body) => save({ body })} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function WatBody({ page }: { page: WatPage }) {
+  const { data } = useSiteData()
+  const editing = useEditor()
+  function save(part: Partial<WatPage>, summary: string) {
+    publishSite(
+      { ...data, wat: data.wat.map((item) => (item.slug === page.slug ? { ...item, ...part } : item)) },
+      summary,
+    )
+  }
   return (
     <div className="mt-12">
       <div className="grid items-center gap-10 lg:grid-cols-12">
         <div className="relative lg:col-span-6">
           <div className="absolute -bottom-3 -right-3 h-full w-full rounded-card bg-accent" />
           <div className="relative">
-            <MediaPane type={page.mediaType} url={page.mediaUrl} label={page.title} />
+            {page.mediaType === "image" && (page.mediaUrl || editing) ? (
+              <EditablePhoto
+                src={page.mediaUrl}
+                alt={page.title}
+                className="aspect-[4/3] w-full rounded-card object-cover"
+                onSave={(mediaUrl) => save({ mediaUrl, mediaType: "image" }, "Beeld aangepast")}
+              />
+            ) : (
+              <MediaPane type={page.mediaType} url={page.mediaUrl} label={page.title} />
+            )}
           </div>
         </div>
         <div className="lg:col-span-6">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wat ik doe</p>
-          <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{page.title}</h1>
-          <p className="mt-6 font-story text-xl italic leading-relaxed text-ink">{page.lead}</p>
-          <p className="mt-5 leading-relaxed text-ink-soft">{page.body}</p>
+          <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
+            <EditableText value={page.title} onSave={(title) => save({ title }, "Titel aangepast")} />
+          </h1>
+          <p className="mt-6 font-story text-xl italic leading-relaxed text-ink">
+            <EditableText value={page.lead} multiline onSave={(lead) => save({ lead }, "Tekst aangepast")} />
+          </p>
+          <p className="mt-5 leading-relaxed text-ink-soft">
+            <EditableText value={page.body} multiline onSave={(body) => save({ body }, "Tekst aangepast")} />
+          </p>
         </div>
       </div>
       {page.exampleUrl ? (
@@ -590,8 +715,12 @@ export function ContactPage() {
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:py-20 lg:grid-cols-2">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Contact</p>
-            <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{copy.contactTitle}</h1>
-            <p className="mt-5 max-w-md text-lg leading-relaxed text-paper/80">{copy.contactLead}</p>
+            <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
+              <EditableText value={copy.contactTitle} onSave={(contactTitle) => publishSite({ ...data, copy: { ...copy, contactTitle } }, "Contacttitel aangepast")} />
+            </h1>
+            <p className="mt-5 max-w-md text-lg leading-relaxed text-paper/80">
+              <EditableText value={copy.contactLead} multiline onSave={(contactLead) => publishSite({ ...data, copy: { ...copy, contactLead } }, "Contacttekst aangepast")} />
+            </p>
             <a href={`mailto:${copy.email}`} className="mt-6 inline-flex text-lg font-bold underline decoration-accent underline-offset-4">
               {copy.email}
             </a>

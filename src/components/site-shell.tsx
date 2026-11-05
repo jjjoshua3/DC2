@@ -4,6 +4,7 @@ import { ChevronDown, Linkedin, Menu, Twitter, X, Youtube } from "lucide-react"
 import { useSiteData } from "@/lib/data-service"
 import type { Socials } from "@/lib/site-types"
 import { toEmbedUrl } from "@/lib/media"
+import { EditBar, EditableText, publishSite, useEditor } from "@/components/live-edit"
 
 const LINKS = [
   { to: "/", label: "Over mij" },
@@ -136,10 +137,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
           <div className="hidden items-center xl:flex">
             <SocialsRow socials={data.design.socials} />
           </div>
-          <Link to="/admin" className="ml-1 hidden min-h-11 items-center rounded-full border border-line bg-card px-4 text-sm font-semibold text-ink hover:border-accent lg:inline-flex">
-            Beheer
-          </Link>
-          <button type="button" className="ml-auto grid h-11 w-11 place-items-center rounded-full border border-line lg:hidden" onClick={() => setOpen((value) => !value)} aria-label="Menu">
+          <button type="button" className="ml-auto grid h-11 w-11 place-items-center rounded-full border border-line lg:ml-1 lg:hidden" onClick={() => setOpen((value) => !value)} aria-label="Menu">
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
@@ -168,13 +166,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
                 {item.label}
               </Link>
             ))}
-            <Link to="/admin" onClick={() => setOpen(false)} className="flex min-h-11 items-center text-base font-semibold">
-              Beheer
-            </Link>
           </nav>
         ) : null}
       </header>
       <main>{children}</main>
+      <EditBar />
       <footer className="border-t border-line bg-paper">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-sm text-muted">
@@ -201,7 +197,12 @@ export function ClientLogos() {
   if (!clients.length) return null
   return (
     <div className="border-t border-line py-14">
-      <p className="px-4 text-center text-xs font-bold uppercase tracking-[0.22em] text-muted">{data.copy.clientsTitle}</p>
+      <p className="px-4 text-center text-xs font-bold uppercase tracking-[0.22em] text-muted">
+        <EditableText
+          value={data.copy.clientsTitle}
+          onSave={(clientsTitle) => publishSite({ ...data, copy: { ...data.copy, clientsTitle } }, "Kop boven de logo’s aangepast")}
+        />
+      </p>
       <div className="mx-auto mt-8 grid max-w-6xl grid-cols-2 justify-items-center gap-5 px-4 sm:grid-cols-3 lg:grid-cols-4">
         {clients.map((client) => (
           <div key={client.id} className="grid h-36 w-full max-w-64 place-items-center rounded-2xl bg-ink px-6 sm:h-40">
@@ -235,19 +236,47 @@ export function MediaPane({ type, url, label }: { type: "image" | "video"; url: 
 
 export function Poem({ bare = false }: { bare?: boolean }) {
   const { data } = useSiteData()
+  const editing = useEditor()
+  const [open, setOpen] = useState(false)
+  const [draft, setDraft] = useState(data.copy.poem)
   const lines = data.copy.poem.split("\n").map((line) => line.trim()).filter(Boolean)
-  if (!lines.length) return null
-  const body = lines.map((line) =>
-    /geschreven door/i.test(line) ? (
-      <p key={line} className="mt-4 text-sm text-muted">{line}</p>
-    ) : (
-      <p key={line} className={`font-story italic leading-snug text-ink ${bare ? "text-xl sm:text-2xl" : "text-2xl sm:text-4xl"}`}>{line}</p>
-    ),
+  if (!lines.length && !editing) return null
+  const body = open ? (
+    <textarea
+      autoFocus
+      rows={10}
+      className="w-full rounded-md bg-card p-3 font-sans text-base not-italic text-ink outline outline-2 outline-accent"
+      value={draft}
+      onChange={(event) => setDraft(event.target.value)}
+      onBlur={() => {
+        setOpen(false)
+        if (draft !== data.copy.poem) {
+          publishSite({ ...data, copy: { ...data.copy, poem: draft } }, "Spoken word aangepast")
+        }
+      }}
+    />
+  ) : (
+    lines.map((line) =>
+      /geschreven door/i.test(line) ? (
+        <p key={line} className="mt-4 text-sm text-muted">{line}</p>
+      ) : (
+        <p key={line} className={`font-story italic leading-snug text-ink ${bare ? "text-xl sm:text-2xl" : "text-2xl sm:text-4xl"}`}>{line}</p>
+      ),
+    )
   )
-  if (bare) return <div className="flex flex-col gap-3">{body}</div>
+  const frame = editing && !open ? "cursor-text rounded-md outline outline-1 outline-dashed outline-transparent hover:outline-accent" : ""
+  if (bare) {
+    return (
+      <div className={`flex flex-col gap-3 ${frame}`} onClick={() => editing && !open && (setDraft(data.copy.poem), setOpen(true))}>
+        {body}
+      </div>
+    )
+  }
   return (
     <div className="border-y border-line bg-paper">
-      <div className="mx-auto flex max-w-3xl flex-col gap-3 px-4 py-14">{body}</div>
+      <div className={`mx-auto flex max-w-3xl flex-col gap-3 px-4 py-14 ${frame}`} onClick={() => editing && !open && (setDraft(data.copy.poem), setOpen(true))}>
+        {body}
+      </div>
     </div>
   )
 }
