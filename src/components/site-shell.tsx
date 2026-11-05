@@ -160,12 +160,6 @@ export function SiteShell({ children }: { children: ReactNode }) {
               {t("about")}
             </Link>
             <WatMenu path={path} />
-            <Link
-              to="/gedichten"
-              className={`rounded-full px-2.5 py-2 text-sm font-semibold ${active(path, "/gedichten") ? "text-accent" : "text-ink-soft hover:text-ink"}`}
-            >
-              {t("poems")}
-            </Link>
             {LINKS.map((item) => (
               <Link
                 key={item.to}
@@ -203,9 +197,6 @@ export function SiteShell({ children }: { children: ReactNode }) {
                 {page.title}
               </Link>
             ))}
-            <Link to="/gedichten" onClick={() => setOpen(false)} className="flex min-h-11 items-center text-base font-semibold">
-              {t("poems")}
-            </Link>
             {LINKS.map((item) => (
               <Link key={item.to} to={item.to} onClick={() => setOpen(false)} className="flex min-h-11 items-center text-base font-semibold">
                 {t(item.key)}

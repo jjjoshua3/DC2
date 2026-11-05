@@ -617,13 +617,13 @@ function WatForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =>
           </button>
           {page.slug === "artistiek" ? (
             <div className="mt-8 border-t border-line pt-6">
-              <h3 className="font-display text-lg font-extrabold">Pagina Gedichten</h3>
-              <p className="mt-1 text-sm text-muted">Dit staat op /gedichten, niet op de Wat-pagina.</p>
-              <Field label="Paginatitel" value={page.poemPageTitle || "Gedichten"} onChange={(value) => patch(data, save, index, { poemPageTitle: value })} />
-              <Area label="Korte tekst naast de foto" value={page.poemLead || ""} onChange={(value) => patch(data, save, index, { poemLead: value })} />
+              <h3 className="font-display text-lg font-extrabold">Artistiek</h3>
+              <p className="mt-1 text-sm text-muted">Dit is de Artistiek-pagina. De vakjes werken als de blogs: een foto, en rechts het gedicht.</p>
+              <Field label="Subtitel" value={!page.poemPageTitle || page.poemPageTitle === "Gedichten" ? "Stories & Gedichten" : page.poemPageTitle} onChange={(value) => patch(data, save, index, { poemPageTitle: value })} />
+              <Area label="Tekst naast de foto" value={page.poemLead?.startsWith("Drie gedichten") ? "" : page.poemLead || ""} onChange={(value) => patch(data, save, index, { poemLead: value })} />
               <Field label="Foto-URL" value={page.poemPhoto || ""} onChange={(value) => patch(data, save, index, { poemPhoto: value })} />
-              <DropImage label="Upload foto" onFile={(url) => patch(data, save, index, { poemPhoto: url })} />
-              <p className="mt-6 text-sm text-muted">Gedichten. Elke regel op een nieuwe regel.</p>
+              <DropImage label="Upload foto naast de tekst" onFile={(url) => patch(data, save, index, { poemPhoto: url })} />
+              <p className="mt-6 text-sm text-muted">Gedichten. Elke regel op een nieuwe regel. Het lettertype op de pagina is hetzelfde als bij Stad van Ons.</p>
               {(page.poems ?? []).map((poem) => (
                 <div key={poem.id} className="mt-4 rounded-xl border border-line bg-paper p-4">
                   <div className="flex items-center justify-between">
@@ -644,8 +644,23 @@ function WatForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =>
                       patch(data, save, index, { poems: next })
                     }}
                   />
+                  <Field
+                    label="Foto-URL van het vakje"
+                    value={poem.image || ""}
+                    onChange={(value) => {
+                      const next = (page.poems ?? []).map((item) => (item.id === poem.id ? { ...item, image: value } : item))
+                      patch(data, save, index, { poems: next })
+                    }}
+                  />
+                  <DropImage
+                    label="Upload foto voor het vakje"
+                    onFile={(url) => {
+                      const next = (page.poems ?? []).map((item) => (item.id === poem.id ? { ...item, image: url } : item))
+                      patch(data, save, index, { poems: next })
+                    }}
+                  />
                   <Area
-                    label="Tekst"
+                    label="Gedicht"
                     value={poem.body}
                     onChange={(value) => {
                       const next = (page.poems ?? []).map((item) => (item.id === poem.id ? { ...item, body: value } : item))
@@ -658,7 +673,7 @@ function WatForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =>
                 type="button"
                 className="mt-4 inline-flex min-h-11 items-center rounded-full border border-line px-4 text-sm font-semibold"
                 onClick={() => {
-                  const item: PoemItem = { id: newId(), title: "Nieuw gedicht", body: "" }
+                  const item: PoemItem = { id: newId(), title: "Nieuw gedicht", body: "", image: "" }
                   patch(data, save, index, { poems: [...(page.poems ?? []), item] })
                 }}
               >

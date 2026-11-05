@@ -16,8 +16,8 @@ export function NotFoundPage() {
               <Link to="/" className="inline-flex min-h-11 items-center rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink">
                 {t("about")}
               </Link>
-              <Link to="/gedichten" className="inline-flex min-h-11 items-center rounded-full border border-paper/30 px-5 py-2.5 text-sm font-bold">
-                {t("poems")}
+              <Link to="/wat/$slug" params={{ slug: "artistiek" }} className="inline-flex min-h-11 items-center rounded-full border border-paper/30 px-5 py-2.5 text-sm font-bold">
+                Artistiek
               </Link>
             </div>
           </div>

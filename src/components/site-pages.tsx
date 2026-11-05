@@ -44,6 +44,41 @@ function PhotoShow({ photos, alt }: { photos: string[]; alt: string }) {
   )
 }
 
+function ContactBand() {
+  const { data } = useLocaleSite()
+  const { t } = useI18n()
+  const { copy } = data
+  function setCopy(part: Partial<typeof copy>, summary: string) {
+    publishSite({ ...data, copy: { ...copy, ...part } }, summary)
+  }
+  return (
+    <section className="bg-ink text-paper">
+      <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-16 sm:flex-row sm:items-end sm:justify-between">
+        <div className="max-w-xl">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{t("contact")}</p>
+          <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight">
+            <EditableText value={copy.contactTitle} onSave={(contactTitle) => setCopy({ contactTitle }, "Contacttitel aangepast")} />
+          </h2>
+          <p className="mt-3 leading-relaxed text-paper/80">
+            <EditableText value={copy.contactLead} multiline onSave={(contactLead) => setCopy({ contactLead }, "Contacttekst aangepast")} />
+          </p>
+          <a href={`mailto:${copy.email}`} className="mt-4 inline-flex font-bold underline decoration-accent underline-offset-4">
+            {copy.email}
+          </a>
+        </div>
+        <Link to="/contact" className="inline-flex min-h-11 items-center rounded-full bg-accent px-5 text-sm font-bold text-accent-ink">
+          {t("touch")}
+        </Link>
+      </div>
+    </section>
+  )
+}
+
+function storiesSubtitle(value?: string) {
+  if (!value || value === "Gedichten") return "Stories & Gedichten"
+  return value
+}
+
 export function HomePage() {
   const { data } = useLocaleSite()
   const { t } = useI18n()
@@ -230,26 +265,7 @@ export function HomePage() {
       ) : null}
 
       <ClientLogos />
-
-      <section className="bg-ink text-paper">
-        <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-16 sm:flex-row sm:items-end sm:justify-between">
-          <div className="max-w-xl">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{t("contact")}</p>
-            <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight">
-              <EditableText value={copy.contactTitle} onSave={(contactTitle) => setCopy({ contactTitle }, "Contacttitel aangepast")} />
-            </h2>
-            <p className="mt-3 leading-relaxed text-paper/80">
-              <EditableText value={copy.contactLead} multiline onSave={(contactLead) => setCopy({ contactLead }, "Contacttekst aangepast")} />
-            </p>
-            <a href={`mailto:${copy.email}`} className="mt-4 inline-flex font-bold underline decoration-accent underline-offset-4">
-              {copy.email}
-            </a>
-          </div>
-          <Link to="/contact" className="inline-flex min-h-11 items-center rounded-full bg-accent px-5 text-sm font-bold text-accent-ink">
-            {t("touch")}
-          </Link>
-        </div>
-      </section>
+      <ContactBand />
     </SiteShell>
   )
 }
@@ -408,9 +424,10 @@ export function GedichtenPage() {
   )
 }
 
-export function WatDetailPage({ slug }: { slug: string }) {
+export function WatDetailPage({ slug, gedicht = "" }: { slug: string; gedicht?: string }) {
   const { data } = useLocaleSite()
   const page = data.wat.find((item) => item.slug === slug)
+  if (page?.slug === "artistiek") return <ArtistiekPage page={page} gedicht={gedicht} />
   return (
     <SiteShell>
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
@@ -418,6 +435,127 @@ export function WatDetailPage({ slug }: { slug: string }) {
         {page ? <WatBody page={page} /> : <p className="mt-10 text-ink-soft">Deze pagina bestaat niet.</p>}
       </section>
     </SiteShell>
+  )
+}
+
+function ArtistiekPage({ page, gedicht }: { page: WatPage; gedicht: string }) {
+  const { data } = useLocaleSite()
+  const poem = (page.poems ?? []).find((item) => item.id === gedicht) || null
+  function patch(part: Partial<WatPage>, summary: string) {
+    publishSite(
+      { ...data, wat: data.wat.map((item) => (item.slug === "artistiek" ? { ...item, ...part } : item)) },
+      summary,
+    )
+  }
+  function patchPoem(id: string, part: Partial<PoemItem>, summary: string) {
+    patch(
+      { poems: (page.poems ?? []).map((item) => (item.id === id ? { ...item, ...part } : item)) },
+      summary,
+    )
+  }
+  if (poem) {
+    return (
+      <SiteShell>
+        <article className="mx-auto grid max-w-6xl items-start gap-10 px-4 py-12 font-story sm:py-16 lg:grid-cols-2">
+          <div>
+            <PoemPhoto
+              src={poem.image || ""}
+              onSave={(image) => patchPoem(poem.id, { image }, "Foto bij gedicht toegevoegd")}
+            />
+          </div>
+          <div>
+            <Link to="/wat/$slug" params={{ slug: "artistiek" }} search={{ gedicht: "" }} className="text-sm font-semibold text-accent">
+              Artistiek
+            </Link>
+            <h1 className="mt-4 font-story text-4xl italic leading-tight sm:text-5xl">
+              <EditableText value={poem.title} onSave={(title) => patchPoem(poem.id, { title }, "Titel gedicht aangepast")} />
+            </h1>
+            <div className="mt-8 font-story text-xl italic leading-snug text-ink sm:text-2xl">
+              <EditableText
+                className="whitespace-pre-wrap"
+                value={poem.body}
+                multiline
+                onSave={(body) => patchPoem(poem.id, { body }, "Gedicht aangepast")}
+              />
+            </div>
+          </div>
+        </article>
+      </SiteShell>
+    )
+  }
+  const intro = page.poemLead?.startsWith("Drie gedichten") ? "" : page.poemLead || ""
+  return (
+    <SiteShell>
+      <section className="mx-auto max-w-6xl px-4 py-16 font-story sm:py-20">
+        <h1 className="font-story text-5xl leading-none sm:text-6xl">
+          <EditableText value={page.title || "Artistiek"} onSave={(title) => patch({ title }, "Titel Artistiek aangepast")} />
+        </h1>
+        <p className="mt-4 font-story text-2xl italic text-ink-soft">
+          <EditableText
+            value={storiesSubtitle(page.poemPageTitle)}
+            onSave={(poemPageTitle) => patch({ poemPageTitle }, "Subtitel Artistiek aangepast")}
+          />
+        </p>
+        <div className="mt-12 grid items-center gap-10 lg:grid-cols-2">
+          <PoemPhoto src={page.poemPhoto || ""} onSave={(poemPhoto) => patch({ poemPhoto }, "Foto bij Artistiek toegevoegd")} />
+          <p className="font-story text-xl italic leading-relaxed text-ink-soft">
+            <EditableText value={intro} multiline onSave={(poemLead) => patch({ poemLead }, "Tekst bij Artistiek aangepast")} />
+          </p>
+        </div>
+        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {(page.poems ?? []).map((item) => (
+            <Link
+              key={item.id}
+              to="/wat/$slug"
+              params={{ slug: "artistiek" }}
+              search={{ gedicht: item.id }}
+              className="group flex h-full flex-col overflow-hidden rounded-card border border-line bg-card text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <span className="block aspect-[4/3] overflow-hidden bg-ink">
+                {item.image ? (
+                  <img src={item.image} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" />
+                ) : (
+                  <span className="grid h-full place-items-center px-6 text-center font-story text-3xl italic text-paper">{item.title}</span>
+                )}
+              </span>
+              <span className="flex flex-1 flex-col gap-2 p-5">
+                <span className="font-story text-2xl italic leading-tight">{item.title}</span>
+                {item.body ? <span className="line-clamp-3 font-story text-sm italic leading-relaxed text-ink-soft">{item.body.split("\n").find((line) => line.trim())}</span> : null}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+      <ContactBand />
+    </SiteShell>
+  )
+}
+
+function PoemPhoto({ src, onSave }: { src: string; onSave: (url: string) => void }) {
+  const editing = useEditor()
+  return (
+    <div>
+      {src ? (
+        <img src={src} alt="" className="aspect-[4/5] w-full rounded-card object-cover object-top" />
+      ) : editing ? (
+        <div className="grid aspect-[4/5] place-items-center rounded-card border border-dashed border-line bg-card font-story text-2xl italic text-muted">Foto</div>
+      ) : null}
+      {editing ? (
+        <label className="mt-4 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-line bg-card px-4 text-sm font-semibold">
+          Foto uploaden
+          <input
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.target.files?.[0]
+              if (!file) return
+              void compressImage(file).then(onSave)
+            }}
+          />
+        </label>
+      ) : null}
+    </div>
   )
 }
 

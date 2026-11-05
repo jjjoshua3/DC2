@@ -31,7 +31,7 @@ export type WhoPerson = {
 
 export type OfferCard = { title: string; text: string; image: string; i18n?: I18nMap }
 
-export type PoemItem = { id: string; title: string; body: string; i18n?: I18nMap }
+export type PoemItem = { id: string; title: string; body: string; image?: string; i18n?: I18nMap }
 
 export type WatPage = {
   slug: "journalistiek" | "artistiek" | "artistiek-journalistiek"
