@@ -283,6 +283,7 @@ function WorkStrip() {
   if (!works.length) return null
   return (
     <section className="mx-auto max-w-6xl px-4 pb-6">
+      <p className="mb-4 text-xs font-bold uppercase tracking-[0.22em] text-accent">Werk in beeld</p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {works.map((project) => (
           <Link key={project.id} to="/projecten" className="group relative overflow-hidden rounded-card">
