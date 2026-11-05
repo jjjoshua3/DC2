@@ -3,7 +3,6 @@ import { CmsPage } from "@/components/cms-page"
 import { clearAdminSession, setAdminSession, adminSession, adminIdleDue, markIdleLogout, markForcedLogout, takeIdleNotice, takeForcedNotice, touchAdminActivity, hardLeave } from "@/lib/admin-session"
 import { logLogout, postAudit } from "@/lib/audit-client"
 import { adminAccount } from "@/lib/admins"
-import { SITE_VERSION } from "@/lib/site-version"
 
 type Pending = {
   token: string
@@ -214,7 +213,6 @@ function AdminLogin({ idleNotice, forcedNotice, onCloseIdle }: { idleNotice: boo
         <p className="mt-2 text-sm leading-relaxed text-muted">
           Vul je e-mailadres in. Je krijgt een magische link om in te loggen.
         </p>
-        <p className="mt-2 text-xs text-muted">Versie {SITE_VERSION}</p>
         <label className="mt-6 block text-sm font-semibold" htmlFor="email">
           E-mailadres
         </label>
