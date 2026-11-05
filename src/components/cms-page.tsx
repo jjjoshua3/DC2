@@ -757,50 +757,7 @@ function CopyForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =
       <Area label="Over, rechter kolom" value={copy.aboutRight} onChange={(value) => set("aboutRight", value)} />
       <Field label="Over-foto URL" value={copy.aboutPhoto} onChange={(value) => set("aboutPhoto", value)} />
       <DropImage label="Upload foto bij Over mij" onFile={(url) => set("aboutPhoto", url)} />
-      <Field label="Stijl-titel" value={copy.stylesTitle} onChange={(value) => set("stylesTitle", value)} />
-      {copy.styles.map((card, index) => (
-        <div key={index} className="mt-4 rounded-xl border border-line bg-card p-4">
-          <Field
-            label={`Stijl ${index + 1} titel`}
-            value={card.title}
-            onChange={(value) => {
-              const styles = copy.styles.map((item, i) => (i === index ? { ...item, title: value } : item))
-              set("styles", styles)
-            }}
-          />
-          <Area
-            label="Tekst"
-            value={card.text}
-            onChange={(value) => {
-              const styles = copy.styles.map((item, i) => (i === index ? { ...item, text: value } : item))
-              set("styles", styles)
-            }}
-          />
-        </div>
-      ))}
-      <Field label="Diensten-titel" value={copy.servicesTitle} onChange={(value) => set("servicesTitle", value)} />
-      {copy.services.map((card, index) => (
-        <div key={index} className="mt-4 rounded-xl border border-line bg-card p-4">
-          <Field
-            label={`Dienst ${index + 1}`}
-            value={card.title}
-            onChange={(value) => {
-              const services = copy.services.map((item, i) => (i === index ? { ...item, title: value } : item))
-              set("services", services)
-            }}
-          />
-          <Area
-            label="Tekst"
-            value={card.text}
-            onChange={(value) => {
-              const services = copy.services.map((item, i) => (i === index ? { ...item, text: value } : item))
-              set("services", services)
-            }}
-          />
-        </div>
-      ))}
       <Field label="Banner" value={copy.bannerText} onChange={(value) => set("bannerText", value)} />
-      <Field label="Wie-titel" value={copy.whoTitle} onChange={(value) => set("whoTitle", value)} />
       <p className="mt-6 text-sm text-muted">Voeg mensen toe. Bij twee of meer foto’s start vanzelf een diashow.</p>
       {copy.people.map((person, index) => (
         <div key={person.id} className="mt-4 rounded-xl border border-line bg-card p-4">
@@ -839,7 +796,6 @@ function CopyForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =
       >
         Iemand toevoegen
       </button>
-      <Field label="Citaat" value={copy.quote} onChange={(value) => set("quote", value)} />
       <Area label="Spoken word" value={copy.poem} onChange={(value) => set("poem", value)} />
       <Field label="Foto naast spoken word" value={copy.poemPhoto} onChange={(value) => set("poemPhoto", value)} />
       <DropImage label="Upload foto naast spoken word" onFile={(url) => set("poemPhoto", url)} />
@@ -851,6 +807,35 @@ function CopyForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =
       <Field label="Blog-titel" value={copy.blogTitle} onChange={(value) => set("blogTitle", value)} />
       <Area label="Blog-intro" value={copy.blogLead} onChange={(value) => set("blogLead", value)} />
       <Field label="Knop naar de blogs" value={copy.blogButton} onChange={(value) => set("blogButton", value)} />
+      <div className="mt-10 border-t border-line pt-6">
+        <h2 className="font-display text-lg font-extrabold">Niet op de site</h2>
+        <p className="mt-1 text-sm text-muted">Dit zijn resten van de eerste site, zoals de zes diensten. Ze staan nergens live. Verwijder wat je niet gebruikt.</p>
+        {copy.services.length === 0 && copy.styles.length === 0 ? (
+          <p className="mt-3 text-sm text-muted">Er staat niets meer.</p>
+        ) : null}
+        {copy.services.map((card, index) => (
+          <div key={`dienst-${index}`} className="mt-4 rounded-xl border border-line bg-card p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-semibold">{card.title || `Dienst ${index + 1}`}</p>
+              <button type="button" className="text-sm font-semibold text-accent" onClick={() => set("services", copy.services.filter((_, i) => i !== index))}>
+                Verwijder
+              </button>
+            </div>
+            <p className="mt-2 text-sm text-muted">{card.text}</p>
+          </div>
+        ))}
+        {copy.styles.map((card, index) => (
+          <div key={`stijl-${index}`} className="mt-4 rounded-xl border border-line bg-card p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-semibold">{card.title || `Stijl ${index + 1}`}</p>
+              <button type="button" className="text-sm font-semibold text-accent" onClick={() => set("styles", copy.styles.filter((_, i) => i !== index))}>
+                Verwijder
+              </button>
+            </div>
+            <p className="mt-2 text-sm text-muted">{card.text}</p>
+          </div>
+        ))}
+      </div>
     </section>
   )
 }

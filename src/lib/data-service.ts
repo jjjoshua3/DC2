@@ -30,6 +30,11 @@ function placeholderLead(lead: string | undefined) {
   return lead.startsWith("Drie gedichten")
 }
 
+function sameBlocks(current: { title: string; text: string }[], original: { title: string; text: string }[]) {
+  if (current.length !== original.length) return false
+  return current.every((item, index) => item.title === original[index]?.title && item.text === original[index]?.text)
+}
+
 export function normalizeSite(value: SiteData): SiteData {
   const next = clone(value)
   if (!Array.isArray(next.posts)) next.posts = clone(defaultSite.posts)
@@ -60,8 +65,10 @@ export function normalizeSite(value: SiteData): SiteData {
     ...person,
     photos: Array.isArray(person.photos) ? person.photos.filter(Boolean) : [],
   }))
-  if (!Array.isArray(next.copy.styles) || next.copy.styles.length === 0) next.copy.styles = base.styles
-  if (!Array.isArray(next.copy.services) || next.copy.services.length === 0) next.copy.services = base.services
+  if (!Array.isArray(next.copy.styles)) next.copy.styles = []
+  if (!Array.isArray(next.copy.services)) next.copy.services = []
+  if (sameBlocks(next.copy.styles, base.styles)) next.copy.styles = []
+  if (sameBlocks(next.copy.services, base.services)) next.copy.services = []
   const watBase = clone(defaultSite.wat)
   const saved = Array.isArray(next.wat) ? next.wat : []
   next.wat = watBase.map((page) => {
@@ -71,7 +78,7 @@ export function normalizeSite(value: SiteData): SiteData {
       : {
           ...page,
           ...found,
-          cards: Array.isArray(found.cards) && found.cards.length ? found.cards : page.cards,
+          cards: Array.isArray(found.cards) ? found.cards : page.cards,
           poems: placeholderPoems(found.poems) ? page.poems : found.poems,
           poemPageTitle: found.poemPageTitle || page.poemPageTitle,
           poemLead: found.poemLead || (placeholderLead(found.lead) ? found.lead : page.poemLead),

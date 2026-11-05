@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import { useSiteData } from "@/lib/data-service"
-import type { I18nMap, LangCode, PageCopy, PoemItem, Post, Project, SiteData, TextPack, WatPage } from "@/lib/site-types"
+import type { I18nMap, LangCode, PageCopy, PoemItem, Post, Project, SiteData, WatPage } from "@/lib/site-types"
 import { postPacks, projectPacks } from "@/lib/content-i18n"
+import { defaultSite } from "@/lib/site-defaults"
 
 export const LOCALES = [
   { id: "nl", label: "Nederlands", short: "NL" },
@@ -412,72 +413,73 @@ function packValue(map: I18nMap | undefined, locale: LangCode, key: string) {
   return typeof value === "string" && value.trim() ? value : ""
 }
 
-function translated(dutch: string, map: I18nMap | undefined, locale: LangCode, key: string, fallback?: string) {
-  return packValue(map, locale, key) || (fallback && fallback.trim() ? fallback : dutch)
-}
-
-function mergedMap(stored: I18nMap | undefined, catalog: Partial<Record<LangCode, TextPack>> | undefined, locale: LangCode): I18nMap | undefined {
-  const extra = catalog?.[locale]
-  const own = stored?.[locale]
-  if (!extra && !own) return stored
-  const pack: TextPack = { ...extra }
-  if (own) {
-    for (const [key, value] of Object.entries(own)) {
-      if (typeof value === "string" && value.trim()) pack[key] = value
-    }
-  }
-  return { ...stored, [locale]: pack }
+function translated(dutch: string, map: I18nMap | undefined, locale: LangCode, key: string, fallback?: string, original?: string) {
+  const own = packValue(map, locale, key)
+  if (own) return own
+  const unchanged = original === undefined || dutch.trim() === original.trim()
+  if (unchanged && fallback && fallback.trim()) return fallback
+  return dutch
 }
 
 function translatePost(post: Post, locale: LangCode): Post {
-  const map = mergedMap(post.i18n, postPacks[post.id], locale)
+  const origin = defaultSite.posts.find((item) => item.id === post.id)
+  const catalog = postPacks[post.id]?.[locale]
+  const baked = (key: "title" | "lead" | "body", current: string) =>
+    !origin || current.trim() === (origin[key] || "").trim() ? catalog?.[key] : undefined
   return {
     ...post,
-    title: translated(post.title, map, locale, "title"),
-    lead: translated(post.lead, map, locale, "lead"),
-    body: translated(post.body, map, locale, "body"),
+    title: translated(post.title, post.i18n, locale, "title", baked("title", post.title)),
+    lead: translated(post.lead, post.i18n, locale, "lead", baked("lead", post.lead)),
+    body: translated(post.body, post.i18n, locale, "body", baked("body", post.body)),
   }
 }
 
 function translateProject(project: Project, locale: LangCode): Project {
-  const map = mergedMap(project.i18n, projectPacks[project.id], locale)
+  const origin = defaultSite.projects.find((item) => item.id === project.id)
+  const catalog = projectPacks[project.id]?.[locale]
+  const baked = (key: "title" | "lead" | "body" | "ctaLabel", current: string) =>
+    !origin || current.trim() === (origin[key] || "").trim() ? catalog?.[key] : undefined
   return {
     ...project,
-    title: translated(project.title, map, locale, "title"),
-    lead: translated(project.lead, map, locale, "lead"),
-    body: translated(project.body, map, locale, "body"),
-    ctaLabel: translated(project.ctaLabel, map, locale, "ctaLabel"),
+    title: translated(project.title, project.i18n, locale, "title", baked("title", project.title)),
+    lead: translated(project.lead, project.i18n, locale, "lead", baked("lead", project.lead)),
+    body: translated(project.body, project.i18n, locale, "body", baked("body", project.body)),
+    ctaLabel: translated(project.ctaLabel, project.i18n, locale, "ctaLabel", baked("ctaLabel", project.ctaLabel)),
   }
 }
 
-function translatePoem(poem: PoemItem, locale: LangCode, fallback?: { title: string; body: string }) {
+function translatePoem(poem: PoemItem, locale: LangCode, fallback?: { title: string; body: string }, original?: { title: string; body: string }) {
   return {
     ...poem,
-    title: translated(poem.title, poem.i18n, locale, "title", fallback?.title),
-    body: translated(poem.body, poem.i18n, locale, "body", fallback?.body),
+    title: translated(poem.title, poem.i18n, locale, "title", original && poem.title.trim() !== original.title.trim() ? undefined : fallback?.title),
+    body: translated(poem.body, poem.i18n, locale, "body", original && poem.body.trim() !== original.body.trim() ? undefined : fallback?.body),
   }
 }
 
 function translateWat(page: WatPage, locale: LangCode, fallback?: Partial<WatPage>, poemFallbacks?: { id: string; title: string; body: string }[], poemLead?: string): WatPage {
+  const origin = defaultSite.wat.find((item) => item.slug === page.slug)
+  const same = (current: string, previous?: string) => previous !== undefined && current.trim() === previous.trim()
   const cards = page.cards.map((card, index) => {
     const twin = fallback?.cards?.[index]
+    const before = origin?.cards[index]
     return {
       ...card,
-      title: translated(card.title, card.i18n, locale, "title", twin?.title),
-      text: translated(card.text, card.i18n, locale, "text", twin?.text),
+      title: translated(card.title, card.i18n, locale, "title", same(card.title, before?.title) ? twin?.title : undefined),
+      text: translated(card.text, card.i18n, locale, "text", same(card.text, before?.text) ? twin?.text : undefined),
     }
   })
+  const poems = origin?.poems
   return {
     ...page,
-    title: translated(page.title, page.i18n, locale, "title", fallback?.title),
-    lead: translated(page.lead, page.i18n, locale, "lead", fallback?.lead),
-    body: translated(page.body, page.i18n, locale, "body", fallback?.body),
-    offerTitle: translated(page.offerTitle, page.i18n, locale, "offerTitle", fallback?.offerTitle),
-    offerText: translated(page.offerText, page.i18n, locale, "offerText", fallback?.offerText),
-    poemPageTitle: translated(page.poemPageTitle || "", page.i18n, locale, "poemPageTitle", fallback?.poemPageTitle),
-    poemLead: translated(page.poemLead || "", page.i18n, locale, "poemLead", poemLead),
+    title: translated(page.title, page.i18n, locale, "title", same(page.title, origin?.title) ? fallback?.title : undefined),
+    lead: translated(page.lead, page.i18n, locale, "lead", same(page.lead, origin?.lead) ? fallback?.lead : undefined),
+    body: translated(page.body, page.i18n, locale, "body", same(page.body, origin?.body) ? fallback?.body : undefined),
+    offerTitle: translated(page.offerTitle, page.i18n, locale, "offerTitle", same(page.offerTitle, origin?.offerTitle) ? fallback?.offerTitle : undefined),
+    offerText: translated(page.offerText, page.i18n, locale, "offerText", same(page.offerText, origin?.offerText) ? fallback?.offerText : undefined),
+    poemPageTitle: translated(page.poemPageTitle || "", page.i18n, locale, "poemPageTitle", same(page.poemPageTitle || "", origin?.poemPageTitle) ? fallback?.poemPageTitle : undefined),
+    poemLead: translated(page.poemLead || "", page.i18n, locale, "poemLead", same(page.poemLead || "", origin?.poemLead) ? poemLead : undefined),
     cards,
-    poems: page.poems?.map((poem) => translatePoem(poem, locale, poemFallbacks?.find((item) => item.id === poem.id))),
+    poems: page.poems?.map((poem) => translatePoem(poem, locale, poemFallbacks?.find((item) => item.id === poem.id), poems?.find((item) => item.id === poem.id))),
   }
 }
 
@@ -486,25 +488,28 @@ function localize(source: SiteData, locale: LangCode): SiteData {
   const pages = watText[locale]
   const copy = source.copy
   const stored = copy.i18n
+  const base = defaultSite.copy
+  const line = (key: keyof typeof text, current: string) =>
+    translated(current, stored, locale, key, text[key], base[key as keyof PageCopy] as string)
   return {
     ...source,
     copy: {
       ...copy,
-      heroSubtitle: translated(copy.heroSubtitle, stored, locale, "heroSubtitle", text.heroSubtitle),
-      aboutTitle: translated(copy.aboutTitle, stored, locale, "aboutTitle", text.aboutTitle),
-      aboutLead: translated(copy.aboutLead, stored, locale, "aboutLead", text.aboutLead),
-      aboutLeft: translated(copy.aboutLeft, stored, locale, "aboutLeft", text.aboutLeft),
-      aboutRight: translated(copy.aboutRight, stored, locale, "aboutRight", text.aboutRight),
-      clientsTitle: translated(copy.clientsTitle, stored, locale, "clientsTitle", text.clientsTitle),
-      contactTitle: translated(copy.contactTitle, stored, locale, "contactTitle", text.contactTitle),
-      contactLead: translated(copy.contactLead, stored, locale, "contactLead", text.contactLead),
-      blogTitle: translated(copy.blogTitle, stored, locale, "blogTitle", text.blogTitle),
-      blogLead: translated(copy.blogLead, stored, locale, "blogLead", text.blogLead),
-      blogButton: translated(copy.blogButton, stored, locale, "blogButton", text.blogButton),
-      poem: translated(copy.poem, stored, locale, "poem", text.poem),
-      whoRole: translated(copy.whoRole, stored, locale, "whoRole", text.whoRole),
+      heroSubtitle: line("heroSubtitle", copy.heroSubtitle),
+      aboutTitle: line("aboutTitle", copy.aboutTitle),
+      aboutLead: line("aboutLead", copy.aboutLead),
+      aboutLeft: line("aboutLeft", copy.aboutLeft),
+      aboutRight: line("aboutRight", copy.aboutRight),
+      clientsTitle: line("clientsTitle", copy.clientsTitle),
+      contactTitle: line("contactTitle", copy.contactTitle),
+      contactLead: line("contactLead", copy.contactLead),
+      blogTitle: line("blogTitle", copy.blogTitle),
+      blogLead: line("blogLead", copy.blogLead),
+      blogButton: line("blogButton", copy.blogButton),
+      poem: line("poem", copy.poem),
+      whoRole: line("whoRole", copy.whoRole),
       people: copy.people.map((person, index) =>
-        index === 0 ? { ...person, role: translated(person.role, stored, locale, "whoRole", text.whoRole) } : person,
+        index === 0 ? { ...person, role: line("whoRole", person.role) } : person,
       ),
     },
     wat: source.wat.map((page) =>
