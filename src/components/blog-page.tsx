@@ -1,18 +1,21 @@
 import { Link } from "@tanstack/react-router"
-import { useSiteData } from "@/lib/data-service"
+import { useLocaleSite, useI18n } from "@/lib/i18n"
 import { sanitizeHtml } from "@/lib/media"
 import { SiteShell } from "@/components/site-shell"
 import type { Post } from "@/lib/site-types"
 
-export function formatPostDate(iso: string) {
+export function formatPostDate(iso: string, locale = "nl") {
   if (!iso) return ""
   const date = new Date(`${iso}T12:00:00`)
   if (Number.isNaN(date.getTime())) return iso
-  return new Intl.DateTimeFormat("nl-NL", { day: "numeric", month: "long", year: "numeric" }).format(date)
+  const map = { nl: "nl-NL", en: "en-GB", fr: "fr-FR", de: "de-DE" } as const
+  const lang = map[locale as keyof typeof map] ?? "nl-NL"
+  return new Intl.DateTimeFormat(lang, { day: "numeric", month: "long", year: "numeric" }).format(date)
 }
 
 export function BlogIndex() {
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
+  const { t } = useI18n()
   const posts = (data.posts ?? []).filter((post) => post.status === "published")
   return (
     <SiteShell>
@@ -27,13 +30,14 @@ export function BlogIndex() {
             <BlogCard key={post.id} post={post} />
           ))}
         </div>
-        {posts.length === 0 ? <p className="mt-8 text-ink-soft">Er staan nog geen blogs live.</p> : null}
+        {posts.length === 0 ? <p className="mt-8 text-ink-soft">{t("noPosts")}</p> : null}
       </div>
     </SiteShell>
   )
 }
 
 export function BlogCard({ post }: { post: Post }) {
+  const { locale } = useI18n()
   return (
     <Link
       to="/blog/$postId"
@@ -50,7 +54,7 @@ export function BlogCard({ post }: { post: Post }) {
         )}
       </span>
       <span className="flex flex-1 flex-col gap-2 p-5">
-        <span className="text-xs font-bold uppercase tracking-widest text-accent">{formatPostDate(post.date)}</span>
+        <span className="text-xs font-bold uppercase tracking-widest text-accent">{formatPostDate(post.date, locale)}</span>
         <span className="font-display text-xl font-extrabold leading-tight">{post.title}</span>
         {post.lead ? <span className="line-clamp-3 text-sm leading-relaxed text-ink-soft">{post.lead}</span> : null}
       </span>
@@ -59,17 +63,18 @@ export function BlogCard({ post }: { post: Post }) {
 }
 
 export function BlogArticle({ postId }: { postId: string }) {
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
+  const { t, locale } = useI18n()
   const post = (data.posts ?? []).find((item) => item.id === postId && item.status === "published")
   return (
     <SiteShell>
       <div className="mx-auto max-w-3xl px-4 py-10 sm:py-14">
         <Link to="/blog" className="text-sm font-semibold text-accent">
-          Alle blogs
+          {t("allPosts")}
         </Link>
         {post ? (
           <article className="mt-6">
-            <p className="text-xs font-bold uppercase tracking-widest text-accent">{formatPostDate(post.date)}</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-accent">{formatPostDate(post.date, locale)}</p>
             <h1 className="mt-3 font-display text-4xl font-extrabold leading-tight sm:text-5xl">{post.title}</h1>
             {post.lead ? <p className="mt-5 text-lg font-semibold leading-relaxed">{post.lead}</p> : null}
             {post.image ? (

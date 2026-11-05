@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link } from "@tanstack/react-router"
 import { adminSession } from "@/lib/admin-session"
+import { useI18n } from "@/lib/i18n"
 import { DataService } from "@/lib/data-service"
 import { saveSiteDocument } from "@/lib/site-store"
 import { logChange } from "@/lib/audit-client"
@@ -11,10 +12,11 @@ let saveTimer: number | null = null
 
 export function useEditor() {
   const [on, setOn] = useState(false)
+  const { locale } = useI18n()
   useEffect(() => {
     setOn(Boolean(adminSession()))
   }, [])
-  return on
+  return on && locale === "nl"
 }
 
 export function publishSite(next: SiteData, summary: string) {

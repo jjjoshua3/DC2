@@ -1,17 +1,57 @@
 import { useState, type ReactNode } from "react"
 import { Link, useRouterState } from "@tanstack/react-router"
-import { ChevronDown, Linkedin, Menu, Twitter, X, Youtube } from "lucide-react"
-import { useSiteData } from "@/lib/data-service"
+import { ChevronDown, Globe, Linkedin, Menu, Twitter, X, Youtube } from "lucide-react"
+import { LOCALES, useI18n, useLocaleSite, type Locale } from "@/lib/i18n"
 import type { Socials } from "@/lib/site-types"
 import { toEmbedUrl } from "@/lib/media"
 import { EditBar, EditableText, publishSite, useEditor } from "@/components/live-edit"
 
 const LINKS = [
-  { to: "/", label: "Over mij" },
-  { to: "/projecten", label: "Projecten" },
-  { to: "/blog", label: "Blog" },
-  { to: "/contact", label: "Contact" },
+  { to: "/projecten", key: "projects" },
+  { to: "/blog", key: "blog" },
+  { to: "/contact", key: "contact" },
 ] as const
+
+function LanguageSwitch() {
+  const { locale, setLocale, t } = useI18n()
+  const [open, setOpen] = useState(false)
+  const current = LOCALES.find((item) => item.id === locale) ?? LOCALES[0]
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={t("language")}
+        onClick={() => setOpen((value) => !value)}
+        className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-sm font-bold"
+      >
+        <Globe className="h-4 w-4 text-accent" />
+        {current.short}
+      </button>
+      {open ? (
+        <div className="absolute right-0 top-full z-50 mt-2 w-44 rounded-card border border-line bg-card p-1 shadow-lg" role="listbox">
+          {LOCALES.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              role="option"
+              aria-selected={item.id === locale}
+              onClick={() => {
+                setLocale(item.id as Locale)
+                setOpen(false)
+              }}
+              className={`flex min-h-11 w-full items-center justify-between rounded-xl px-3 text-sm font-semibold ${item.id === locale ? "text-accent" : "text-ink"}`}
+            >
+              {item.label}
+              <span className="text-xs text-muted">{item.short}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  )
+}
 
 function FlickrIcon() {
   return (
@@ -61,7 +101,8 @@ function active(path: string, to: string) {
 }
 
 function WatMenu({ path }: { path: string }) {
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
+  const { t } = useI18n()
   const open = path.startsWith("/wat")
   return (
     <div className="group relative">
@@ -70,7 +111,7 @@ function WatMenu({ path }: { path: string }) {
         aria-haspopup="menu"
         className={`inline-flex min-h-11 items-center gap-1 rounded-full px-2.5 text-sm font-semibold ${open ? "text-accent" : "text-ink-soft hover:text-ink"}`}
       >
-        Wat
+        {t("what")}
         <ChevronDown className="h-4 w-4" />
       </button>
       <div className="invisible absolute left-0 top-full z-50 min-w-56 pt-2 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
@@ -93,7 +134,8 @@ function WatMenu({ path }: { path: string }) {
 }
 
 export function SiteShell({ children }: { children: ReactNode }) {
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
+  const { t } = useI18n()
   const path = useRouterState({ select: (state) => state.location.pathname })
   const [open, setOpen] = useState(false)
   return (
@@ -115,38 +157,41 @@ export function SiteShell({ children }: { children: ReactNode }) {
               to="/"
               className={`rounded-full px-2.5 py-2 text-sm font-semibold ${active(path, "/") ? "text-accent" : "text-ink-soft hover:text-ink"}`}
             >
-              Over mij
+              {t("about")}
             </Link>
             <WatMenu path={path} />
             <Link
               to="/gedichten"
               className={`rounded-full px-2.5 py-2 text-sm font-semibold ${active(path, "/gedichten") ? "text-accent" : "text-ink-soft hover:text-ink"}`}
             >
-              Gedichten
+              {t("poems")}
             </Link>
-            {LINKS.slice(1).map((item) => (
+            {LINKS.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
                 className={`rounded-full px-2.5 py-2 text-sm font-semibold ${active(path, item.to) ? "text-accent" : "text-ink-soft hover:text-ink"}`}
               >
-                {item.label}
+                {t(item.key)}
               </Link>
             ))}
           </nav>
           <div className="hidden items-center xl:flex">
             <SocialsRow socials={data.design.socials} />
           </div>
-          <button type="button" className="ml-auto grid h-11 w-11 place-items-center rounded-full border border-line lg:ml-1 lg:hidden" onClick={() => setOpen((value) => !value)} aria-label="Menu">
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          <div className="ml-auto flex items-center gap-1 lg:ml-1">
+            <LanguageSwitch />
+            <button type="button" className="grid h-11 w-11 place-items-center rounded-full border border-line lg:hidden" onClick={() => setOpen((value) => !value)} aria-label="Menu">
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
         {open ? (
           <nav className="border-t border-line px-4 py-3 lg:hidden">
             <Link to="/" onClick={() => setOpen(false)} className="flex min-h-11 items-center text-base font-semibold">
-              Over mij
+              {t("about")}
             </Link>
-            <p className="mt-2 text-xs font-bold uppercase tracking-widest text-muted">Wat</p>
+            <p className="mt-2 text-xs font-bold uppercase tracking-widest text-muted">{t("what")}</p>
             {data.wat.map((page) => (
               <Link
                 key={page.slug}
@@ -159,11 +204,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
               </Link>
             ))}
             <Link to="/gedichten" onClick={() => setOpen(false)} className="flex min-h-11 items-center text-base font-semibold">
-              Gedichten
+              {t("poems")}
             </Link>
-            {LINKS.slice(1).map((item) => (
+            {LINKS.map((item) => (
               <Link key={item.to} to={item.to} onClick={() => setOpen(false)} className="flex min-h-11 items-center text-base font-semibold">
-                {item.label}
+                {t(item.key)}
               </Link>
             ))}
           </nav>
@@ -177,8 +222,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
             <p>© De Connectors · Celebrating People</p>
             <p className="mt-1">
               <a className="underline decoration-line underline-offset-2 hover:text-ink" href="https://jjjoshua3.netlify.app/" target="_blank" rel="noreferrer">
-                Ontworpen door Joshua
-              </a>. Beveiligingslek melden? Dat kan via:{" "}
+                {t("designed")}
+              </a>
+              . {t("security")}{" "}
               <a className="underline decoration-line underline-offset-2 hover:text-ink" href="mailto:aa0271n8@gmail.com">
                 aa0271n8@gmail.com
               </a>
@@ -192,7 +238,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
 }
 
 export function ClientLogos() {
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
   const clients = data.design.clients
   if (!clients.length) return null
   return (
@@ -235,7 +281,7 @@ export function MediaPane({ type, url, label }: { type: "image" | "video"; url: 
 }
 
 export function Poem({ bare = false }: { bare?: boolean }) {
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
   const editing = useEditor()
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState(data.copy.poem)

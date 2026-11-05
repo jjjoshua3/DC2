@@ -3,6 +3,7 @@ import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { VisitTracker } from "@/components/visit-tracker";
 import { NotFoundPage } from "@/components/not-found";
+import { LocaleProvider } from "@/lib/i18n";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "DE CONNECTORS — Celebrating People";
@@ -43,7 +44,9 @@ export const Route = createRootRoute({
         <PreviewHostBridge />
         <VisitTracker />
         <AuthProvider>
-          <Outlet />
+          <LocaleProvider>
+            <Outlet />
+          </LocaleProvider>
         </AuthProvider>
         <Scripts />
       </body>

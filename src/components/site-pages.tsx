@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { Link } from "@tanstack/react-router"
 import { ArrowRight, BadgeCheck, Heart, Mail, Smile } from "lucide-react"
-import { useSiteData } from "@/lib/data-service"
+import { useLocaleSite, useI18n } from "@/lib/i18n"
 import type { PoemItem, Project, WatPage } from "@/lib/site-types"
 import { CATEGORIES, projectCategories } from "@/lib/site-types"
 import { ProjectCard, ProjectDialog } from "@/components/project-views"
@@ -45,7 +45,8 @@ function PhotoShow({ photos, alt }: { photos: string[]; alt: string }) {
 }
 
 export function HomePage() {
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
+  const { t } = useI18n()
   const editing = useEditor()
   const { copy } = data
   function setCopy(part: Partial<typeof copy>, summary: string) {
@@ -67,10 +68,10 @@ export function HomePage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/projecten" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink">
-              Bekijk mijn projecten <ArrowRight className="h-4 w-4" />
+              {t("seeProjects")} <ArrowRight className="h-4 w-4" />
             </Link>
             <Link to="/contact" className="inline-flex min-h-11 items-center rounded-full border border-ink px-5 py-2.5 text-sm font-bold">
-              Get in touch
+              {t("touch")}
             </Link>
             <Link to="/blog" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-card px-5 py-2.5 text-sm font-bold">
               <EditableText value={copy.blogButton} onSave={(blogButton) => setCopy({ blogButton }, "Blogknop aangepast")} />
@@ -135,7 +136,7 @@ export function HomePage() {
             </div>
           ) : null}
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Over mij</p>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{t("about")}</p>
             <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight">
               <EditableText value={copy.aboutTitle} onSave={(aboutTitle) => setCopy({ aboutTitle }, "Over-titel aangepast")} />
             </h2>
@@ -155,15 +156,15 @@ export function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wat ik doe</p>
-        <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight">Drie lijnen</h2>
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{t("whatIDo")}</p>
+        <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight">{t("threeLines")}</h2>
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {data.wat.map((page) => (
             <Link key={page.slug} to="/wat/$slug" params={{ slug: page.slug }} className="group flex h-full flex-col rounded-card border border-line bg-card p-6 transition hover:-translate-y-0.5 hover:border-accent">
               <span className="font-display text-2xl font-extrabold">{page.title}</span>
               <span className="mt-3 flex-1 text-sm leading-relaxed text-ink-soft">{page.lead}</span>
               <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-accent">
-                Lees meer <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                {t("readMore")} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
               </span>
             </Link>
           ))}
@@ -199,7 +200,7 @@ export function HomePage() {
 }
 
 export function OverPage() {
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
   const { copy } = data
   const [first, ...others] = copy.people
   return (
@@ -259,18 +260,17 @@ export function OverPage() {
 }
 
 export function WatIndexPage() {
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
+  const { t } = useI18n()
   return (
     <SiteShell>
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
         <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wat ik doe</p>
-            <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-6xl">Drie lijnen. Eén stem.</h1>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{t("whatIDo")}</p>
+            <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-6xl">{t("oneVoice")}</h1>
           </div>
-          <p className="max-w-md text-lg leading-relaxed text-ink-soft lg:col-span-5">
-            Journalistiek, artistiek, en waar die twee elkaar raken. Kies de lijn die bij jouw verhaal past.
-          </p>
+          <p className="max-w-md text-lg leading-relaxed text-ink-soft lg:col-span-5">{t("chooseLine")}</p>
         </div>
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {data.wat.map((page, index) => {
@@ -292,7 +292,7 @@ export function WatIndexPage() {
                   {page.lead}
                 </span>
                 <span className={`mt-8 inline-flex items-center gap-2 text-sm font-bold ${dark ? "text-paper" : "text-ink"}`}>
-                  Lees meer
+                  {t("readMore")}
                   <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
                 </span>
               </Link>
@@ -305,7 +305,8 @@ export function WatIndexPage() {
 }
 
 export function GedichtenPage() {
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
+  const { t } = useI18n()
   const editing = useEditor()
   const source = data.wat.find((item) => item.slug === "artistiek")
   const photo = source?.poemPhoto || ""
@@ -320,7 +321,7 @@ export function GedichtenPage() {
   return (
     <SiteShell>
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Artistiek</p>
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{t("notFoundLabel")}</p>
         <h1 className="mt-3 font-display text-5xl font-extrabold tracking-tight sm:text-7xl">
           <EditableText value={source?.poemPageTitle || "Gedichten"} onSave={(poemPageTitle) => patch({ poemPageTitle }, "Titel gedichten aangepast")} />
         </h1>
@@ -353,7 +354,7 @@ export function GedichtenPage() {
 }
 
 export function WatDetailPage({ slug }: { slug: string }) {
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
   const page = data.wat.find((item) => item.slug === slug)
   return (
     <SiteShell>
@@ -366,7 +367,7 @@ export function WatDetailPage({ slug }: { slug: string }) {
 }
 
 function WatTabs({ current }: { current: string }) {
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
   return (
     <div className="flex flex-wrap gap-2">
       {data.wat.map((page, index) => (
@@ -387,13 +388,14 @@ function WatTabs({ current }: { current: string }) {
 }
 
 function GedichtenZaal({ poems }: { poems: PoemItem[] }) {
+  const { t } = useI18n()
   if (!poems.length) return null
   return (
     <div>
       <div className="bg-ink text-paper">
         <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-12 sm:py-16 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="mt-3 font-display text-5xl font-extrabold leading-none tracking-tight sm:text-7xl">De gedichten</p>
+            <p className="mt-3 font-display text-5xl font-extrabold leading-none tracking-tight sm:text-7xl">{t("poemsHeading")}</p>
           </div>
           <nav className="flex flex-col gap-2">
             {poems.map((poem, index) => (
@@ -436,9 +438,10 @@ function PoemPoster({ index, title, lines }: { index: number; title: string; lin
 
 function OfferPoster({ index, title, lines }: { index: number; title: string; lines: string[] }) {
   const last = lines[lines.length - 1] ?? ""
-  const hasCliff = Boolean(last) && !/^niet\b/i.test(last)
+  const refusal = /^(niet|not|pas|nicht)\b/i
+  const hasCliff = Boolean(last) && !refusal.test(last)
   const body = hasCliff ? lines.slice(0, -1) : lines
-  const cut = body.findIndex((line) => !/^niet\b/i.test(line))
+  const cut = body.findIndex((line) => !refusal.test(line))
   const refusals = cut === -1 ? body : body.slice(0, cut)
   const minutes = cut === -1 ? [] : body.slice(cut)
   return (
@@ -453,8 +456,8 @@ function OfferPoster({ index, title, lines }: { index: number; title: string; li
         <div className="mt-10 columns-1 sm:columns-2 sm:gap-x-16">
           {refusals.map((line, i) => (
             <p key={`${i}-${line}`} className="break-inside-avoid border-b border-white/10 py-2.5 font-story text-2xl leading-snug sm:text-3xl">
-              <span className="text-accent">Niet</span>
-              {line.replace(/^niet/i, "")}
+              <span className="text-accent">{line.match(/^(niet|not|pas|nicht)/i)?.[0]}</span>
+              {line.replace(/^(niet|not|pas|nicht)/i, "")}
             </p>
           ))}
         </div>
@@ -552,7 +555,7 @@ function PlainPoster({ index, title, lines }: { index: number; title: string; li
 
 function PoemEditor({ poem }: { poem: PoemItem }) {
   const editing = useEditor()
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
   if (!editing) return null
   function save(part: Partial<PoemItem>) {
     publishSite(
@@ -583,7 +586,8 @@ function PoemEditor({ poem }: { poem: PoemItem }) {
 }
 
 function WatBody({ page }: { page: WatPage }) {
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
+  const { t } = useI18n()
   const editing = useEditor()
   function save(part: Partial<WatPage>, summary: string) {
     publishSite(
@@ -610,7 +614,7 @@ function WatBody({ page }: { page: WatPage }) {
           </div>
         </div>
         <div className="lg:col-span-6">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Wat ik doe</p>
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{t("whatIDo")}</p>
           <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
             <EditableText value={page.title} onSave={(title) => save({ title }, "Titel aangepast")} />
           </h1>
@@ -624,7 +628,7 @@ function WatBody({ page }: { page: WatPage }) {
       </div>
       {page.exampleUrl ? (
         <div className="mt-16">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted">Voorbeeld</p>
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted">{t("example")}</p>
           <div className="mt-4 max-w-3xl">
             <MediaPane type={page.exampleType} url={page.exampleUrl} label={`${page.title} voorbeeld`} />
           </div>
@@ -656,7 +660,8 @@ function WatBody({ page }: { page: WatPage }) {
 }
 
 export function ProjectsPage() {
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
+  const { t } = useI18n()
   const [filter, setFilter] = useState("Alles")
   const [active, setActive] = useState<Project | null>(null)
   const published = data.projects.filter((project) => project.status === "published")
@@ -666,7 +671,7 @@ export function ProjectsPage() {
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Projecten</p>
         <div className="mt-3 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <h1 className="max-w-xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">Blik op mijn projecten</h1>
+          <h1 className="max-w-xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{t("projectsTitle")}</h1>
           <div className="flex flex-wrap gap-2">
             {["Alles", ...CATEGORIES].map((category) => (
               <button
@@ -675,7 +680,7 @@ export function ProjectsPage() {
                 onClick={() => setFilter(category)}
                 className={`min-h-11 rounded-full px-4 text-sm font-semibold ${filter === category ? "bg-ink text-paper" : "border border-line bg-card"}`}
               >
-                {category}
+                {category === "Alles" ? t("all") : category === "Artikel" ? t("article") : category}
               </button>
             ))}
           </div>
@@ -687,7 +692,7 @@ export function ProjectsPage() {
             ))}
           </div>
         ) : (
-          <p className="mt-10 text-ink-soft">Nog geen gepubliceerde projecten in deze categorie.</p>
+          <p className="mt-10 text-ink-soft">{t("noProjects")}</p>
         )}
       </section>
       <ProjectDialog project={active} onClose={() => setActive(null)} />
@@ -696,7 +701,8 @@ export function ProjectsPage() {
 }
 
 export function ContactPage() {
-  const { data } = useSiteData()
+  const { data } = useLocaleSite()
+  const { t } = useI18n()
   const { copy } = data
   const [sentNote, setSentNote] = useState("")
   function submitContact(event: FormEvent<HTMLFormElement>) {
@@ -707,14 +713,14 @@ export function ContactPage() {
     const message = String(form.get("message") || "")
     const body = encodeURIComponent(`${name}\n${email}\n\n${message}`)
     window.location.href = `mailto:${copy.email}?subject=${encodeURIComponent("Bericht via DE CONNECTORS")}&body=${body}`
-    setSentNote("Je e-mailprogramma opent met dit bericht.")
+    setSentNote(t("sent"))
   }
   return (
     <SiteShell>
       <section className="bg-ink text-paper">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:py-20 lg:grid-cols-2">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">Contact</p>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{t("contact")}</p>
             <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
               <EditableText value={copy.contactTitle} onSave={(contactTitle) => publishSite({ ...data, copy: { ...copy, contactTitle } }, "Contacttitel aangepast")} />
             </h1>
@@ -729,13 +735,13 @@ export function ContactPage() {
             </div>
           </div>
           <form onSubmit={submitContact} className="rounded-card bg-card p-6 text-ink sm:p-8">
-            <label className="block text-sm font-semibold" htmlFor="name">Naam</label>
+            <label className="block text-sm font-semibold" htmlFor="name">{t("name")}</label>
             <input id="name" name="name" required className="mt-2 w-full rounded-xl border border-line bg-paper px-3 py-3 outline-none focus:border-accent" />
-            <label className="mt-4 block text-sm font-semibold" htmlFor="email">E-mail</label>
+            <label className="mt-4 block text-sm font-semibold" htmlFor="email">{t("email")}</label>
             <input id="email" name="email" type="email" required className="mt-2 w-full rounded-xl border border-line bg-paper px-3 py-3 outline-none focus:border-accent" />
-            <label className="mt-4 block text-sm font-semibold" htmlFor="message">Bericht</label>
+            <label className="mt-4 block text-sm font-semibold" htmlFor="message">{t("message")}</label>
             <textarea id="message" name="message" required rows={5} className="mt-2 w-full rounded-xl border border-line bg-paper px-3 py-3 outline-none focus:border-accent" />
-            <button type="submit" className="mt-5 inline-flex min-h-11 items-center rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink">Verstuur</button>
+            <button type="submit" className="mt-5 inline-flex min-h-11 items-center rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink">{t("send")}</button>
             {sentNote ? <p className="mt-3 text-sm text-muted">{sentNote}</p> : null}
           </form>
         </div>
