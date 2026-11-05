@@ -25,7 +25,7 @@ const MESSAGE_RULES: readonly MessageRule[] = [
   {
     needles: ["not_connected", "failed_precondition"],
     kind: "not_connected",
-    message: "Connect this connector in Grok to load your data.",
+    message: "Koppel deze bron om de gegevens te laden.",
   },
   {
     needles: ["scope_denied"],
@@ -57,14 +57,14 @@ export function classifyCallToolError(
   if (raw.includes("missing_connector_token")) {
     return {
       kind: "error",
-      message: "Open this app from Grok to load your data.",
+      message: "Open de site opnieuw om de gegevens te laden.",
       detail,
     };
   }
   if (isLoginRequired(result)) {
     return {
       kind: "login",
-      message: "Continue with Grok to load your data.",
+      message: "Log in om de gegevens te laden.",
       detail,
     };
   }

@@ -10,7 +10,7 @@
     <meta name="theme-color" content="#000000" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="{{APP_NAME}}" />
-    <title>Add {{APP_NAME}} to your Home Screen</title>
+    <title>Zet {{APP_NAME}} op je beginscherm</title>
     <link rel="manifest" href="/__grok/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/__grok/icon-180.png" />
     <link rel="stylesheet" href="/__grok/install/styles.css" />
@@ -59,17 +59,9 @@
   </head>
   <body>
     <div class="page">
-      <header class="powered" aria-label="Powered by Grok">
-        <span class="powered-by">Powered by</span>
+      <header class="powered" aria-label="{{APP_NAME}}">
         <span class="powered-brand">
-          <img
-            class="grok-logo"
-            src="/__grok/install/assets/homescreen/logo-grok.svg"
-            width="14"
-            height="14"
-            alt=""
-          />
-          <span class="powered-grok">Grok</span>
+          <span class="powered-grok">{{APP_NAME}}</span>
         </span>
       </header>
 
@@ -92,32 +84,32 @@
         </div>
 
         <section class="copy">
-          <h1>Add {{APP_NAME}} to your&nbsp;Home&nbsp;Screen</h1>
+          <h1>Zet {{APP_NAME}} op je&nbsp;beginscherm</h1>
 
           <div class="steps">
             <p class="step step-tap step-ios27">
-              <span class="muted">Tap</span>
+              <span class="muted">Tik</span>
               <span class="glass glass--icon" aria-hidden="true">
                 <img src="/__grok/install/assets/homescreen/glass-puzzle.svg" width="24" height="24" alt="" />
               </span>
-              <span class="muted loc loc-phone">in the bottom bar, then</span>
-              <span class="muted loc loc-ipad">in the tool bar, then</span>
+              <span class="muted loc loc-phone">in de balk onderaan, daarna</span>
+              <span class="muted loc loc-ipad">in de werkbalk, daarna</span>
               <span class="glass glass--icon" aria-hidden="true">
                 <img src="/__grok/install/assets/homescreen/glass-share.svg" width="24" height="24" alt="" />
               </span>
             </p>
 
             <p class="step step-tap step-ios-legacy">
-              <span class="muted">Tap</span>
+              <span class="muted">Tik</span>
               <span class="glass glass--icon" aria-hidden="true">
                 <img src="/__grok/install/assets/homescreen/glass-share.svg" width="24" height="24" alt="" />
               </span>
-              <span class="muted loc loc-phone">in the bottom bar</span>
-              <span class="muted loc loc-ipad">in the tool bar</span>
+              <span class="muted loc loc-phone">in de balk onderaan</span>
+              <span class="muted loc loc-ipad">in de werkbalk</span>
             </p>
 
             <p class="step step-select">
-              <span class="muted">Select</span>
+              <span class="muted">Kies</span>
               <span class="add-label">
                 <img
                   class="plus-icon"
@@ -126,7 +118,7 @@
                   height="16"
                   alt=""
                 />
-                <span class="add-text">Add to Home Screen</span>
+                <span class="add-text">Zet op beginscherm</span>
               </span>
             </p>
           </div>
@@ -135,9 +127,9 @@
 
       <main class="content content-desktop">
         <section class="copy">
-          <h1>Open this link on your iPhone&nbsp;or&nbsp;iPad</h1>
+          <h1>Open deze link op je iPhone&nbsp;of&nbsp;iPad</h1>
           <p class="desktop-note">
-            This page shows how to add {{APP_NAME}} to an iOS Home Screen.
+            Zo zet je {{APP_NAME}} op het beginscherm van een iPhone of iPad.
           </p>
           <a class="desktop-open" href="{{APP_URL}}">Open {{APP_NAME}}</a>
         </section>

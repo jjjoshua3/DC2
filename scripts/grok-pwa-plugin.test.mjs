@@ -25,16 +25,16 @@ test("injects before </head>", () => {
   const out = injectGrokPwaHead("<html><head><title>x</title></head><body></body></html>");
   assert.match(out, /rel="manifest"/);
   assert.match(out, /apple-touch-icon/);
-  assert.match(out, /grok-app-builder\/extensions\.js/);
+  assert.doesNotMatch(out, /grok-app-builder\/extensions\.js/);
   assert.ok(out.indexOf("manifest") < out.indexOf("</head>"));
 });
 
-test("injects the extensions script without a project id", () => {
+test("does not inject the extensions script unless the deployer enables it", () => {
   const out = injectGrokPwaHead("<html><head></head></html>", {
     appName: "Demo",
     projectId: "",
   });
-  assert.match(out, /src="https:\/\/grok\.com\/grok-app-builder\/extensions\.js" defer/);
+  assert.doesNotMatch(out, /grok-app-builder\/extensions\.js/);
   assert.doesNotMatch(out, /grok-project-id/);
   assert.doesNotMatch(out, /data-project-id/);
   assert.doesNotMatch(out, /property="grok:app_id"/);
@@ -46,7 +46,7 @@ test("injects project id on the script and meta when provided", () => {
     projectId: "proj-123",
   });
   assert.match(out, /name="grok-project-id" content="proj-123"/);
-  assert.match(out, /data-project-id="proj-123"/);
+  assert.doesNotMatch(out, /data-project-id="proj-123"/);
   assert.match(out, /property="grok:app_id" content="proj-123"/);
 });
 
@@ -420,7 +420,7 @@ test("does not duplicate the extensions script", () => {
   const once = injectGrokPwaHead("<html><head></head></html>", ctx);
   const twice = injectGrokPwaHead(once, ctx);
   assert.equal(once, twice);
-  assert.equal(twice.split("extensions.js").length - 1, 1);
+  assert.equal(twice.split("extensions.js").length - 1, 0);
 });
 
 test("is idempotent", () => {
@@ -484,19 +484,19 @@ test("strips install params from the app link", () => {
 });
 
 test("names the install page from host slug", () => {
-  assert.equal(appNameFromHost("localhost:8080"), "Grok App");
-  assert.equal(appNameFromHost("172.17.154.217:8080"), "Grok App");
+  assert.equal(appNameFromHost("localhost:8080"), "DE CONNECTORS");
+  assert.equal(appNameFromHost("172.17.154.217:8080"), "DE CONNECTORS");
   assert.equal(appNameFromHost("wild-race.grok.me"), "Wild Race");
 });
 
 test("rejects hosts that are not plain slugs", () => {
-  assert.equal(appNameFromHost("<script>alert(1)</script>"), "Grok App");
-  assert.equal(appNameFromHost('"><img src=x onerror=1>.grok.me'), "Grok App");
+  assert.equal(appNameFromHost("<script>alert(1)</script>"), "DE CONNECTORS");
+  assert.equal(appNameFromHost('"><img src=x onerror=1>.grok.me'), "DE CONNECTORS");
 });
 
 test("renders install page markup", () => {
   const html = renderInstallPage("wild-race.grok.me", "/?install=1&platform=ios");
-  assert.match(html, /Add Wild Race to your/);
+  assert.match(html, /Zet Wild Race op je/);
   assert.match(html, /\/__grok\/install\/styles\.css/);
   assert.match(html, /href="\/"/);
   assert.equal(html.includes("{{APP_NAME}}"), false);
@@ -510,8 +510,8 @@ test("escapes host-derived values in the install page", () => {
 
 test("renders the manifest with the per-app name", () => {
   const manifest = JSON.parse(renderWebManifest("wild-race.grok.me"));
-  assert.equal(manifest.name, "Wild Race");
-  assert.equal(manifest.short_name, "Wild Race");
+  assert.equal(manifest.name, "DE CONNECTORS");
+  assert.equal(manifest.short_name, "DE CONNECTORS");
   assert.equal(manifest.icons[0].src, "/__grok/icon-180.png");
 });
 
