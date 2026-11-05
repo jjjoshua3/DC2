@@ -68,24 +68,9 @@ export function AdminGate() {
       if (!adminIdleDue()) return
       logLogout()
       hardLeave("idle")
-    }, 15000)
-    const started = Date.now()
-    const misses = { n: 0 }
-    const check = window.setInterval(() => {
-      if (Date.now() - started < 90_000) return
-      void checkRemoteSession().then((alive) => {
-        if (alive) {
-          misses.n = 0
-          return
-        }
-        misses.n += 1
-        if (misses.n < 2) return
-        hardLeave("forced")
-      })
     }, 60000)
     return () => {
       window.clearInterval(timer)
-      window.clearInterval(check)
       for (const name of events) window.removeEventListener(name, mark)
     }
   }, [authed])
@@ -120,23 +105,6 @@ export function AdminGate() {
 function magicUrl() {
   const match = window.location.pathname.match(/^(\/hds-[a-z0-9]+-\d+-[a-z0-9]+)(?=\/|$)/i)
   return `${match?.[1] ?? ""}/api/magic`
-}
-
-async function checkRemoteSession() {
-  const session = adminSession()
-  if (!session) return true
-  try {
-    const response = await fetch(magicUrl(), {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ action: "session-check", token: session.token }),
-    })
-    if (response.status >= 500) return true
-    const data = (await response.json().catch(() => null)) as { error?: string } | null
-    return data?.error !== "Sessie ongeldig."
-  } catch {
-    return true
-  }
 }
 
 async function sessionFromUrl() {
