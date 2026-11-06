@@ -19,6 +19,7 @@ import { compressImage, newId, toEmbedUrl } from "@/lib/media"
 import { adminSession, clearAdminSession, hardLeave } from "@/lib/admin-session"
 import { SITE_VERSION } from "@/lib/site-version"
 import { saveSiteDocument } from "@/lib/site-store"
+import { externalizeImages } from "@/lib/store-images"
 import { BlogAdmin } from "@/components/blog-admin"
 import { LangPicker } from "@/components/lang-picker"
 import { readLang, writeLang, type EditLang } from "@/lib/i18n"
@@ -68,25 +69,28 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
     if (remoteTimer.current) window.clearTimeout(remoteTimer.current)
     setSync("saving")
     remoteTimer.current = window.setTimeout(() => {
-      const current = DataService.load()
-      const described = lastAudited.current
-        ? describeChange(lastAudited.current, current)
-        : { summary: "Wijziging opgeslagen", detail: "" }
-      if (pendingNote.current) {
-        described.summary = pendingNote.current
-        described.detail = pendingNote.current
-        pendingNote.current = ""
-      }
-      lastAudited.current = current
-      logChange(described.summary, described.detail)
-      void saveSiteDocument({
-        data: {
-          token: session.token,
-          document: JSON.stringify(current),
-        },
-      })
-        .then(() => setSync("live"))
-        .catch((error: unknown) => {
+      void (async () => {
+        try {
+          const current = await externalizeImages(DataService.load(), session.token)
+          DataService.save(current)
+          const described = lastAudited.current
+            ? describeChange(lastAudited.current, current)
+            : { summary: "Wijziging opgeslagen", detail: "" }
+          if (pendingNote.current) {
+            described.summary = pendingNote.current
+            described.detail = pendingNote.current
+            pendingNote.current = ""
+          }
+          lastAudited.current = current
+          logChange(described.summary, described.detail)
+          await saveSiteDocument({
+            data: {
+              token: session.token,
+              document: JSON.stringify(current),
+            },
+          })
+          setSync("live")
+        } catch (error) {
           setSync("local")
           const detail = error instanceof Error ? error.message : ""
           setNotice(
@@ -94,7 +98,8 @@ export function CmsPage({ onLogout }: { onLogout?: () => void }) {
               ? `Bewaard op dit apparaat. Gedeelde opslag: ${detail}`
               : "Bewaard op dit apparaat. De gedeelde opslag reageerde niet — probeer het nog eens.",
           )
-        })
+        }
+      })()
     }, 800)
   }
 

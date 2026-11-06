@@ -27,6 +27,7 @@ import { Route as PaginaSlugRouteImport } from './routes/pagina.$slug'
 import { Route as ProjectProjectIdRouteImport } from './routes/project.$projectId'
 import { Route as WatIndexRouteImport } from './routes/wat.index'
 import { Route as WatSlugRouteImport } from './routes/wat.$slug'
+import { Route as MediaUIdRouteImport } from './routes/media.u.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -118,6 +119,11 @@ const WatSlugRoute = WatSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => WatRoute,
 } as any)
+const MediaUIdRoute = MediaUIdRouteImport.update({
+  id: '/media/u/$id',
+  path: '/media/u/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/wat/$slug': typeof WatSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/wat/': typeof WatIndexRoute
+  '/media/u/$id': typeof MediaUIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/wat/$slug': typeof WatSlugRoute
   '/blog': typeof BlogIndexRoute
   '/wat': typeof WatIndexRoute
+  '/media/u/$id': typeof MediaUIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/wat/$slug': typeof WatSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/wat/': typeof WatIndexRoute
+  '/media/u/$id': typeof MediaUIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -199,6 +208,7 @@ export interface FileRouteTypes {
     | '/wat/$slug'
     | '/blog/'
     | '/wat/'
+    | '/media/u/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -217,6 +227,7 @@ export interface FileRouteTypes {
     | '/wat/$slug'
     | '/blog'
     | '/wat'
+    | '/media/u/$id'
   id:
     | '__root__'
     | '/'
@@ -237,6 +248,7 @@ export interface FileRouteTypes {
     | '/wat/$slug'
     | '/blog/'
     | '/wat/'
+    | '/media/u/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -254,6 +266,7 @@ export interface RootRouteChildren {
   ApiStatsRoute: typeof ApiStatsRoute
   PaginaSlugRoute: typeof PaginaSlugRoute
   ProjectProjectIdRoute: typeof ProjectProjectIdRoute
+  MediaUIdRoute: typeof MediaUIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -384,6 +397,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WatSlugRouteImport
       parentRoute: typeof WatRoute
     }
+    '/media/u/$id': {
+      id: '/media/u/$id'
+      path: '/media/u/$id'
+      fullPath: '/media/u/$id'
+      preLoaderRoute: typeof MediaUIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -426,6 +446,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiStatsRoute: ApiStatsRoute,
   PaginaSlugRoute: PaginaSlugRoute,
   ProjectProjectIdRoute: ProjectProjectIdRoute,
+  MediaUIdRoute: MediaUIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

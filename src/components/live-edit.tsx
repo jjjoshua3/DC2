@@ -6,6 +6,7 @@ import { DataService } from "@/lib/data-service"
 import { saveSiteDocument } from "@/lib/site-store"
 import { logChange } from "@/lib/audit-client"
 import { compressImage } from "@/lib/media"
+import { externalizeImages } from "@/lib/store-images"
 import type { SiteData } from "@/lib/site-types"
 
 let saveTimer: number | null = null
@@ -26,10 +27,14 @@ export function publishSite(next: SiteData, summary: string) {
   if (!session) return
   if (saveTimer) window.clearTimeout(saveTimer)
   saveTimer = window.setTimeout(() => {
-    logChange(summary, summary)
-    void saveSiteDocument({
-      data: { token: session.token, document: JSON.stringify(DataService.load()) },
-    }).catch(() => {})
+    void (async () => {
+      const current = await externalizeImages(DataService.load(), session.token)
+      DataService.save(current)
+      logChange(summary, summary)
+      await saveSiteDocument({
+        data: { token: session.token, document: JSON.stringify(current) },
+      })
+    })()
   }, 500)
 }
 

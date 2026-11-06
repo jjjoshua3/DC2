@@ -30,7 +30,6 @@ export const saveSiteDocument = createServerFn({ method: "POST" })
     const token = (input as { token?: unknown }).token
     const document = (input as { document?: unknown }).document
     if (typeof token !== "string" || typeof document !== "string") throw new Error("Ongeldige invoer")
-    if (document.length > 6_000_000) throw new Error("De site is te groot om op te slaan")
     JSON.parse(document)
     return { token, document }
   })
