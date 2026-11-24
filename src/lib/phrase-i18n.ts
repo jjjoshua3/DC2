@@ -122,10 +122,10 @@ const phrases: Phrase[] = [
     de: "Verbinde dich mit mir",
   },
   {
-    dutch: "Wat kan ik voor je betekenen? Bel, app of mail mij.",
-    en: "How can I help? Call, message or email me.",
-    fr: "Que puis-je faire pour vous ? Appelez-moi, envoyez-moi un message ou un e-mail.",
-    de: "Was kann ich für dich tun? Ruf an, schreib oder mail mir.",
+    dutch: "Wat kan ik voor je betekenen? Mail mij.",
+    en: "How can I help? Email me.",
+    fr: "Que puis-je faire pour vous ? Envoyez-moi un e-mail.",
+    de: "Was kann ich für dich tun? Mail mir.",
   },
 ].map((item) => ({ ...item, dutch: norm(item.dutch) }))
 
