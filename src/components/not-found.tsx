@@ -22,7 +22,7 @@ export function NotFoundPage() {
             </div>
           </div>
           <div className="lg:col-span-7">
-            <img src="/media/404.jpg" alt="Stefanie Vermeulen" className="w-full rounded-card object-cover" />
+            <img src="/media/404.jpg" alt="Stefanie Vermeulen" loading="lazy" decoding="async" className="w-full rounded-card object-cover" />
           </div>
         </div>
       </section>

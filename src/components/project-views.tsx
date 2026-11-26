@@ -20,6 +20,7 @@ export function ProjectCard({
         {image ? (
           <img
             src={image}
+            loading="lazy" decoding="async"
             alt={project.title || "Project"}
             className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
           />
@@ -120,6 +121,7 @@ export function ArticleBody({ project, stacked = false }: { project: Project; st
         ) : image ? (
           <img
             src={image}
+            loading="lazy" decoding="async"
             alt={project.title || "Project"}
             className={
               stacked
