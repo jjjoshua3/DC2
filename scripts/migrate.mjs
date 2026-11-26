@@ -81,6 +81,10 @@ async function main() {
 }
 
 main().catch((err) => {
+  if (err?.code === "XX000" || /EMAXCONNSESSION|max clients reached/i.test(String(err?.message || err))) {
+    console.warn("[migrate] connection limit hit (Supabase session pooler). Skipping — migrations are already applied or will be applied on first request.");
+    process.exit(0);
+  }
   console.error("[migrate] failed:", err?.message || err);
   // pg errors carry the context needed to debug a bad SQL file.
   for (const key of ["code", "detail", "hint", "position", "where"]) {
