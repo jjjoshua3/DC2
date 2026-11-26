@@ -191,8 +191,7 @@ export function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="font-display text-4xl font-extrabold tracking-tight">{t("whatIDo")}</h2>
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-3">
           {data.wat.map((page) => (
             <Link key={page.slug} to="/wat/$slug" params={{ slug: page.slug }} className="group flex h-full flex-col rounded-card border border-line bg-card p-6 transition hover:-translate-y-0.5 hover:border-accent">
               <span className="font-display text-2xl font-extrabold">
@@ -338,8 +337,7 @@ export function WatIndexPage() {
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
         <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{t("whatIDo")}</p>
-            <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-6xl">{t("oneVoice")}</h1>
+            <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-6xl">{t("oneVoice")}</h1>
           </div>
           <p className="max-w-md text-lg leading-relaxed text-ink-soft lg:col-span-5">{t("chooseLine")}</p>
         </div>
@@ -778,10 +776,40 @@ function PoemEditor({ poem }: { poem: PoemItem }) {
   )
 }
 
+function Thumb({ src, alt }: { src: string; alt: string }) {
+  const [failed, setFailed] = useState(false)
+  if (!src || failed) {
+    return <span className="grid h-full place-items-center px-6 text-center font-display text-lg font-bold text-paper">{alt}</span>
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      onError={() => setFailed(true)}
+      className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+    />
+  )
+}
+
+const STOCK_OFFER = new Set([
+  "wat ik doe",
+  "wat ik voor je kan doen",
+  "what i do",
+  "what i can do for you",
+  "ce que je fais",
+  "ce que je peux faire pour vous",
+  "was ich tue",
+  "was ich für sie tun kann",
+])
+
 function WatBody({ page }: { page: WatPage }) {
   const { data } = useLocaleSite()
-  const { t } = useI18n()
   const editing = useEditor()
+  const stories = page.stories ?? []
+  const offerTitle = (page.offerTitle || "").trim()
+  const showOffer = Boolean(offerTitle) && !STOCK_OFFER.has(offerTitle.toLowerCase())
   function save(part: Partial<WatPage>, summary: string) {
     publishSite(
       { ...data, wat: data.wat.map((item) => (item.slug === page.slug ? { ...item, ...part } : item)) },
@@ -807,8 +835,7 @@ function WatBody({ page }: { page: WatPage }) {
           </div>
         </div>
         <div className="lg:col-span-6">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{t("whatIDo")}</p>
-          <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
+          <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
             <EditableText value={page.title} onSave={(title) => save({ title }, "Titel aangepast")} />
           </h1>
           <p className="mt-6 font-story text-xl italic leading-relaxed text-ink">
@@ -819,35 +846,47 @@ function WatBody({ page }: { page: WatPage }) {
           </p>
         </div>
       </div>
-      {page.exampleUrl ? (
+      {page.cards.length ? (
         <div className="mt-16">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted">{t("example")}</p>
-          <div className="mt-4 max-w-3xl">
-            <MediaPane type={page.exampleType} url={page.exampleUrl} label={`${page.title} voorbeeld`} />
+          {showOffer ? <h2 className="font-display text-3xl font-extrabold tracking-tight">{offerTitle}</h2> : null}
+          {page.offerText ? <p className={`${showOffer ? "mt-4" : ""} max-w-2xl text-lg leading-relaxed text-ink-soft`}>{page.offerText}</p> : null}
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {page.cards.map((card, index) => (
+              <article key={`${card.title}-${index}`} className="group flex h-full flex-col overflow-hidden rounded-card border border-line bg-card shadow-sm">
+                <span className="block aspect-[4/3] overflow-hidden bg-ink">
+                  <Thumb src={card.image} alt={card.title} />
+                </span>
+                <div className="flex flex-1 flex-col p-5">
+                  <h3 className="font-display text-xl font-extrabold leading-tight">{card.title}</h3>
+                  {card.text ? <p className="mt-2 text-sm leading-relaxed text-ink-soft">{card.text}</p> : null}
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       ) : null}
-      <div className="mt-20 border-t border-line pt-14">
-        <div className="max-w-2xl">
-          <h2 className="font-display text-3xl font-extrabold tracking-tight">{page.offerTitle || "Wat ik voor je kan doen"}</h2>
-          <p className="mt-4 text-lg leading-relaxed text-ink-soft">{page.offerText}</p>
+      {page.banner?.trim() || editing ? (
+        <div className="mt-16 rounded-card bg-ink px-6 py-14 text-center text-paper sm:px-12">
+          <p className="font-story text-3xl italic leading-snug sm:text-5xl">
+            <EditableText value={page.banner || ""} multiline onSave={(banner) => save({ banner }, "Banner aangepast")} />
+          </p>
         </div>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {page.cards.map((card) => (
-            <article key={card.title} className="flex h-full flex-col overflow-hidden rounded-card border border-line bg-card shadow-sm">
-              {card.image ? (
-                <img src={card.image} alt={card.title} loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover" />
-              ) : (
-                <div className="grid aspect-[4/3] place-items-center bg-ink px-6 text-center font-display text-lg font-bold text-paper">{card.title}</div>
-              )}
-              <div className="flex flex-1 flex-col p-5">
-                <h3 className="font-display text-xl font-extrabold leading-tight">{card.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">{card.text}</p>
-              </div>
+      ) : null}
+      {stories.length ? (
+        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {stories.map((story) => (
+            <article key={story.id} className="group flex h-full flex-col overflow-hidden rounded-card border border-line bg-card text-left shadow-sm">
+              <span className="block aspect-[4/3] overflow-hidden bg-ink">
+                <Thumb src={story.image} alt={story.title} />
+              </span>
+              <span className="flex flex-1 flex-col gap-2 p-5">
+                <span className="font-display text-2xl font-extrabold leading-tight">{story.title}</span>
+                {story.text ? <span className="line-clamp-4 text-sm leading-relaxed text-ink-soft">{story.text}</span> : null}
+              </span>
             </article>
           ))}
         </div>
-      </div>
+      ) : null}
     </div>
   )
 }
@@ -896,15 +935,58 @@ export function ContactPage() {
   const { t } = useI18n()
   const { copy } = data
   const [sentNote, setSentNote] = useState("")
-  function submitContact(event: FormEvent<HTMLFormElement>) {
+  const [error, setError] = useState("")
+  const [busy, setBusy] = useState(false)
+  const [challenge, setChallenge] = useState({ question: "", token: "" })
+
+  async function loadChallenge() {
+    try {
+      const response = await fetch("/api/contact")
+      const payload = (await response.json().catch(() => null)) as { question?: string; token?: string } | null
+      if (payload?.question && payload.token) setChallenge({ question: payload.question, token: payload.token })
+    } catch {
+      setChallenge({ question: "", token: "" })
+    }
+  }
+
+  useEffect(() => {
+    void loadChallenge()
+  }, [])
+
+  async function submitContact(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const form = new FormData(event.currentTarget)
-    const name = String(form.get("name") || "")
-    const email = String(form.get("email") || "")
-    const message = String(form.get("message") || "")
-    const body = encodeURIComponent(`${name}\n${email}\n\n${message}`)
-    window.location.href = `mailto:${copy.email}?subject=${encodeURIComponent("Bericht via DE CONNECTORS")}&body=${body}`
-    setSentNote(t("sent"))
+    const formEl = event.currentTarget
+    const form = new FormData(formEl)
+    setBusy(true)
+    setError("")
+    setSentNote("")
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: String(form.get("name") || ""),
+          email: String(form.get("email") || ""),
+          message: String(form.get("message") || ""),
+          answer: String(form.get("answer") || ""),
+          token: challenge.token,
+          website: String(form.get("website") || ""),
+        }),
+      })
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null
+      if (!response.ok) {
+        setError(payload?.error || t("sendFail"))
+        await loadChallenge()
+        return
+      }
+      formEl.reset()
+      setSentNote(t("sent"))
+      await loadChallenge()
+    } catch {
+      setError(t("sendFail"))
+    } finally {
+      setBusy(false)
+    }
   }
   return (
     <SiteShell>
@@ -925,14 +1007,27 @@ export function ContactPage() {
               <SocialsRow socials={data.design.socials} tone="paper" />
             </div>
           </div>
-          <form onSubmit={submitContact} className="rounded-card bg-card p-6 text-ink sm:p-8">
+          <form onSubmit={submitContact} className="relative rounded-card bg-card p-6 text-ink sm:p-8">
+            <div className="absolute -left-[9999px] h-0 overflow-hidden" aria-hidden="true">
+              <label>
+                Website
+                <input name="website" tabIndex={-1} autoComplete="off" />
+              </label>
+            </div>
             <label className="block text-sm font-semibold" htmlFor="name">{t("name")}</label>
-            <input id="name" name="name" required className="mt-2 w-full rounded-xl border border-line bg-paper px-3 py-3 outline-none focus:border-accent" />
+            <input id="name" name="name" required autoComplete="name" className="mt-2 w-full rounded-xl border border-line bg-paper px-3 py-3 outline-none focus:border-accent" />
             <label className="mt-4 block text-sm font-semibold" htmlFor="email">{t("email")}</label>
-            <input id="email" name="email" type="email" required className="mt-2 w-full rounded-xl border border-line bg-paper px-3 py-3 outline-none focus:border-accent" />
+            <input id="email" name="email" type="email" required autoComplete="email" className="mt-2 w-full rounded-xl border border-line bg-paper px-3 py-3 outline-none focus:border-accent" />
             <label className="mt-4 block text-sm font-semibold" htmlFor="message">{t("message")}</label>
             <textarea id="message" name="message" required rows={5} className="mt-2 w-full rounded-xl border border-line bg-paper px-3 py-3 outline-none focus:border-accent" />
-            <button type="submit" className="mt-5 inline-flex min-h-11 items-center rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink">{t("send")}</button>
+            <label className="mt-4 block text-sm font-semibold" htmlFor="answer">
+              {t("captcha")} {challenge.question ? <span className="font-extrabold">{challenge.question}</span> : null}
+            </label>
+            <input id="answer" name="answer" inputMode="numeric" autoComplete="off" required className="mt-2 w-32 rounded-xl border border-line bg-paper px-3 py-3 outline-none focus:border-accent" />
+            <button type="submit" disabled={busy} className="mt-5 inline-flex min-h-11 items-center rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink disabled:opacity-60">
+              {busy ? t("sending") : t("send")}
+            </button>
+            {error ? <p className="mt-3 text-sm text-accent">{error}</p> : null}
             {sentNote ? <p className="mt-3 text-sm text-muted">{sentNote}</p> : null}
           </form>
         </div>

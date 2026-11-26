@@ -273,6 +273,12 @@ export function ClientLogos() {
   )
 }
 
+function StillImage({ url }: { url: string }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) return null
+  return <img src={url} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} className="aspect-[4/3] w-full rounded-card object-cover" />
+}
+
 export function MediaPane({ type, url, label }: { type: "image" | "video"; url: string; label: string }) {
   const embed = type === "video" ? toEmbedUrl(url) : null
   if (embed) {
@@ -285,7 +291,7 @@ export function MediaPane({ type, url, label }: { type: "image" | "video"; url: 
   if (type === "video" && url) {
     return <video src={url} controls className="aspect-video w-full rounded-card bg-ink" />
   }
-  if (url) return <img src={url} alt="" loading="lazy" decoding="async" className="aspect-[4/3] w-full rounded-card object-cover" />
+  if (url) return <StillImage key={url} url={url} />
   return <div className="grid aspect-[4/3] place-items-center rounded-card bg-ink px-6 text-center font-display text-lg font-bold text-paper">Beeld volgt</div>
 }
 

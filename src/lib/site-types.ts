@@ -31,6 +31,8 @@ export type WhoPerson = {
 
 export type OfferCard = { title: string; text: string; image: string; i18n?: I18nMap }
 
+export type StoryItem = { id: string; title: string; text: string; image: string; i18n?: I18nMap }
+
 export type PoemItem = { id: string; title: string; body: string; image?: string; i18n?: I18nMap }
 
 export type WatPage = {
@@ -45,6 +47,8 @@ export type WatPage = {
   offerTitle: string
   offerText: string
   cards: OfferCard[]
+  banner?: string
+  stories?: StoryItem[]
   layout?: "default" | "poems"
   poemPageTitle?: string
   poemLead?: string

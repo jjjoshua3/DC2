@@ -21,6 +21,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as WatRouteImport } from './routes/wat'
 import { Route as ApiStatsRouteImport } from './routes/api.stats'
+import { Route as ApiContactRouteImport } from './routes/api.contact'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogPostIdRouteImport } from './routes/blog.$postId'
 import { Route as PaginaSlugRouteImport } from './routes/pagina.$slug'
@@ -89,6 +90,11 @@ const ApiStatsRoute = ApiStatsRouteImport.update({
   path: '/api/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiContactRoute = ApiContactRouteImport.update({
+  id: '/api/contact',
+  path: '/api/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/wat': typeof WatRouteWithChildren
   '/api/stats': typeof ApiStatsRoute
+  '/api/contact': typeof ApiContactRoute
   '/blog/$postId': typeof BlogPostIdRoute
   '/pagina/$slug': typeof PaginaSlugRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/stats': typeof ApiStatsRoute
+  '/api/contact': typeof ApiContactRoute
   '/blog/$postId': typeof BlogPostIdRoute
   '/pagina/$slug': typeof PaginaSlugRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/wat': typeof WatRouteWithChildren
   '/api/stats': typeof ApiStatsRoute
+  '/api/contact': typeof ApiContactRoute
   '/blog/$postId': typeof BlogPostIdRoute
   '/pagina/$slug': typeof PaginaSlugRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/wat'
     | '/api/stats'
+    | '/api/contact'
     | '/blog/$postId'
     | '/pagina/$slug'
     | '/project/$projectId'
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/api/stats'
+    | '/api/contact'
     | '/blog/$postId'
     | '/pagina/$slug'
     | '/project/$projectId'
@@ -242,6 +253,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/wat'
     | '/api/stats'
+    | '/api/contact'
     | '/blog/$postId'
     | '/pagina/$slug'
     | '/project/$projectId'
@@ -264,6 +276,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WatRoute: typeof WatRouteWithChildren
   ApiStatsRoute: typeof ApiStatsRoute
+  ApiContactRoute: typeof ApiContactRoute
   PaginaSlugRoute: typeof PaginaSlugRoute
   ProjectProjectIdRoute: typeof ProjectProjectIdRoute
   MediaUIdRoute: typeof MediaUIdRoute
@@ -355,6 +368,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/contact': {
+      id: '/api/contact'
+      path: '/api/contact'
+      fullPath: '/api/contact'
+      preLoaderRoute: typeof ApiContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/': {
       id: '/blog/'
       path: '/'
@@ -444,6 +464,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   WatRoute: WatRouteWithChildren,
   ApiStatsRoute: ApiStatsRoute,
+  ApiContactRoute: ApiContactRoute,
   PaginaSlugRoute: PaginaSlugRoute,
   ProjectProjectIdRoute: ProjectProjectIdRoute,
   MediaUIdRoute: MediaUIdRoute,

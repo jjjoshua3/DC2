@@ -3,6 +3,8 @@
 # Supabase Postgres-adres. Zonder die sleutel blijft de site
 # online met de teksten die nu in de pagina zitten.
 # Inloglinks: zet ook GMAIL_APP_PASSWORD (app-wachtwoord van aa0271n8@gmail.com).
+# Contactformulier: CONTACT_SMTP_PASS is het postvakwachtwoord van noreply@deconnectors.com.
+# Zonder die variabele leest de functie een afgeschermde waarde uit de database.
 [build]
   command = "npm run build && cp node_modules/@electric-sql/pglite/dist/pglite.data .netlify/functions-internal/server/_libs/pglite.data"
   publish = "dist"

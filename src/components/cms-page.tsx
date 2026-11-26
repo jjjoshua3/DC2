@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 import { DataService, useSiteData } from "@/lib/data-service"
 import { defaultSite } from "@/lib/site-defaults"
-import { CATEGORIES, projectCategories, type PageCopy, type PoemItem, type Project, type SiteData, type WatPage, type WhoPerson } from "@/lib/site-types"
+import { CATEGORIES, projectCategories, type PageCopy, type PoemItem, type Project, type SiteData, type StoryItem, type WatPage, type WhoPerson } from "@/lib/site-types"
 import { ArticleBody, ProjectCard } from "@/components/project-views"
 import { DropImage, RichText } from "@/components/editor-fields"
 import { compressImage, newId, toEmbedUrl } from "@/lib/media"
@@ -549,7 +549,7 @@ function WatForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =>
   return (
     <section className="max-w-3xl">
       <h1 className="font-display text-2xl font-extrabold">Wat-pagina’s</h1>
-      <p className="mt-2 text-sm text-muted">Journalistiek, Artistiek en Artistiek journalistiek. De korte tekst hieronder is ook de tekst in het vak op de homepage. Het vak linkt naar deze pagina.</p>
+      <p className="mt-2 text-sm text-muted">Journalistiek en Artistiek journalistiek hebben dezelfde opbouw: boven een beeld met een korte tekst, daarna drie vakjes met uitleg, dan een banner voor een quote, en daaronder zoveel extra vakjes als je wilt. Artistiek blijft de pagina met gedichten. Een lege foto blijft leeg.</p>
       {data.wat.map((page, index) => (
         <div key={page.slug} className="mt-8 rounded-card border border-line bg-card p-4">
           <h2 className="font-display text-xl font-extrabold">{page.title}</h2>
@@ -563,67 +563,145 @@ function WatForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =>
             onType={(mediaType) => patch(data, save, index, { mediaType })}
             onUrl={(mediaUrl) => patch(data, save, index, { mediaUrl })}
           />
-          <MediaFields
-            label="Voorbeeld eronder"
-            type={page.exampleType}
-            url={page.exampleUrl}
-            onType={(exampleType) => patch(data, save, index, { exampleType })}
-            onUrl={(exampleUrl) => patch(data, save, index, { exampleUrl })}
-          />
-          <Field label="Titel van het aanbod" value={page.offerTitle} onChange={(value) => patch(data, save, index, { offerTitle: value })} />
-          <Area label="Wat ik voor je kan doen" value={page.offerText} onChange={(value) => patch(data, save, index, { offerText: value })} />
-          {page.cards.map((card, cardIndex) => (
-            <div key={`${page.slug}-${cardIndex}`} className="mt-4 rounded-xl border border-line bg-paper p-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-bold">Blok {cardIndex + 1}</p>
-                <button
-                  type="button"
-                  className="text-sm font-semibold text-accent"
-                  onClick={() => patch(data, save, index, { cards: page.cards.filter((_, i) => i !== cardIndex) })}
-                >
-                  Verwijder
-                </button>
-              </div>
-              <Field
-                label="Titel"
-                value={card.title}
-                onChange={(value) => {
-                  const cards = page.cards.map((item, i) => (i === cardIndex ? { ...item, title: value } : item))
-                  patch(data, save, index, { cards })
+          {page.slug === "artistiek" ? null : (
+            <>
+              <Field label="Titel boven de drie vakjes" value={page.offerTitle} onChange={(value) => patch(data, save, index, { offerTitle: value })} />
+              <Area label="Korte tekst bij de drie vakjes" value={page.offerText} onChange={(value) => patch(data, save, index, { offerText: value })} />
+              {page.cards.map((card, cardIndex) => (
+                <div key={`${page.slug}-${cardIndex}`} className="mt-4 rounded-xl border border-line bg-paper p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-bold">Vakje {cardIndex + 1}</p>
+                    <button
+                      type="button"
+                      className="text-sm font-semibold text-accent"
+                      onClick={() => patch(data, save, index, { cards: page.cards.filter((_, i) => i !== cardIndex) })}
+                    >
+                      Verwijder
+                    </button>
+                  </div>
+                  <Field
+                    label="Titel"
+                    value={card.title}
+                    onChange={(value) => {
+                      const cards = page.cards.map((item, i) => (i === cardIndex ? { ...item, title: value } : item))
+                      patch(data, save, index, { cards })
+                    }}
+                  />
+                  <Area
+                    label="Uitleg"
+                    value={card.text}
+                    onChange={(value) => {
+                      const cards = page.cards.map((item, i) => (i === cardIndex ? { ...item, text: value } : item))
+                      patch(data, save, index, { cards })
+                    }}
+                  />
+                  <Field
+                    label="Afbeelding-URL"
+                    value={card.image}
+                    onChange={(value) => {
+                      const cards = page.cards.map((item, i) => (i === cardIndex ? { ...item, image: value } : item))
+                      patch(data, save, index, { cards })
+                    }}
+                  />
+                  <DropImage
+                    label="Upload afbeelding"
+                    onFile={(url) => {
+                      const cards = page.cards.map((item, i) => (i === cardIndex ? { ...item, image: url } : item))
+                      patch(data, save, index, { cards })
+                    }}
+                  />
+                  {card.image ? (
+                    <button
+                      type="button"
+                      className="mt-2 text-sm font-semibold text-accent"
+                      onClick={() => {
+                        const cards = page.cards.map((item, i) => (i === cardIndex ? { ...item, image: "" } : item))
+                        patch(data, save, index, { cards })
+                      }}
+                    >
+                      Foto weg
+                    </button>
+                  ) : null}
+                </div>
+              ))}
+              <button
+                type="button"
+                className="mt-4 inline-flex min-h-11 items-center rounded-full border border-line px-4 text-sm font-semibold"
+                onClick={() => patch(data, save, index, { cards: [...page.cards, { title: "Nieuw vakje", text: "", image: "" }] })}
+              >
+                Vakje toevoegen
+              </button>
+              <Area label="Banner, bijvoorbeeld een quote" value={page.banner || ""} onChange={(value) => patch(data, save, index, { banner: value })} />
+              <p className="mt-6 text-sm text-muted">Extra vakjes onder de banner. Net als bij Artistiek: zoveel als je wilt.</p>
+              {(page.stories ?? []).map((story) => (
+                <div key={story.id} className="mt-4 rounded-xl border border-line bg-paper p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-bold">{story.title || "Vakje"}</p>
+                    <button
+                      type="button"
+                      className="text-sm font-semibold text-accent"
+                      onClick={() => patch(data, save, index, { stories: (page.stories ?? []).filter((item) => item.id !== story.id) })}
+                    >
+                      Verwijder
+                    </button>
+                  </div>
+                  <Field
+                    label="Titel"
+                    value={story.title}
+                    onChange={(value) => {
+                      const stories = (page.stories ?? []).map((item) => (item.id === story.id ? { ...item, title: value } : item))
+                      patch(data, save, index, { stories })
+                    }}
+                  />
+                  <Area
+                    label="Korte tekst"
+                    value={story.text}
+                    onChange={(value) => {
+                      const stories = (page.stories ?? []).map((item) => (item.id === story.id ? { ...item, text: value } : item))
+                      patch(data, save, index, { stories })
+                    }}
+                  />
+                  <Field
+                    label="Afbeelding-URL"
+                    value={story.image}
+                    onChange={(value) => {
+                      const stories = (page.stories ?? []).map((item) => (item.id === story.id ? { ...item, image: value } : item))
+                      patch(data, save, index, { stories })
+                    }}
+                  />
+                  <DropImage
+                    label="Upload afbeelding"
+                    onFile={(url) => {
+                      const stories = (page.stories ?? []).map((item) => (item.id === story.id ? { ...item, image: url } : item))
+                      patch(data, save, index, { stories })
+                    }}
+                  />
+                  {story.image ? (
+                    <button
+                      type="button"
+                      className="mt-2 text-sm font-semibold text-accent"
+                      onClick={() => {
+                        const stories = (page.stories ?? []).map((item) => (item.id === story.id ? { ...item, image: "" } : item))
+                        patch(data, save, index, { stories })
+                      }}
+                    >
+                      Foto weg
+                    </button>
+                  ) : null}
+                </div>
+              ))}
+              <button
+                type="button"
+                className="mt-4 inline-flex min-h-11 items-center rounded-full border border-line px-4 text-sm font-semibold"
+                onClick={() => {
+                  const item: StoryItem = { id: newId(), title: "Nieuw vakje", text: "", image: "" }
+                  patch(data, save, index, { stories: [...(page.stories ?? []), item] })
                 }}
-              />
-              <Area
-                label="Tekst"
-                value={card.text}
-                onChange={(value) => {
-                  const cards = page.cards.map((item, i) => (i === cardIndex ? { ...item, text: value } : item))
-                  patch(data, save, index, { cards })
-                }}
-              />
-              <Field
-                label="Afbeelding-URL"
-                value={card.image}
-                onChange={(value) => {
-                  const cards = page.cards.map((item, i) => (i === cardIndex ? { ...item, image: value } : item))
-                  patch(data, save, index, { cards })
-                }}
-              />
-              <DropImage
-                label="Upload afbeelding"
-                onFile={(url) => {
-                  const cards = page.cards.map((item, i) => (i === cardIndex ? { ...item, image: url } : item))
-                  patch(data, save, index, { cards })
-                }}
-              />
-            </div>
-          ))}
-          <button
-            type="button"
-            className="mt-4 inline-flex min-h-11 items-center rounded-full border border-line px-4 text-sm font-semibold"
-            onClick={() => patch(data, save, index, { cards: [...page.cards, { title: "Nieuw blok", text: "", image: "" }] })}
-          >
-            Blok toevoegen
-          </button>
+              >
+                Extra vakje toevoegen
+              </button>
+            </>
+          )}
           {page.slug === "artistiek" ? (
             <div className="mt-8 border-t border-line pt-6">
               <h3 className="font-display text-lg font-extrabold">Artistiek</h3>
@@ -632,6 +710,11 @@ function WatForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =>
               <Area label="Tekst naast de foto" value={page.poemLead?.startsWith("Drie gedichten") ? "" : page.poemLead || ""} onChange={(value) => patch(data, save, index, { poemLead: value })} />
               <Field label="Foto-URL" value={page.poemPhoto || ""} onChange={(value) => patch(data, save, index, { poemPhoto: value })} />
               <DropImage label="Upload foto naast de tekst" onFile={(url) => patch(data, save, index, { poemPhoto: url })} />
+              {page.poemPhoto ? (
+                <button type="button" className="mt-2 text-sm font-semibold text-accent" onClick={() => patch(data, save, index, { poemPhoto: "" })}>
+                  Foto weg
+                </button>
+              ) : null}
               <p className="mt-6 text-sm text-muted">Gedichten. Elke regel op een nieuwe regel. Het lettertype op de pagina is hetzelfde als bij Stad van Ons.</p>
               {(page.poems ?? []).map((poem) => (
                 <div key={poem.id} className="mt-4 rounded-xl border border-line bg-paper p-4">
@@ -668,6 +751,18 @@ function WatForm({ data, commit }: { data: SiteData; commit: (next: SiteData) =>
                       patch(data, save, index, { poems: next })
                     }}
                   />
+                  {poem.image ? (
+                    <button
+                      type="button"
+                      className="mt-2 text-sm font-semibold text-accent"
+                      onClick={() => {
+                        const next = (page.poems ?? []).map((item) => (item.id === poem.id ? { ...item, image: "" } : item))
+                        patch(data, save, index, { poems: next })
+                      }}
+                    >
+                      Foto weg
+                    </button>
+                  ) : null}
                   <Area
                     label="Gedicht"
                     value={poem.body}
@@ -726,6 +821,11 @@ function MediaFields({
       </div>
       <Field label={type === "video" ? "YouTube-, Vimeo- of videolink" : "Afbeelding-URL"} value={url} onChange={onUrl} />
       {type === "image" ? <DropImage label="Upload afbeelding" onFile={onUrl} /> : null}
+      {url ? (
+        <button type="button" className="mt-2 text-sm font-semibold text-accent" onClick={() => onUrl("")}>
+          Foto weg
+        </button>
+      ) : null}
     </div>
   )
 }

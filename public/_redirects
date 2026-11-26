@@ -3,3 +3,4 @@
 /api/audit /.netlify/functions/audit 200
 /api/magic /.netlify/functions/magic 200
 /api/feedback /.netlify/functions/feedback 200
+/api/contact /.netlify/functions/contact 200

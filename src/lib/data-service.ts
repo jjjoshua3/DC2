@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { defaultSite } from "@/lib/site-defaults"
-import type { CustomPage, PageBlock, SiteData } from "@/lib/site-types"
+import type { CustomPage, PageBlock, SiteData, StoryItem } from "@/lib/site-types"
 import { projectCategories } from "@/lib/site-types"
 import { inkForAccent } from "@/lib/media"
 import { fetchSiteDocument } from "@/lib/site-store"
@@ -53,6 +53,20 @@ function cleanBlock(block: PageBlock): PageBlock {
     cards: Array.isArray(block.cards) ? block.cards.map((card) => ({ title: card.title || "", text: card.text || "", image: card.image || "" })) : [],
   }
 }
+function keptString(value: unknown, fallback: string) {
+  return typeof value === "string" ? value : fallback
+}
+
+function cleanStories(value: unknown): StoryItem[] {
+  if (!Array.isArray(value)) return []
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return []
+    const story = item as StoryItem
+    if (!story.id) return []
+    return [{ id: story.id, title: story.title || "", text: story.text || "", image: typeof story.image === "string" ? story.image : "", i18n: story.i18n }]
+  })
+}
+
 function sameBlocks(current: { title: string; text: string }[], original: { title: string; text: string }[]) {
   if (current.length !== original.length) return false
   return current.every((item, index) => item.title === original[index]?.title && item.text === original[index]?.text)
@@ -107,12 +121,14 @@ export function normalizeSite(value: SiteData): SiteData {
           poems: placeholderPoems(found.poems) ? page.poems : found.poems,
           poemPageTitle: found.poemPageTitle || page.poemPageTitle,
           poemLead: found.poemLead || (placeholderLead(found.lead) ? found.lead : page.poemLead),
-          poemPhoto: found.poemPhoto || (placeholderLead(found.lead) ? found.mediaUrl : page.poemPhoto),
+          poemPhoto: typeof found.poemPhoto === "string" ? found.poemPhoto : placeholderLead(found.lead) ? found.mediaUrl : page.poemPhoto || "",
           lead: placeholderLead(found.lead) ? page.lead : found.lead,
           body: placeholderLead(found.lead) && !found.body ? page.body : found.body,
-          mediaUrl: placeholderLead(found.lead) ? page.mediaUrl : found.mediaUrl,
-          exampleUrl: found.exampleUrl || page.exampleUrl,
-          offerText: found.offerText || page.offerText,
+          mediaUrl: placeholderLead(found.lead) ? page.mediaUrl : keptString(found.mediaUrl, page.mediaUrl),
+          exampleUrl: keptString(found.exampleUrl, ""),
+          offerText: keptString(found.offerText, page.offerText),
+          banner: keptString(found.banner, ""),
+          stories: cleanStories(found.stories),
         }
     if (merged.slug === "artistiek") {
       return { ...merged, layout: "default" as const, poemPageTitle: merged.poemPageTitle || "Gedichten" }
