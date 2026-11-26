@@ -214,15 +214,17 @@ export async function handleMagicRequest(request: Request): Promise<Response> {
         email,
         link,
       ])
-      const password = process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, "")
+      const password = process.env.CONTACT_SMTP_PASS?.trim() || process.env.SMTP_PASS?.trim() || ""
       if (!password) {
-        throw new Error("GMAIL_APP_PASSWORD ontbreekt. Zet het app-wachtwoord van aa0271n8@gmail.com.")
+        throw new Error("SMTP-wachtwoord ontbreekt. Zet CONTACT_SMTP_PASS op Netlify.")
       }
       const transport = nodemailer.createTransport({
-        host: "smtp.gmail.com",
+        host: "mail.antagonist.nl",
         port: 465,
         secure: true,
-        auth: { user: "aa0271n8@gmail.com", pass: password },
+        auth: { user: "noreply@deconnectors.com", pass: password },
+        connectionTimeout: 12000,
+        greetingTimeout: 12000,
       })
       await transport.sendMail({
         from: "DE CONNECTORS <noreply@deconnectors.com>",

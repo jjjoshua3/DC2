@@ -79,16 +79,30 @@ async function ensureTables(pool) {
   `)
 }
 
-async function sendLink(email, name, link) {
-  const password = process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, "")
+const SMTP_USER = "noreply@deconnectors.com"
+
+async function smtpPassword(pool) {
+  const fromEnv = process.env.CONTACT_SMTP_PASS?.trim() || process.env.SMTP_PASS?.trim()
+  if (fromEnv) return fromEnv
+  if (!pool) return ""
+  await pool.query(`create table if not exists site_private (id text primary key, value text not null)`)
+  await pool.query(`alter table site_private enable row level security`)
+  const found = await pool.query(`select value from site_private where id = 'smtp_pass'`)
+  return String(found.rows[0]?.value || "")
+}
+
+async function sendLink(email, name, link, pool) {
+  const password = await smtpPassword(pool)
   if (!password) {
-    throw new Error("GMAIL_APP_PASSWORD ontbreekt op Netlify. Zet daar het app-wachtwoord van aa0271n8@gmail.com (of de SMTP-gegevens voor noreply@deconnectors.com).")
+    throw new Error("SMTP-wachtwoord ontbreekt. Zet CONTACT_SMTP_PASS op Netlify of sla het op in site_private.")
   }
   const transport = nodemailer.createTransport({
-    host: "smtp.gmail.com",
+    host: "mail.antagonist.nl",
     port: 465,
     secure: true,
-    auth: { user: "aa0271n8@gmail.com", pass: password },
+    auth: { user: SMTP_USER, pass: password },
+    connectionTimeout: 12000,
+    greetingTimeout: 12000,
   })
   await transport.sendMail({
     from: FROM,
@@ -241,7 +255,7 @@ export default async (request) => {
         email,
         link,
       ])
-      await sendLink(email, account.name, link)
+      await sendLink(email, account.name, link, pool)
       await pool.query(`update site_magic_outbox set sent_at = now() where id = $1`, [outboxId])
       return Response.json({ ok: true })
     })
