@@ -1,3 +1,8 @@
+
+function poolerUrl(url) {
+  if (!url) return url
+  return url.replace(/:5432\//, ":6543/")
+}
 import { createHash } from "node:crypto"
 import pg from "pg"
 
@@ -155,7 +160,7 @@ export default async (request) => {
       )
     }
     const pool = new pg.Pool({
-      connectionString: databaseUrl,
+      connectionString: poolerUrl(databaseUrl),
       ssl: databaseUrl.includes("supabase") ? { rejectUnauthorized: false } : undefined,
       max: 1,
       connectionTimeoutMillis: 8000,

@@ -1,4 +1,9 @@
 // @ts-nocheck
+
+function poolerUrl(url) {
+  if (!url) return url
+  return url.replace(/:5432\//, ":6543/")
+}
 import { createHash, createHmac, randomInt, timingSafeEqual } from "node:crypto"
 import pg from "pg"
 import nodemailer from "nodemailer"
@@ -53,7 +58,7 @@ function poolFromEnv() {
   const databaseUrl = process.env.DATABASE_URL?.trim()
   if (!databaseUrl) return null
   return new pg.Pool({
-    connectionString: databaseUrl,
+    connectionString: poolerUrl(databaseUrl),
     ssl: databaseUrl.includes("supabase") ? { rejectUnauthorized: false } : undefined,
     max: 1,
     connectionTimeoutMillis: 8000,

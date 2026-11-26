@@ -15,14 +15,23 @@ function hashToken(token) {
   return createHash("sha256").update(token).digest("hex")
 }
 
+function poolerUrl(url) {
+  // Prefer transaction mode (port 6543) over session mode (port 5432) for short serverless connections.
+  // Session mode has a hard limit of ~15 clients and is easy to exhaust.
+  if (!url) return url
+  return url.replace(/:5432\//, ":6543/")
+}
+
 async function withDb(run) {
-  const databaseUrl = process.env.DATABASE_URL?.trim()
-  if (!databaseUrl) throw new Error("DATABASE_URL ontbreekt op Netlify")
+  const raw = process.env.DATABASE_URL?.trim()
+  if (!raw) throw new Error("DATABASE_URL ontbreekt op Netlify")
+  const databaseUrl = poolerUrl(raw)
   const pool = new pg.Pool({
     connectionString: databaseUrl,
     ssl: databaseUrl.includes("supabase") ? { rejectUnauthorized: false } : undefined,
     max: 1,
     connectionTimeoutMillis: 8000,
+    idleTimeoutMillis: 5000,
   })
   try {
     return await run(pool)
@@ -237,7 +246,8 @@ export default async (request) => {
       return Response.json({ ok: true })
     })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Onbekende fout"
+    const raw = error instanceof Error ? error.message : String(error)
+    const message = /EMAXCONNSESSION|max clients reached/i.test(raw) ? "De database is even druk. Probeer het over een paar seconden opnieuw." : raw
     return Response.json({ error: message }, { status: 500 })
   }
 }

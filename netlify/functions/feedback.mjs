@@ -1,3 +1,8 @@
+
+function poolerUrl(url) {
+  if (!url) return url
+  return url.replace(/:5432\//, ":6543/")
+}
 import { createHash, randomBytes } from "node:crypto"
 import pg from "pg"
 import nodemailer from "nodemailer"
@@ -29,7 +34,7 @@ async function withDb(run) {
   const databaseUrl = process.env.DATABASE_URL?.trim()
   if (!databaseUrl) throw new Error("DATABASE_URL ontbreekt op Netlify")
   const pool = new pg.Pool({
-    connectionString: databaseUrl,
+    connectionString: poolerUrl(databaseUrl),
     ssl: databaseUrl.includes("supabase") ? { rejectUnauthorized: false } : undefined,
     max: 1,
     connectionTimeoutMillis: 8000,
