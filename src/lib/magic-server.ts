@@ -225,7 +225,7 @@ export async function handleMagicRequest(request: Request): Promise<Response> {
         auth: { user: "aa0271n8@gmail.com", pass: password },
       })
       await transport.sendMail({
-        from: "DE CONNECTORS <aa0271n8@gmail.com>",
+        from: "DE CONNECTORS <noreply@deconnectors.com>",
         to: email,
         subject: "Inloglink DE CONNECTORS",
         text: `Hoi ${account.name},\n\nHier is je inloglink voor het beheer. De link is 30 minuten geldig en werkt één keer.\n\n${link}\n`,

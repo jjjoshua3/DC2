@@ -1,3 +1,4 @@
+import { randomUUID } from "@/lib/uuid"
 import { ipFromHeaders, lookupPlace } from "@/lib/analytics"
 import { accountFromToken, adminAccount } from "@/lib/admins"
 import { getSql } from "@/lib/db"
@@ -32,7 +33,7 @@ async function writeEvent(input: {
   detail: string
 }) {
   const sql = await ensureAuditTable()
-  const id = crypto.randomUUID()
+  const id = randomUUID()
   await sql`
     insert into site_audit (id, kind, username, ip, city, country, ok, summary, detail)
     values (

@@ -1,3 +1,4 @@
+import { randomUUID } from "@/lib/uuid"
 import { ipFromHeaders, lookupPlace } from "@/lib/analytics"
 import { ensureVisitTable } from "@/lib/stats-query"
 
@@ -29,7 +30,7 @@ export async function handleVisitRequest(request: Request): Promise<Response> {
     const place = await lookupPlace(ipFromHeaders(request.headers))
     const ip = ipFromHeaders(request.headers)
     const path = typeof body?.path === "string" ? body.path.slice(0, 120) : "/"
-    const id = crypto.randomUUID()
+    const id = randomUUID()
     await sql`
       insert into site_visit (id, visitor_id, country, city, region, ip, path)
       values (${id}, ${visitorId}, ${place.country}, ${place.city}, ${place.region}, ${ip}, ${path})

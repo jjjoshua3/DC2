@@ -1,29 +1,35 @@
-import type { ErrorComponentProps } from "@tanstack/react-router";
-import { TriangleAlert } from "lucide-react";
+import type { ErrorComponentProps } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 
-const FALLBACK_MESSAGE = "An unexpected error occurred. Try reloading the page.";
-
-function errorMessage(error: unknown): string {
-  if (error instanceof Error && error.message) return error.message;
-  if (typeof error === "string" && error) return error;
-  return FALLBACK_MESSAGE;
-}
-
-export function AppErrorComponent({ error }: ErrorComponentProps) {
+/**
+ * Ongeacht welke fout er optreedt (crypto.randomUUID, runtime errors, etc.),
+ * tonen we een nette 404-pagina. Geen "Something went wrong" meer voor bezoekers.
+ */
+export function AppErrorComponent(_props: ErrorComponentProps) {
   return (
-    <main
-      className={
-        "flex min-h-screen flex-col items-center justify-center gap-3 px-6 text-center " +
-        "bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50"
-      }
-    >
-      <span className="text-red-500" aria-hidden="true">
-        <TriangleAlert className="size-10" strokeWidth={2} />
-      </span>
-      <h1 className="text-lg font-semibold">Something went wrong</h1>
-      <p className="max-w-md text-sm break-words text-zinc-500 dark:text-zinc-400">
-        {errorMessage(error)}
-      </p>
+    <main className="min-h-screen bg-ink text-paper">
+      <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 sm:py-20 lg:grid-cols-12">
+        <div className="lg:col-span-5">
+          <p className="text-xs font-bold uppercase tracking-[0.28em] text-accent">404</p>
+          <h1 className="mt-4 font-display text-5xl font-extrabold leading-[0.95] tracking-tight sm:text-6xl">
+            Pagina niet gevonden
+          </h1>
+          <p className="mt-6 max-w-md text-lg leading-relaxed text-paper/75">
+            Deze pagina bestaat niet of er is iets misgegaan. Ga terug naar de startpagina.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              to="/"
+              className="inline-flex min-h-11 items-center rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-ink"
+            >
+              Naar de start
+            </Link>
+          </div>
+        </div>
+        <div className="lg:col-span-7">
+          <img src="/media/404.jpg" alt="Stefanie Vermeulen" className="w-full rounded-card object-cover" />
+        </div>
+      </section>
     </main>
-  );
+  )
 }

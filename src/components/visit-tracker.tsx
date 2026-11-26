@@ -1,3 +1,4 @@
+import { randomUUID } from "@/lib/uuid"
 import { useEffect } from "react"
 
 const VISITOR_KEY = "dc.visitor"
@@ -6,7 +7,7 @@ let tracked = false
 function visitorId() {
   const existing = window.localStorage.getItem(VISITOR_KEY)
   if (existing) return existing
-  const next = crypto.randomUUID()
+  const next = randomUUID()
   window.localStorage.setItem(VISITOR_KEY, next)
   return next
 }

@@ -1,3 +1,4 @@
+import { randomUUID } from "@/lib/uuid"
 import { createServerFn } from "@tanstack/react-start"
 import { getRequest } from "@tanstack/react-start/server"
 import { ensureVisitTable } from "@/lib/stats-query"
@@ -82,7 +83,7 @@ export const startVisit = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const sql = await ensureVisitTable()
     const place = await lookupPlace(ipFromHeaders(getRequest().headers))
-    const id = crypto.randomUUID()
+    const id = randomUUID()
     await sql`
       insert into site_visit (id, visitor_id, country, city, region)
       values (${id}, ${data.visitorId}, ${place.country}, ${place.city}, ${place.region})

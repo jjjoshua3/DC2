@@ -4,7 +4,7 @@ import nodemailer from "nodemailer"
 import { Secret, TOTP } from "otpauth"
 import QRCode from "qrcode"
 
-const FROM = "DE CONNECTORS <aa0271n8@gmail.com>"
+const FROM = "DE CONNECTORS <noreply@deconnectors.com>"
 const TOTP_CHANCE = 0.28
 const ADMINS = {
   "joshua.bosma@kpnmail.nl": { name: "Joshua Bosma", role: "Webdeveloper" },
@@ -73,7 +73,7 @@ async function ensureTables(pool) {
 async function sendLink(email, name, link) {
   const password = process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, "")
   if (!password) {
-    throw new Error("GMAIL_APP_PASSWORD ontbreekt op Netlify. Zet daar het app-wachtwoord van aa0271n8@gmail.com.")
+    throw new Error("GMAIL_APP_PASSWORD ontbreekt op Netlify. Zet daar het app-wachtwoord van aa0271n8@gmail.com (of de SMTP-gegevens voor noreply@deconnectors.com).")
   }
   const transport = nodemailer.createTransport({
     host: "smtp.gmail.com",
